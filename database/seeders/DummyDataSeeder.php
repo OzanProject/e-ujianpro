@@ -21,10 +21,22 @@ class DummyDataSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
+        // 0. Ensure Host / Admin Lembaga
+        $admin = \App\Models\User::firstOrCreate(
+            ['email' => 'admin@smadummy.com'],
+            [
+                'name' => 'Admin SMA Dummy',
+                'password' => Hash::make('password'),
+                'role' => 'admin_lembaga',
+                'status' => 'active',
+            ]
+        );
+
         // 1. Ensure Institution
         $institution = Institution::first();
         if (!$institution) {
             $institution = Institution::create([
+                'user_id' => $admin->id,
                 'name' => 'SMA Dummy Sejahtera',
                 'email' => 'admin@smadummy.com',
                 'phone' => '08123456789',
@@ -36,6 +48,7 @@ class DummyDataSeeder extends Seeder
         } else {
             // Update existing for dynamic data check
             $institution->update([
+                'user_id' => $admin->id,
                 'city' => 'Jakarta Selatan',
                 'head_master' => 'Dr. Budi Santoso, M.Pd.',
                 'nip_head_master' => '19800101 200501 1 001',
@@ -62,6 +75,21 @@ class DummyDataSeeder extends Seeder
                 ['code' => $code]
             );
         }
+
+        // 2b. Create Teacher
+        $this->command->info('Creating Dummy Teacher...');
+        $teacher = \App\Models\User::firstOrCreate(
+            ['email' => 'guru@smadummy.com'],
+            [
+                'name' => 'Guru Teladan',
+                'password' => Hash::make('password'),
+                'role' => 'pengajar',
+                'status' => 'active',
+                'created_by' => $admin->id,
+            ]
+        );
+        // Attach all created subjects to this teacher
+        $teacher->subjects()->sync(collect($subjects)->pluck('id'));
 
         // 3. Create Student Groups
         $groups = [];

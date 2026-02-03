@@ -52,7 +52,9 @@ class ExamPackageController extends Controller
             'subject_id' => 'required|exists:subjects,id',
         ]);
 
-        $package = ExamPackage::create($request->all());
+        $data = $request->all();
+        $data['created_by'] = auth()->id();
+        $package = ExamPackage::create($data);
 
         return redirect()->route('admin.exam_package.show', $package->id)
                          ->with('success', 'Paket soal berhasil dibuat. Silakan tambahkan soal.');
