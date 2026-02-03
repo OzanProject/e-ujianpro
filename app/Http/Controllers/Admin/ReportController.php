@@ -68,7 +68,19 @@ class ReportController extends Controller
         }
 
         $sessions = $query->get();
-        $institution = \App\Models\Institution::first();
+        $sessions = $query->get();
+        // Fix Institution: Get creator's institution
+        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+
+        // Fallback for Teachers: Get institution via assigned subject creator or their own user_id if they belong to one
+        if (!$institution && $user->role === 'pengajar') {
+             // Try to find institution via first subject's creator
+             $firstSubject = $user->subjects->first();
+             if ($firstSubject) {
+                  $institution = \App\Models\Institution::where('user_id', $firstSubject->created_by)->first();
+             }
+        }
 
         return view('admin.report.print_exam_schedule', compact('sessions', 'startDate', 'endDate', 'institution'));
     }
@@ -88,9 +100,7 @@ class ReportController extends Controller
         $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
         
         $query = \App\Models\Student::with('examRoom', 'group')
-                    ->whereHas('user', function($q) use ($creatorId) {
-                        $q->where('created_by', $creatorId);
-                    });
+                    ->where('created_by', $creatorId);
         
         if ($request->has('exam_room_id') && $request->exam_room_id != 'all') {
             if ($request->exam_room_id == 'null') {
@@ -108,7 +118,9 @@ class ReportController extends Controller
              return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
         });
 
-        $institution = \App\Models\Institution::first();
+        // Fix Institution
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+        
         $roomName = $request->exam_room_id && $request->exam_room_id != 'all' && $request->exam_room_id != 'null' 
                     ? \App\Models\ExamRoom::find($request->exam_room_id)->name 
                     : 'Semua Ruangan';
@@ -122,7 +134,13 @@ class ReportController extends Controller
         $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
         $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
         // Fetch upcoming/recent sessions for selection
+        // Scope by Subjects owned/assigned
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+
         $sessions = ExamSession::with('subject')
+            ->whereIn('subject_id', $subjectIds)
             ->where('start_time', '>=', now()->subDays(7)) // Show sessions from last week onwards
             ->orderBy('start_time', 'asc')
             ->get();
@@ -155,9 +173,7 @@ class ReportController extends Controller
         }
 
         $query = \App\Models\Student::with('examRoom', 'group')
-                    ->whereHas('user', function($q) use ($creatorId) {
-                        $q->where('created_by', $creatorId);
-                    });
+                    ->where('created_by', $creatorId);
         
         if ($request->exam_room_id != 'all') {
             if ($request->exam_room_id == 'null') {
@@ -172,7 +188,7 @@ class ReportController extends Controller
              return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
         });
 
-        $institution = \App\Models\Institution::first();
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
         return view('admin.report.attendance.print', compact('students', 'institution', 'room', 'session'));
     }
@@ -182,7 +198,12 @@ class ReportController extends Controller
         $user = Auth::user();
         $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
         
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+
         $sessions = ExamSession::with('subject')
+            ->whereIn('subject_id', $subjectIds)
             ->where('start_time', '>=', now()->subDays(7))
             ->orderBy('start_time', 'asc')
             ->get();
@@ -206,7 +227,7 @@ class ReportController extends Controller
              $session = ExamSession::with('subject')->find($request->exam_session_id);
         }
         
-        $institution = \App\Models\Institution::first();
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
         return view('admin.report.attendance.print_proctor', compact('proctors', 'institution', 'session'));
     }
