@@ -1,126 +1,123 @@
 # E-Ujian PRO 🎓🚀
 
-**E-Ujian PRO** adalah platform *Computer Based Test* (CBT) dan Sistem Manajemen Sekolah modern berbasis **Laravel 12** dan **Vite + Tailwind CSS 4**. Aplikasi ini dirancang dengan arsitektur *Multi-Tenancy* yang memungkinkan satu sistem digunakan oleh banyak sekolah/lembaga secara terisolasi, aman, dan profesional.
+**E-Ujian PRO** adalah platform *Computer Based Test* (CBT) dan Sistem Manajemen Sekolah Modern. Dirancang dengan teknologi terkini (**Laravel 12**, **Tailwind CSS 4**), aplikasi ini menawarkan solusi Ujian Online yang **stabil**, **aman**, dan **mudah digunakan** oleh institusi pendidikan manapun.
 
-![Status Proyek](https://img.shields.io/badge/status-active-success.svg)
-![Laravel Version](https://img.shields.io/badge/laravel-v12.0-red.svg)
-![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue.svg)
+Sistem ini mendukung arsitektur *Multi-Tenancy*, yang memungkinkan satu instalasi digunakan oleh banyak sekolah dengan data yang terisolasi sempurna.
 
----
-
-## 🔥 Fitur Unggulan Terbaru
-
-### 1. 🏢 Multi-Tenancy & Data Isolation
-Setiap sekolah (Institution) memiliki ekosistem yang sepenuhnya terisolasi.
--   **Deep Delete System**: Penghapusan data sekolah akan membersihkan seluruh aset terkait (Siswa, Guru, Soal, Ujian) tanpa sisa sampah data.
--   **Custom Branding**: Logo dan Kop Surat sekolah yang dapat dikustomisasi.
-
-### 2. 🎨 "Clean Enterprise" UI/UX
-Desain antarmuka telah dirombak total menjadi lebih modern, bersih, dan profesional.
--   **Glassmorphism & Minimalist**: Tampilan dashboard dan form yang elegan menggunakan Tailwind CSS 4 & Bootstrap 5 (Hybrid optimized).
--   **Responsive Mobile**: Optimal untuk penggunaan di HP (Siswa & Guru).
--   **Professional Admin Panel**: Sidebar yang rapi, tabel interaktif, dan navigasi intuitif.
-
-### 3. ✅ Manajemen Ujian Lengkap
--   **Master Jenis Ujian**: Kelola kategori ujian (UTS, UAS, Quiz) agar judul ujian lebih konsisten.
--   **Jadwal Ujian**: Pembuatan sesi ujian dengan pemilihan "Jenis Ujian" dan pengaturan waktu yang fleksibel.
--   **Token Ujian**: Generator token otomatis (5 karakter unik) untuk keamanan masuk ujian.
--   **Bank Soal & Paket**: Manajemen soal pilihan ganda & esai yang terstruktur, mendukung impor/ekspor.
-
-### 4. 👥 Manajemen Pengguna & Peran
-Sistem memiliki tingkatan akses yang detail:
--   **Super Admin**: Platform owner, verifikasi sekolah & poin.
--   **Admin Lembaga**: Kepala Sekolah/Operator Utama.
--   **Guru (Pengajar)**: Kelola Mapel, Bank Soal, dan Monitoring Ujian.
--   **Wali Kelas**: Monitoring spesifik untuk kelas binaannya (Rekap Absen & Laporan).
--   **Pengawas (Proctor)**: Akses khusus monitoring ruang ujian & absen peserta.
--   **Siswa**: Dashboard modern untuk mengerjakan ujian & melihat pengumuman.
-
-### 5. 💰 Sistem Poin & Dompet (Wallet)
--   Integrasi sistem pembayaran berbasis poin untuk layanan sekolah.
--   Top-up dan riwayat transaksi poin transparan.
-
-### 6. 📊 Laporan & Cetak Dokumen
-Sistem pelaporan lengkap siap cetak:
--   **Kartu Meja & Daftar Hadir**: Cetak otomatis per ruang ujian.
--   **Berita Acara & Absen Pengawas**: Dokumen administrasi ujian lengkap.
--   **Rekap Nilai**: Ekspor hasil ujian siswa secara mendetail.
--   **Rekap Absensi Bulanan**: Laporan kehadiran siswa otomatis (Wali Kelas).
-
-### 7. 📱 Fitur Scan Absensi (QR Code)
--   **Optimasi Mobile**: Halaman scan QR Code yang ringan dan cepat.
--   **Live Attendance**: Perekaman kehadiran siswa secara real-time.
+![Status Proyek](https://img.shields.io/badge/status-active-success.svg?style=for-the-badge)
+![Laravel Version](https://img.shields.io/badge/laravel-v12.0-red.svg?style=for-the-badge&logo=laravel)
+![PHP Version](https://img.shields.io/badge/php-%5E8.2-blue.svg?style=for-the-badge&logo=php)
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## 🌐 Live Demo & Akses
 
--   **Backend**: Laravel Framework 12.x
--   **Frontend**: Blade Templates, Tailwind CSS v4, Bootstrap 5 (AdminLTE Customized)
--   **Interactivity**: Alpine.js, jQuery (Legacy Support)
--   **Build Tool**: Vite 7.x
+Cobalah sistem secara langsung melalui tautan berikut. Gunakan akun demo di bawah ini untuk masuk.
+
+👉 **URL Akses**: [https://e-ujian.ozanproject.site/](https://e-ujian.ozanproject.site/)
+
+### 🔑 Akun Demo (Credentials)
+
+| Peran (Role) | Email Login | Password | Fungsi Utama |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `superadmin@e-ujian.id` | `password` | Mengelola seluruh sekolah & langganan sistem. |
+| **Admin Lembaga** | `admin@smkn1.sch.id` | `password` | **(RECOMMENDED)** Mengelola data siswa, guru, jadwal, dan laporan sekolah. |
+| **Guru (Pengajar)** | `guru@smkn1.sch.id` | `password` | Membuat soal, memonitor ujian aktif, dan koreksi nilai. |
+| **Siswa** | `123456` (NIS) | `password` | Mengerjakan ujian & melihat hasil. |
+
+> **Catatan:** Jangan mengubah password akun demo agar pengguna lain tetap bisa mencoba.
+
+---
+
+## 🔥 Fitur Utama & Keunggulan
+
+### 1. 📚 Bank Soal Fleksibel (Import Word/Excel)
+Tidak perlu repot input satu per satu!
+-   **Import Word (.docx)**: Buat tabel soal di Microsoft Word dan upload langsung. Mendukung soal bergambar/rumus matematika.
+-   **Import Excel (.xlsx)**: Solusi cepat untuk input ribuan soal sekaligus.
+-   **Editor WYSIWYG**: Input manual dengan fitur lengkap untuk soal kompleks.
+
+### 2. 🗺️ Panduan Sistem Interaktif
+Bingung harus mulai dari mana?
+-   Fitur **"Panduan Sistem"** baru di panel admin memandu Anda langkah-demi-langkah.
+-   Mulai dari **Data Master** -> **Bank Soal** -> **Jadwal** -> **Pelaksanaan**. Dilengkapi visual timeline agar alur kerja jelas.
+
+### 3. 🛡️ Keamanan Ujian (Secure Exam)
+-   **Token Ujian**: Generate token unik 6 digit yang wajib dimasukkan siswa sebelum ujian dimulai.
+-   **Timer Server-Side**: Waktu ujian dihitung dari server, mencegah kecurangan manipulasi jam di perangkat siswa.
+-   **Acak Soal & Jawaban**: Tiap siswa mendapatkan urutan soal yang berbeda.
+
+### 4. 🏢 Multi-Tenancy & Data Isolation
+-   Setiap sekolah memiliki **Logo**, **Kop Surat**, dan **Data** sendiri.
+-   Penghapusan data satu sekolah TIDAK akan mengganggu data sekolah lain.
+-   Dasbor statistik terpisah untuk setiap lembaga.
+
+### 5. 📊 Laporan & Administrasi Lengkap
+Sistem ini bukan hanya untuk ujian, tapi juga administrasi:
+-   **Cetak Kartu Peserta**: Kartu ujian siap cetak dengen QR Code login.
+-   **Absensi & Berita Acara**: Dokumen pengawas siap unduh dalam format PDF.
+-   **Analisis Nilai**: Rekap nilai otomatis (Excel/PDF).
+
+---
+
+## 🛠️ Stack Teknologi
+
+Dibangun dengan fondasi yang kokoh untuk performa tinggi:
+
+-   **Backend**: Laravel Framework 12.x (PHP 8.2+)
+-   **Frontend**: Blade, Tailwind CSS v4, Bootstrap 5 AdminLTE (Customized)
 -   **Database**: MySQL / MariaDB
--   **Authentication**: Laravel Breeze + Spatie Permission (Role Based)
+-   **Server**: Nginx / Apache
+-   **Modul**: Spatie Permission, Excel Maatwebsite, PHPWord, DomPDF.
 
 ---
 
-## ⚙️ Persyaratan Sistem
+## ⚙️ Cara Instalasi (Localhost)
 
-Pastikan server Anda memenuhi spesifikasi berikut:
--   **PHP**: Versi 8.2 atau lebih baru (Disarankan 8.3).
--   **Database**: MySQL 5.7+ atau MariaDB 10.3+.
--   **Composer**: Dependency Manager v2+.
--   **Node.js & NPM**: Node 18+ (Disarankan 20+).
+Ingin mengembangkan fitur ini di komputer sendiri?
 
----
-
-## 🚀 Panduan Instalasi Lokal
-
-### 1. Clone & Install
+### 1. Clone Repository
 ```bash
-git clone https://github.com/username/e-ujian-pro.git
-cd e-ujian-pro
+git clone https://github.com/OzanProject/e-ujianpro.git
+cd e-ujianpro
+```
+
+### 2. Install Dependencies
+```bash
 composer install
 npm install
 ```
 
-### 2. Environment Setup
+### 3. Setup Environment
+Copy file `.env.example` ke `.env` dan atur database Anda.
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
-Atur `.env` (DB_DATABASE, DB_USERNAME, dll).
 
-### 3. Migrasi Database
+### 4. Migrasi & Seeding
+Ini akan mengisi database dengan data dummy untuk percobaan.
 ```bash
+# Pastikan database sudah dibuat di MySQL
 php artisan migrate:fresh --seed
 ```
 
-### 4. Menjalankan Aplikasi
+### 5. Jalankan Aplikasi
 ```bash
-npm run dev   # Terminal 1 (Frontend)
-php artisan serve # Terminal 2 (Backend)
+# Terminal 1 (Jalankan Vite untuk aset frontend)
+npm run dev
+
+# Terminal 2 (Jalankan Server Laravel)
+php artisan serve
 ```
-Akses: `http://localhost:8000`
+Akses di browser: `http://localhost:8000`
 
 ---
 
-## 🔑 Akun Default (Demo)
+## 👨‍💻 Kontribusi & Lisensi
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Super Admin** | `ardiansyahdzan@gmail.com` | `password` |
-| **Admin Sekolah** | (Dibuat sbg user pertama) | `password` |
-| **Guru/Siswa** | (Hasil seeder / input manual) | `password` |
-
-> ⚠️ **PENTING**: Segera ubah password default saat production!
+Proyek ini dikembangkan oleh **OzanProject Team**.
+Silakan buat *Issue* atau *Pull Request* jika Anda menemukan bug atau ingin menambahkan fitur baru.
 
 ---
-
-## 🛡️ Lisensi & Kredit
-
-Aplikasi ini dikembangkan dengan standar keamanan tinggi (CSRF, XSS Protection, Role Middleware).
-
----
-
-*Happy Coding & Happy Testing! 🚀*
+*Dibuat dengan ❤️ untuk kemajuan pendidikan Indonesia.*
