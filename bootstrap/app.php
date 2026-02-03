@@ -24,11 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Smart Redirection for Unauthenticated Users (Guests)
         $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
-            // 1. If Subdomain Context
+            // 1. If Subdomain Context (via Route Param)
             if ($subdomain = $request->route('subdomain')) {
                 // If accessing Student Area -> Student Login
-                if ($request->is('*/siswa/*') || $request->is('siswa/*')) {
-                    return route('institution.student.login', $subdomain);
+                if ($request->routeIs('institution.student.*') || $request->is('*/siswa/*')) {
+                     return route('institution.student.login', $subdomain);
                 }
                 // Default Institution Login
                 return route('institution.login', $subdomain);
@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // 2. If Global Context
             // Student Area
-            if ($request->is('siswa') || $request->is('siswa/*')) {
+            if ($request->is('siswa') || $request->is('siswa/*') || $request->routeIs('student.*')) {
                 return route('student.login');
             }
 

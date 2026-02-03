@@ -38,7 +38,8 @@ class AuthController extends Controller
             
             // Redirect to Subdomain Dashboard if login was from subdomain
             if ($request->route('subdomain')) {
-                return redirect()->intended(route('institution.student.dashboard', $request->route('subdomain')));
+                // Force redirect to dashboard to prevent implicit 'intended' redirect to main domain
+                return redirect()->route('institution.student.dashboard', $request->route('subdomain'));
             }
 
             return redirect()->intended(route('student.dashboard'));
