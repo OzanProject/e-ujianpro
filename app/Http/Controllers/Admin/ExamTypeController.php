@@ -55,7 +55,7 @@ class ExamTypeController extends Controller
      */
     public function edit(ExamType $examType)
     {
-        if ($examType->created_by !== auth()->id()) {
+        if ($examType->created_by != auth()->id()) {
             abort(403);
         }
         return view('admin.exam_type.edit', compact('examType'));
@@ -66,7 +66,7 @@ class ExamTypeController extends Controller
      */
     public function update(Request $request, ExamType $examType)
     {
-        if ($examType->created_by !== auth()->id()) {
+        if ($examType->created_by != auth()->id()) {
             abort(403);
         }
 
@@ -91,7 +91,7 @@ class ExamTypeController extends Controller
      */
     public function destroy(ExamType $examType)
     {
-        if ($examType->created_by !== auth()->id()) {
+        if ($examType->created_by != auth()->id()) {
             abort(403);
         }
 
