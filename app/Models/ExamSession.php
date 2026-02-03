@@ -23,6 +23,7 @@ class ExamSession extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'is_active' => 'boolean',
+        'duration' => 'integer',
     ];
 
     public function examType()
