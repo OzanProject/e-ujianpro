@@ -64,7 +64,7 @@ class ExamCorrectionController extends Controller
 
         // Recalculate Total Score from DB to be safe
         $totalScore = $attempt->answers()->sum('score');
-        $attempt->total_score = $totalScore;
+        $attempt->score = $totalScore;
         $attempt->save();
 
         return redirect()->route('admin.correction.show', $attempt->exam_session_id)

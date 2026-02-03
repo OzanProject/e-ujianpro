@@ -34,7 +34,7 @@
                                 <td>{{ $loop->iteration + $attempts->firstItem() - 1 }}</td>
                                 <td>{{ $attempt->student->name }}</td>
                                 <td>
-                                    <span class="badge badge-success" style="font-size: 14px">{{ number_format($attempt->total_score, 2) }}</span>
+                                    <span class="badge badge-success" style="font-size: 14px">{{ number_format($attempt->score, 2) }}</span>
                                 </td>
                                 <td>{{ $attempt->updated_at->format('d M Y H:i') }}</td>
                                 <td>

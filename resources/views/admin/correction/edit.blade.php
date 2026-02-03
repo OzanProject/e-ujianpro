@@ -13,7 +13,7 @@
             <div class="card">
                 <div class="card-header bg-primary">
                     <h3 class="card-title">Detail Ujian</h3>
-                    <div class="card-tools">Total Skor Saat Ini: <strong>{{ number_format($attempt->total_score, 2) }}</strong></div>
+                    <div class="card-tools">Total Skor Saat Ini: <strong>{{ number_format($attempt->score, 2) }}</strong></div>
                 </div>
                 <div class="card-body">
                     <dl class="row">
