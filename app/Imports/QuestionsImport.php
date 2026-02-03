@@ -36,9 +36,19 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                         }
                     }
 
+                    // Find Reading Text by Code
+                    $readingTextId = null;
+                    if (isset($row['kode_bacaan']) && !empty($row['kode_bacaan'])) {
+                         $rt = \App\Models\ReadingText::where('code', trim($row['kode_bacaan']))->first();
+                         if ($rt) {
+                             $readingTextId = $rt->id;
+                         }
+                    }
+
                     // Create Question
                     $question = Question::create([
                         'subject_id' => $this->subjectId,
+                        'reading_text_id' => $readingTextId,
                         'content' => $row['soal'],
                         'type' => $type,
                     ]);

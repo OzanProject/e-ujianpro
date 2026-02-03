@@ -95,7 +95,7 @@ class OneSchoolSeeder extends Seeder
                 ['nis' => "100$i"],
                 [
                     'name' => "Siswa Demo $i",
-                    'email' => "siswa$i@demo.com",
+                    'email' => "siswa$@demo.com",
                     'password' => Hash::make('12345678'),
                     'student_group_id' => $group->id,
                     'kelas' => $group->name,

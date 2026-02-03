@@ -240,12 +240,14 @@ class QuestionController extends Controller
                         'Contoh Soal Pilihan Ganda?', 
                         'multiple_choice', 
                         'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 
-                        'A'
+                        'A',
+                        'RT-001' // Contoh Kode Bacaan
                     ],
                     [
                         'Contoh Soal Essay?', 
                         'essay', 
                         '', '', '', '', '', 
+                        '',
                         ''
                     ],
                 ]);
@@ -257,7 +259,8 @@ class QuestionController extends Controller
                     'soal', 
                     'jenis', 
                     'opsi_a', 'opsi_b', 'opsi_c', 'opsi_d', 'opsi_e', 
-                    'jawaban'
+                    'jawaban',
+                    'kode_bacaan'
                 ];
             }
         }, $fileName);
