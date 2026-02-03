@@ -36,7 +36,7 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        <p class="font-weight-bold">{!! nl2br(e($answer->question->content)) !!}</p>
+                        <p class="font-weight-bold">{!! $answer->question->content !!}</p>
                         
                         <hr>
                         <strong>Jawaban Siswa:</strong>
