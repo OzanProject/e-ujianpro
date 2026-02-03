@@ -71,17 +71,55 @@ class RecapController extends Controller
 
     public function printExamResult(Request $request)
     {
-        $selectedSession = ExamSession::with(['examPackage.subject'])->find($request->exam_session_id);
-        $attempts = collect([]);
+        $user = Auth::user();
+        $selectedSession = ExamSession::with(['examPackage.subject', 'examPackage.subject.creator'])->find($request->exam_session_id);
 
-        if ($selectedSession) {
-             $attempts = $selectedSession->attempts()
-                ->with('student.group', 'student', 'answers')
-                ->orderByDesc('score')
-                ->get();
+        if (!$selectedSession) {
+            abort(404);
         }
 
-        $institution = \App\Models\Institution::first();
+        // Security Check: Verify user can access this session
+        // Logic: 
+        // 1. If Teacher: Session's Subject must be one of Teacher's subjects OR Session owned by Teacher (if supported)
+        // 2. If Admin/Operator: Session's Subject must be owned by Admin (creatorId)
+        
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+             // Check if subject is assigned to teacher or created by them (if applicable, though subjects usually admin's)
+             // Simplified: Check if subject_id is in user's assigned subjects
+             // Note: In typical logic, Teacher can only view sessions for their subjects.
+             $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+             if (in_array($selectedSession->subject_id, $allowedSubjectIds)) {
+                 $hasAccess = true;
+             }
+        } else {
+             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+             // Check if session's subject is created by this Admin
+             if ($selectedSession->subject->created_by == $creatorId) {
+                 $hasAccess = true;
+             }
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access to this exam session.');
+        }
+
+        $attempts = $selectedSession->attempts()
+            ->with('student.group', 'student', 'answers')
+            ->orderByDesc('score')
+            ->get();
+
+
+        // Fix: Get Institution from Session Owner (Subject Creator -> User -> Institution)
+        // OR get from the current User's institution (since they must be related to view it)
+        // Best approach: Get Institution of the Admin who owns the Subject.
+        $subjectOwnerId = $selectedSession->subject->created_by;
+        $institution = \App\Models\Institution::where('user_id', $subjectOwnerId)->first();
+
+        if (!$institution) {
+             // Fallback current user
+             $institution = \App\Models\Institution::where('user_id', $user->id)->first();
+        }
 
         return view('admin.recap.print_exam_result', compact('selectedSession', 'attempts', 'institution'));
     }
