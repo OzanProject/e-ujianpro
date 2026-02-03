@@ -295,6 +295,20 @@
                 <div class="p-4 p-md-5">
                     @foreach($questions as $index => $question)
                         <div class="question-block" id="question-{{ $index + 1 }}" style="display: {{ $index == 0 ? 'block' : 'none' }}">
+                            
+                            <!-- Reading Text Block -->
+                            @if($question->readingText)
+                                <div class="reading-text-card mb-4 p-4 bg-blue-50 border-l-4 border-indigo-500 rounded-r-lg shadow-sm">
+                                    <h6 class="font-bold text-gray-800 mb-2 border-b border-blue-200 pb-2 flex items-center">
+                                        <i class="fas fa-book-open mr-2 text-indigo-600"></i> 
+                                        Bacaan: {{ $question->readingText->title }}
+                                    </h6>
+                                    <div class="prose max-w-none text-gray-700 leading-relaxed text-sm overflow-y-auto max-h-96 pr-2 custom-scrollbar">
+                                        {!! $question->readingText->content !!}
+                                    </div>
+                                </div>
+                            @endif
+
                             <!-- Question Text -->
                             <div class="question-text">
                                 {!! $question->content !!}

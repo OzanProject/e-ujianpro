@@ -115,9 +115,9 @@ class ExamController extends Controller
         // Fetch questions properly ordered
         // If package is set, use package questions. Otherwise use all subject questions.
         if ($session->exam_package_id) {
-             $questions = $session->examPackage->questions()->with('options')->get();
+             $questions = $session->examPackage->questions()->with(['options', 'readingText'])->get();
         } else {
-             $questions = \App\Models\Question::where('subject_id', $session->subject_id)->with('options')->get();
+             $questions = \App\Models\Question::where('subject_id', $session->subject_id)->with(['options', 'readingText'])->get();
         }
 
         // Calculate Remaining Time
@@ -237,6 +237,7 @@ class ExamController extends Controller
         }
 
         foreach ($answers as $ans) {
+            /** @var \App\Models\ExamAnswer $ans */
             $q = $questions[$ans->question_id] ?? null;
             if ($q) {
                 $groupId = $q->question_group_id ?? 'default';
