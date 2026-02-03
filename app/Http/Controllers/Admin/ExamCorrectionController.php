@@ -25,7 +25,7 @@ class ExamCorrectionController extends Controller
         $session = ExamSession::findOrFail($sessionId);
         $attempts = ExamAttempt::where('exam_session_id', $sessionId)
                                 ->where('status', 'completed')
-                                ->with('user')
+                                ->with('student')
                                 ->latest()
                                 ->paginate(20);
 
@@ -35,7 +35,7 @@ class ExamCorrectionController extends Controller
     public function edit($attemptId)
     {
         // Show Grading Interface
-        $attempt = ExamAttempt::with(['user', 'examSession.subject', 'answers.question'])->findOrFail($attemptId);
+        $attempt = ExamAttempt::with(['student', 'examSession.subject', 'answers.question'])->findOrFail($attemptId);
         
         return view('admin.correction.edit', compact('attempt'));
     }

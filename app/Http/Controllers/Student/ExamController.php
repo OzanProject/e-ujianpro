@@ -206,28 +206,48 @@ class ExamController extends Controller
         $attempt->end_time = now();
         $attempt->save();
 
-        // Calculate Score Immediate
-        // Calculate Score with Conversion Logic
+        // 1. Fetch Questions & Answers
+        $questions = $this->getQuestionsForSession($session);
         $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
-        
-        // Group answers by question_group_id
-        // We need to fetch questions to know their group
+
+        // 2. Calculate Stats per Group
+        $groups = $this->calculateGroupStats($questions, $answers);
+
+        // 3. Calculate Final Score (Linear or Scaled)
+        $finalScore = $this->calculateFinalScore($groups, $questions->count(), $session);
+
+        $attempt->score = $finalScore;
+        $attempt->save();
+
+        $message = 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2);
+
+        if ($request->route('subdomain')) {
+            return redirect()->route('institution.student.dashboard', $request->route('subdomain'))
+                             ->with('success', $message);
+        }
+        return redirect()->route('student.dashboard')->with('success', $message);
+    }
+
+    private function getQuestionsForSession($session)
+    {
         if ($session->exam_package_id) {
-            $questions = $session->examPackage->questions()
-                            ->with('questionGroup') // Ensure we know the group
+            return $session->examPackage->questions()
+                            ->with('questionGroup')
                             ->get()
                             ->keyBy('id');
         } else {
-            $questions = \App\Models\Question::where('subject_id', $session->subject_id)
+            return \App\Models\Question::where('subject_id', $session->subject_id)
                             ->with('questionGroup')
                             ->get()
                             ->keyBy('id');
         }
+    }
 
+    private function calculateGroupStats($questions, $answers)
+    {
         $groups = [];
-        $totalCorrect = 0;
-        $totalQuestions = $questions->count();
 
+        // Initialize groups
         foreach ($questions as $q) {
             $groupId = $q->question_group_id ?? 'default';
             if (!isset($groups[$groupId])) {
@@ -236,6 +256,7 @@ class ExamController extends Controller
             $groups[$groupId]['total']++;
         }
 
+        // Process Answers
         foreach ($answers as $ans) {
             /** @var \App\Models\ExamAnswer $ans */
             $q = $questions[$ans->question_id] ?? null;
@@ -243,9 +264,9 @@ class ExamController extends Controller
                 $groupId = $q->question_group_id ?? 'default';
                 
                 $opt = \App\Models\QuestionOption::find($ans->question_option_id);
-                
-                // Re-verify and update Is Correct status in DB (Syncing)
                 $isCorrect = $opt && $opt->is_correct;
+
+                // Sync correctness if changed
                 if ($ans->is_correct != $isCorrect) {
                      $ans->is_correct = $isCorrect;
                      $ans->save();
@@ -253,30 +274,33 @@ class ExamController extends Controller
 
                 if ($isCorrect) {
                     $groups[$groupId]['correct']++;
-                    $totalCorrect++;
                 }
             }
         }
+        return $groups;
+    }
 
+    private function calculateFinalScore($groups, $totalQuestions, $session)
+    {
         $finalScore = 0;
         $activeScalesCount = 0;
+        $totalCorrectGlobal = 0;
+
+        // Try to determine Institution ID for Scaling
+        $student = Auth::guard('student')->user();
+        $institutionId = $student && $student->user_id ? \App\Models\Institution::where('user_id', $student->user_id)->value('id') : null;
+        
+        if (!$institutionId && $session->subject && $session->subject->created_by) {
+             $institutionId = \App\Models\Institution::where('user_id', $session->subject->created_by)->value('id');
+        }
 
         foreach ($groups as $groupId => $stats) {
+            $totalCorrectGlobal += $stats['correct'];
+
             if ($groupId === 'default') {
-                continue; // We handle valid groups first
+                continue;
             }
 
-            // Check for Scale
-            // Use Student's Creator (Admin Lembaga) to find Institution
-            // This ensures we get the correct Institution even if ExamSession was created by a Teacher
-            $student = Auth::guard('student')->user();
-            $institutionId = $student && $student->user_id ? \App\Models\Institution::where('user_id', $student->user_id)->value('id') : null;
-            
-            // Fallback to session owner if student has no creator (unlikely but safe)
-            if (!$institutionId && $session->user_id) {
-                 $institutionId = \App\Models\Institution::where('user_id', $session->user_id)->value('id');
-            }
-            
             $scale = null;
             if ($institutionId) {
                 $scale = \App\Models\ScoreScale::where('institution_id', $institutionId)
@@ -288,40 +312,15 @@ class ExamController extends Controller
             if ($scale) {
                 $finalScore += $scale->scaled_score;
                 $activeScalesCount++;
-            } else {
-                // Determine weight? 
-                // If mixed mode (Some scaled, some not), this is tricky.
-                // Assumption: If using scales, expected behavior is "Points Accumulation".
-                // If no scale defined for this group, add 0? Or add proportional?
-                // Let's add (correct/total_in_group)*100 ?? No that makes 100+100.
-                // Let's assume if Scalling is active, ALL groups should be scaled.
-                // If not scaled, we add (correct / total_exam) * 100 ? No impossible to mix.
-                
-                // Fallback: If partial scaling, we treat non-scaled groups as "0 weight" or raw points?
-                // Let's stick to: If ANY scale found, use Accumulation.
-                // If NO scale found (activeScalesCount == 0), use global linear.
             }
         }
 
-        // Handle Default Group or Non-Scaled Groups
         if ($activeScalesCount > 0) {
-            // Grading Mode: Custom Scale
-            // We only sum the SCALED scores.
-            // Any group without a scale contributes 0 to the score? 
-            // Or maybe we should try to find a scale for them too.
-            // If no scale, we leave it as 0 (Teacher forgot to define scale).
+            // Scaled Mode
+            return $finalScore;
         } else {
-            // Standard Mode: Linear
-            $finalScore = $totalQuestions > 0 ? ($totalCorrect / $totalQuestions) * 100 : 0;
+            // Linear Mode
+            return $totalQuestions > 0 ? ($totalCorrectGlobal / $totalQuestions) * 100 : 0;
         }
-        
-        $attempt->score = $finalScore;
-        $attempt->save();
-
-        if ($request->route('subdomain')) {
-            return redirect()->route('institution.student.dashboard', $request->route('subdomain'))
-                             ->with('success', 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2));
-        }
-        return redirect()->route('student.dashboard')->with('success', 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2));
     }
 }

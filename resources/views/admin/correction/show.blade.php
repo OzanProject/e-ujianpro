@@ -32,7 +32,7 @@
                         @forelse($attempts as $attempt)
                             <tr>
                                 <td>{{ $loop->iteration + $attempts->firstItem() - 1 }}</td>
-                                <td>{{ $attempt->user->name }}</td>
+                                <td>{{ $attempt->student->name }}</td>
                                 <td>
                                     <span class="badge badge-success" style="font-size: 14px">{{ number_format($attempt->total_score, 2) }}</span>
                                 </td>

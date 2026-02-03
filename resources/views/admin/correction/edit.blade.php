@@ -1,7 +1,7 @@
 @extends('layouts.admin.app')
 
 @section('title', 'Koreksi Jawaban')
-@section('page_title', 'Koreksi Jawaban: ' . $attempt->user->name)
+@section('page_title', 'Koreksi Jawaban: ' . $attempt->student->name)
 
 @section('content')
 <div class="row">
