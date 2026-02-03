@@ -17,13 +17,20 @@ class DashboardController extends Controller
         $now = now();
 
         // Determine Institution Scope via Admin (Creator of the Student)
-        // Student -> User (foreign_key user_id) -> created_by (Admin ID)
-        $adminId = $student->user->created_by; 
+        // Check if student has direct created_by or via user relation
+        $adminId = $student->created_by ?? ($student->user ? $student->user->created_by : null);
+
+        if (!$adminId) {
+             // Fallback or Handle Orphan Student (Should not happen ideally)
+             // Maybe return empty view or specific error, but let's try to proceed safely
+             $validCreatorIds = [];
+        } else { 
 
         // Get Valid Content Creators (Admin + Teachers created by Admin)
         $validCreatorIds = \App\Models\User::where('id', $adminId)
                                 ->orWhere('created_by', $adminId)
                                 ->pluck('id');
+        } // Closing the else block
 
         // Fetch valid exam sessions
         // 1. Is Active
