@@ -29,6 +29,7 @@ Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::cla
     // Route Resource Bank Soal
     Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('admin.question.import');
     Route::get('question/template', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('admin.question.template');
+    Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('admin.question.template.word'); // New Route
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class)->names('admin.question');
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class)->names('admin.reading_text');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class)->names('admin.question_group');

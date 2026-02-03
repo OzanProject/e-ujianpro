@@ -193,7 +193,7 @@ class QuestionController extends Controller
     {
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
-            'file' => 'required|file|mimes:xlsx,xls,csv',
+            'file' => 'required|file|mimes:xlsx,xls,csv,docx',
         ]);
 
         $user = auth()->user();
@@ -212,8 +212,18 @@ class QuestionController extends Controller
         }
 
         try {
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\QuestionsImport($request->subject_id), $request->file('file'));
-            return back()->with('success', 'Import soal berhasil (Excel).');
+            $extension = $request->file('file')->getClientOriginalExtension();
+
+            if (strtolower($extension) == 'docx') {
+                // Word Import
+                $importer = new \App\Services\WordQuestionImporter($request->subject_id);
+                $result = $importer->import($request->file('file')->path());
+                return back()->with('success', "Import soal berhasil (Word). {$result['count']} soal ditambahkan.");
+            } else {
+                // Excel Import
+                \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\QuestionsImport($request->subject_id), $request->file('file'));
+                return back()->with('success', 'Import soal berhasil (Excel).');
+            }
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal import: ' . $e->getMessage());
         }
@@ -267,5 +277,77 @@ class QuestionController extends Controller
                 ];
             }
         }, $fileName);
+    }
+
+    public function downloadTemplateWord()
+    {
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        $section = $phpWord->addSection();
+
+        // Add Title
+        $section->addText('Format Import Soal (Word)', ['bold' => true, 'size' => 16]);
+        $section->addText('Silakan isi tabel di bawah ini. Jangan ubah urutan kolom.', ['italic' => true]);
+        $section->addTextBreak(1);
+
+        // Define Table Style
+        $tableStyle = [
+            'borderSize' => 6, 
+            'borderColor' => '000000', 
+            'cellMargin' => 80
+        ];
+        $phpWord->addTableStyle('QuestionTable', $tableStyle);
+        $table = $section->addTable('QuestionTable');
+
+        // Add Header Row
+        $table->addRow();
+        $headers = ['No', 'Soal', 'Jenis', 'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Jawaban', 'Kode Bacaan', 'Grup Soal'];
+        
+        $headerFontStyle = ['bold' => true, 'color' => 'FFFFFF'];
+        $headerCellStyle = ['bgColor' => '4caf50', 'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER];
+
+        foreach ($headers as $header) {
+            $table->addCell(2000, $headerCellStyle)->addText($header, $headerFontStyle);
+        }
+
+        // Add Sample Row 1 (Multiple Choice)
+        $table->addRow();
+        $table->addCell()->addText('1');
+        $table->addCell()->addText('Siapakah penemu bola lampu?');
+        $table->addCell()->addText('multiple_choice');
+        $table->addCell()->addText('Thomas Edison');
+        $table->addCell()->addText('Nikola Tesla');
+        $table->addCell()->addText('Isaac Newton');
+        $table->addCell()->addText('Albert Einstein');
+        $table->addCell()->addText('Alexander G. Bell');
+        $table->addCell()->addText('A');
+        $table->addCell()->addText(''); // Kode Bacaan
+        $table->addCell()->addText('Sejarah'); // Grup Soal
+
+        // Add Sample Row 2 (Essay)
+        $table->addRow();
+        $table->addCell()->addText('2');
+        $table->addCell()->addText('Jelaskan proses terjadinya hujan!');
+        $table->addCell()->addText('essay');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('');
+        $table->addCell()->addText('IPA');
+
+        // Output to browser
+        $fileName = 'format_import_soal_word.docx';
+        header("Content-Description: File Transfer");
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        header('Content-Transfer-Encoding: binary');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+        
+        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter->save("php://output");
+        exit;
     }
 }

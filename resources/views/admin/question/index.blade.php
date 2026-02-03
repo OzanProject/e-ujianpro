@@ -145,7 +145,7 @@
         <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
             <div class="modal-header bg-gradient-to-r from-green-600 to-teal-600 text-white border-0">
                 <h5 class="modal-title font-weight-bold" id="importModalLabel">
-                    <i class="fas fa-file-excel mr-2"></i> Import Soal (Excel)
+                    <i class="fas fa-file-import mr-2"></i> Import Soal (Excel / Word)
                 </h5>
                 <button type="button" class="close text-white opacity-75 hover:opacity-100" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -154,9 +154,9 @@
             <form action="{{ route('admin.question.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body p-4 bg-light">
-                     <div class="alert alert-info border-0 shadow-sm rounded-lg d-flex align-items-start mb-4">
+                    <div class="alert alert-info border-0 shadow-sm rounded-lg d-flex align-items-start mb-4">
                         <i class="fas fa-info-circle text-lg mr-3 mt-1"></i>
-                        <span class="text-sm">Gunakan template yang disediakan agar data terbaca dengan benar. Sistem sekarang mendukung format <strong>.xlsx</strong>.</span>
+                        <span class="text-sm">Gunakan template yang disediakan. Sistem mendukung format <strong>.xlsx</strong> (Excel) dan <strong>.docx</strong> (Word dengan Tabel).</span>
                     </div>
 
                     <div class="form-group mb-4">
@@ -170,16 +170,19 @@
                     </div>
 
                     <div class="form-group mb-4">
-                         <label class="font-weight-bold text-gray-700">File Excel (.xlsx)</label>
+                         <label class="font-weight-bold text-gray-700">File Excel (.xlsx) atau Word (.docx)</label>
                          <div class="custom-file">
-                            <input type="file" name="file" class="custom-file-input" id="customFile" required accept=".xlsx, .xls">
+                            <input type="file" name="file" class="custom-file-input" id="customFile" required accept=".xlsx, .xls, .docx">
                             <label class="custom-file-label border-0 shadow-sm" for="customFile">Pilih file...</label>
                         </div>
                     </div>
 
                     <div class="text-center mt-4">
-                        <a href="{{ route('admin.question.template') }}" id="downloadTemplateBtn" class="btn btn-outline-success btn-block rounded-pill font-weight-bold border-2" target="_blank">
-                             <i class="fas fa-download mr-1"></i> Download Template (Format Import Soal - Umum.xlsx)
+                        <a href="{{ route('admin.question.template') }}" id="downloadTemplateBtn" class="btn btn-outline-success btn-block rounded-pill font-weight-bold border-2 mb-2" target="_blank">
+                             <i class="fas fa-file-excel mr-1"></i> Download Template Excel
+                        </a>
+                        <a href="{{ route('admin.question.template.word') }}" id="downloadTemplateWordBtn" class="btn btn-outline-primary btn-block rounded-pill font-weight-bold border-2" target="_blank">
+                             <i class="fas fa-file-word mr-1"></i> Download Template Word
                         </a>
                     </div>
                 </div>
