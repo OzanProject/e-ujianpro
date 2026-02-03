@@ -9,6 +9,9 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     // Route Dashboard Admin Lembaga
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+    // Route Panduan Sistem
+    Route::get('/guide', [\App\Http\Controllers\Admin\GuideController::class, 'index'])->name('admin.guide.index');
+
     // Route Resource Operator
     Route::resource('operator', \App\Http\Controllers\Admin\OperatorController::class)->names('admin.operator');
     
