@@ -14,8 +14,8 @@ class StudentTemplateExport implements FromCollection, WithHeadings
     public function collection()
     {
         return new Collection([
-            ['Budi Santoso', '12345', 'X-IPA', 'IPA', 'password123'],
-            ['Siti Aminah', '12346', 'X-IPA', 'IPA', '']
+            ['Budi Santoso', '12345', 'X-IPA', 'IPA', 'password123', 'Kelompok 1', 'Ruang Ujian 1'],
+            ['Siti Aminah', '12346', 'X-IPA', 'IPA', '', '', '']
         ]);
     }
 

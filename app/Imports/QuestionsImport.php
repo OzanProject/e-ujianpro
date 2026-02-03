@@ -45,10 +45,23 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                          }
                     }
 
+                    // Find/Create Question Group
+                    $questionGroupId = null;
+                    if (isset($row['grup_soal']) && !empty($row['grup_soal'])) {
+                        $groupName = trim($row['grup_soal']);
+                        // Scope to Subject! Migration requires subject_id
+                        $group = \App\Models\QuestionGroup::firstOrCreate([
+                            'name' => $groupName, 
+                            'subject_id' => $this->subjectId // Added subject_id
+                        ]);
+                        $questionGroupId = $group->id;
+                    }
+
                     // Create Question
                     $question = Question::create([
                         'subject_id' => $this->subjectId,
                         'reading_text_id' => $readingTextId,
+                        'question_group_id' => $questionGroupId,
                         'content' => $row['soal'],
                         'type' => $type,
                     ]);

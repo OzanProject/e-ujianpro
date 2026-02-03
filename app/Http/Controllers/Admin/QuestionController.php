@@ -241,12 +241,14 @@ class QuestionController extends Controller
                         'multiple_choice', 
                         'Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 
                         'A',
-                        'RT-001' // Contoh Kode Bacaan
+                        'RT-001', // Contoh Kode Bacaan
+                        'Kategori Mudah' // Contoh Grup Soal
                     ],
                     [
                         'Contoh Soal Essay?', 
                         'essay', 
                         '', '', '', '', '', 
+                        '',
                         '',
                         ''
                     ],
@@ -260,7 +262,8 @@ class QuestionController extends Controller
                     'jenis', 
                     'opsi_a', 'opsi_b', 'opsi_c', 'opsi_d', 'opsi_e', 
                     'jawaban',
-                    'kode_bacaan'
+                    'kode_bacaan',
+                    'grup_soal'
                 ];
             }
         }, $fileName);

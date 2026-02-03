@@ -101,6 +101,25 @@ class StudentsImport implements ToModel, WithHeadingRow
         // Only update group if provided/selected
         if ($this->studentGroupId) {
             $student->student_group_id = $this->studentGroupId;
+        } elseif (!empty($row['kelompok_opsional'])) {
+            // Find/Create Group by Name (Scoped)
+            $groupName = trim($row['kelompok_opsional']);
+            $group = \App\Models\StudentGroup::firstOrCreate(
+                ['name' => $groupName, 'created_by' => auth()->id()],
+                ['created_by' => auth()->id()]
+            );
+            $student->student_group_id = $group->id;
+        }
+
+        // Handle Exam Room
+        if (!empty($row['ruangan_opsional'])) {
+            $roomName = trim($row['ruangan_opsional']);
+            $room = \App\Models\ExamRoom::where('name', $roomName)
+                        ->where('created_by', auth()->id())
+                        ->first();
+            if ($room) {
+                $student->exam_room_id = $room->id;
+            }
         }
 
         return $student;
