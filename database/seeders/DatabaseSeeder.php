@@ -19,7 +19,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SuperAdminSeeder::class,
-            // AdminSeeder::class, 
+                // AdminSeeder::class,     // Replaced by OneSchoolSeeder
+                // institutionSeeder::class, // Replaced by OneSchoolSeeder
+                // QuestionSeeder::class,    // Replaced by OneSchoolSeeder
+            OneSchoolSeeder::class,   // Full Demo School Seeder
             // DummyDataSeeder::class, 
         ]);
     }

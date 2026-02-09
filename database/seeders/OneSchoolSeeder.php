@@ -24,8 +24,8 @@ class OneSchoolSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        $this->command->info('1. Membuat Akun Admin Sekolah...');
-        
+        $this->command->info('1. Membuat Akun Admin Sekolah & Institusi...');
+
         // 1. Admin Sekolah
         $admin = User::firstOrCreate(
             ['email' => 'sekolah@demo.com'],
@@ -40,7 +40,7 @@ class OneSchoolSeeder extends Seeder
         );
 
         // 2. Data Institusi
-        $institution = Institution::firstOrCreate(
+        $institution = Institution::updateOrCreate(
             ['user_id' => $admin->id],
             [
                 'name' => 'SMA Demo Indonesia',
@@ -55,121 +55,162 @@ class OneSchoolSeeder extends Seeder
             ]
         );
 
-        $this->command->info('2. Membuat Mata Pelajaran...');
-        
+        $this->command->info('2. Membuat Mata Pelajaran & Guru...');
+
         // 3. Mata Pelajaran
+        $subjectsData = [
+            'Matematika' => 'MTK',
+            'Bahasa Indonesia' => 'BIN',
+            'Bahasa Inggris' => 'BIG',
+            'Fisika' => 'FIS',
+            'Biologi' => 'BIO'
+        ];
+
         $subjects = [];
-        $subjectNames = ['Bahasa Indonesia', 'Bahasa Inggris', 'Matematika'];
-        foreach ($subjectNames as $name) {
-            $code = strtoupper(substr($name, 0, 3));
-            // Use updateOrCreate to avoid unique constraint violation if exists
+        foreach ($subjectsData as $name => $code) {
             $subjects[$name] = Subject::updateOrCreate(
                 ['name' => $name, 'created_by' => $admin->id],
-                ['code' => $code . '-' . rand(100,999)] // Randomize code slightly to avoid collision if needed, or rely on name
+                ['code' => $code . '-' . rand(100, 999)]
             );
         }
-
-        $this->command->info('3. Membuat Akun Guru & Siswa...');
 
         // 4. Guru
         $teacher = User::firstOrCreate(
             ['email' => 'guru@demo.com'],
             [
-                'name' => 'Guru Demo (B. Indo)',
+                'name' => 'Guru Demo (IPA)',
                 'password' => Hash::make('12345678'),
                 'role' => 'pengajar',
                 'status' => 'active',
                 'created_by' => $admin->id,
             ]
         );
-        $teacher->subjects()->sync([$subjects['Bahasa Indonesia']->id]);
+        // Assign all subjects to this teacher for demo convenience
+        $teacher->subjects()->sync(collect($subjects)->pluck('id'));
 
-        // 5. Kelas & Siswa
-        $group = StudentGroup::firstOrCreate(
-            ['name' => 'X IPA 1', 'created_by' => $admin->id] // Removed institution_id as it doesn't exist
-        );
+        $this->command->info('3. Membuat Kelas & Siswa...');
 
-        // Buat 5 Siswa
-        for ($i = 1; $i <= 5; $i++) {
-            Student::firstOrCreate(
-                ['nis' => "100$i"],
-                [
-                    'name' => "Siswa Demo $i",
-                    'email' => "siswa$@demo.com",
-                    'password' => Hash::make('12345678'),
-                    'student_group_id' => $group->id,
-                    'kelas' => $group->name,
-                    'jurusan' => 'IPA',
-                    'created_by' => $admin->id
-                ]
+        // 5. Kelas
+        $classNames = ['X IPA 1', 'X IPA 2'];
+        $groups = [];
+        foreach ($classNames as $className) {
+            $groups[$className] = StudentGroup::firstOrCreate(
+                ['name' => $className, 'created_by' => $admin->id]
             );
         }
 
-        $this->command->info('4. Membuat Data Ujian (Bacaan, Soal, Paket)...');
+        // 6. Siswa (10 per kelas)
+        foreach ($groups as $className => $group) {
+            for ($i = 1; $i <= 10; $i++) {
+                // Generate NIS unik per sekolah (tergantung created_by)
+                $nisSuffix = ($className == 'X IPA 1' ? '10' : '20') . str_pad($i, 2, '0', STR_PAD_LEFT);
+                $nis = "2024" . $nisSuffix;
 
-        // 6. Reading Text (Wacana)
-        $readingText = ReadingText::create([
-            'subject_id' => $subjects['Bahasa Indonesia']->id,
-            'title' => 'Kisah Sang Kancil',
-            'content' => '<p>Pada suatu hari, Kancil sedang berjalan-jalan di pinggir hutan...</p><p>(Ini adalah contoh teks bacaan panjang yang akan muncul di atas soal)</p>',
-            'code' => 'RT-001'
-        ]);
-
-        // 7. Bank Soal (5 Soal)
-        // Soal 1-2 pakai bacaan
-        $pkg = ExamPackage::create([
-            'subject_id' => $subjects['Bahasa Indonesia']->id,
-            'name' => 'Paket Ujian B. Indo (Demo)',
-            'created_by' => $admin->id,
-            'code' => 'PKT-INDO-01'
-        ]);
-
-        for ($i = 1; $i <= 5; $i++) {
-            $pakaibacaan = ($i <= 2) ? $readingText->id : null;
-            
-            $q = Question::create([
-                'subject_id' => $subjects['Bahasa Indonesia']->id,
-                'reading_text_id' => $pakaibacaan,
-                'content' => "<p>Pertanyaan Nomor $i. Manakah jawaban yang paling tepat?</p>",
-                'type' => 'multiple_choice',
-            ]);
-
-            // Options
-            foreach (['A', 'B', 'C', 'D', 'E'] as $idx => $opt) {
-                QuestionOption::create([
-                    'question_id' => $q->id,
-                    'content' => "Pilihan Jawaban $opt",
-                    'is_correct' => ($idx == 0) // Kunci A
-                ]);
+                Student::updateOrCreate(
+                    ['nis' => $nis, 'created_by' => $admin->id],
+                    [
+                        'name' => "Siswa $className No $i",
+                        'email' => "siswa.$nis@demo.com",
+                        'password' => Hash::make('12345678'),
+                        'student_group_id' => $group->id,
+                        'kelas' => $group->name,
+                        'jurusan' => 'IPA',
+                        'phone_number' => '08123456' . $nis
+                    ]
+                );
             }
-
-            // Bind to Package
-            $pkg->questions()->attach($q->id);
         }
 
-        // 8. Jenis Ujian
-        $type = ExamType::firstOrCreate(
-            ['name' => 'Penilaian Harian', 'created_by' => $admin->id],
-            ['description' => 'Ujian harian biasa', 'is_active' => true]
-        );
+        $this->command->info('4. Membuat Bank Soal & Paket Ujian...');
 
-        $this->command->info('5. Menjadwalkan Sesi Ujian...');
+        // 7. Bank Soal & Paket (Untuk setiap mapel)
+        foreach ($subjects as $name => $subject) {
+            // Buat Paket
+            $pkg = ExamPackage::create([
+                'subject_id' => $subject->id,
+                'name' => "Ujian Akhir Semester $name",
+                'created_by' => $admin->id,
+                'code' => 'UAS-' . strtoupper(substr($name, 0, 3)) . '-' . date('Y')
+            ]);
 
-        // 9. Sesi Ujian
-        ExamSession::create([
-            'title' => 'Ujian Evaluasi Demo',
-            'subject_id' => $subjects['Bahasa Indonesia']->id,
-            'exam_package_id' => $pkg->id,
-            'exam_type_id' => $type->id,
-            'start_time' => now()->subHours(1),
-            'end_time' => now()->addDays(2),
-            'duration' => 60,
-            'description' => 'Silakan kerjakan ujian ini untuk demo.',
-            'is_active' => true,
-            'token' => 'DEMO1'
-            // 'user_id' => $teacher->id // removed as it doesn't exist
-        ]);
+            // Buat 10 Soal PG
+            for ($q = 1; $q <= 10; $q++) {
+                $question = Question::create([
+                    'subject_id' => $subject->id,
+                    'type' => 'multiple_choice',
+                    'content' => "<p>Soal $name Nomor $q. Pilihlah jawaban yang paling benar!</p>",
+                ]);
 
-        $this->command->info("Selesai! \nAdmin: sekolah@demo.com | Pass: 12345678 \nGuru: guru@demo.com | Pass: 12345678 \nSiswa: 1001 (NIS) / siswa1@demo.com | Pass: 12345678");
+                // Opsi
+                foreach (['A', 'B', 'C', 'D', 'E'] as $idx => $opt) {
+                    QuestionOption::create([
+                        'question_id' => $question->id,
+                        'content' => "Pilihan $opt untuk soal $q",
+                        'is_correct' => ($idx == 0) // Kunci A
+                    ]);
+                }
+
+                // Masukkan ke paket
+                $pkg->questions()->attach($question->id);
+            }
+
+            // Buat 2 Soal Essay
+            for ($e = 1; $e <= 2; $e++) {
+                $essay = Question::create([
+                    'subject_id' => $subject->id,
+                    'type' => 'essay',
+                    'content' => "<p>Jelaskan konsep dasar $name tentang topik $e!</p>",
+                ]);
+                $pkg->questions()->attach($essay->id);
+            }
+
+            // 8. Jadwalkan Ujian (Sesi)
+            $type = ExamType::firstOrCreate(
+                ['name' => 'UAS', 'created_by' => $admin->id],
+                ['description' => 'Ujian Akhir Semester', 'is_active' => true]
+            );
+
+            // Tentukan jadwal: 2 Mapel per hari
+            // Mapel 1: 08:00 - 09:30
+            // Mapel 2: 10:00 - 11:30
+
+            // Cari index mapel saat ini utk menentukan urutan
+            $subjectKeys = array_keys($subjects);
+            $index = array_search($name, $subjectKeys); // 0, 1, 2, 3, 4
+
+            $dayOffset = floor($index / 2); // 0, 0, 1, 1, 2
+            $timeSlot = $index % 2; // 0 (Pagi), 1 (Siang)
+
+            // Mulai besok
+            $date = now()->addDay(1)->addDays($dayOffset)->format('Y-m-d');
+
+            if ($timeSlot == 0) {
+                $start = "$date 08:00:00";
+                $end = "$date 09:30:00";
+            } else {
+                $start = "$date 10:00:00";
+                $end = "$date 11:30:00";
+            }
+
+            ExamSession::create([
+                'title' => "UAS $name T.A. 2024/2025",
+                'subject_id' => $subject->id,
+                'exam_package_id' => $pkg->id,
+                'exam_type_id' => $type->id,
+                'start_time' => $start,
+                'end_time' => $end, // Waktu sesi berakhir (batas akses)
+                'duration' => 90,
+                'description' => "Jadwal: " . \Carbon\Carbon::parse($start)->translatedFormat('l, d F Y H:i') . " WIB",
+                'is_active' => true,
+                'token' => strtoupper(substr($name, 0, 3)) . '123'
+            ]);
+        }
+
+        $this->command->info("Selesai! \n---------------------------------------------");
+        $this->command->info("Admin: sekolah@demo.com | Pass: 12345678");
+        $this->command->info("Guru: guru@demo.com | Pass: 12345678");
+        $this->command->info("Siswa: NIS 20241001 (untuk X IPA 1) | Pass: 12345678");
+        $this->command->info("---------------------------------------------");
     }
 }
+

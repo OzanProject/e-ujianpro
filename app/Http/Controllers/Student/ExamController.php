@@ -19,7 +19,7 @@ class ExamController extends Controller
     {
         $id = $p2 ?? $p1;
         $session = ExamSession::with(['subject', 'examPackage'])->findOrFail($id);
-        
+
         // Validation Checks
         if (!$session->is_active) {
             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
@@ -34,8 +34,8 @@ class ExamController extends Controller
 
         $studentId = Auth::guard('student')->id();
         $attempt = ExamAttempt::where('exam_session_id', $id)
-                    ->where('student_id', $studentId)
-                    ->first();
+            ->where('student_id', $studentId)
+            ->first();
 
         if ($attempt && $attempt->status == 'completed') {
             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
@@ -56,8 +56,8 @@ class ExamController extends Controller
 
         // Check if attempting to resume or start new
         $existingAttempt = ExamAttempt::where('exam_session_id', $id)
-                            ->where('student_id', $studentId)
-                            ->first();
+            ->where('student_id', $studentId)
+            ->first();
 
         // If no existing attempt, Validate Token
         if (!$existingAttempt) {
@@ -66,8 +66,8 @@ class ExamController extends Controller
             ]);
 
             if (strtoupper($request->token) !== strtoupper($session->token)) {
-                 $route = request()->route('subdomain') ? route('institution.student.exam.confirmation', ['subdomain' => request()->route('subdomain'), 'id' => $session->id]) : route('student.exam.confirmation', $session->id);
-                 return redirect($route)->with('error', 'Token salah! Silakan coba lagi.');
+                $route = request()->route('subdomain') ? route('institution.student.exam.confirmation', ['subdomain' => request()->route('subdomain'), 'id' => $session->id]) : route('student.exam.confirmation', $session->id);
+                return redirect($route)->with('error', 'Token salah! Silakan coba lagi.');
             }
         }
 
@@ -84,8 +84,8 @@ class ExamController extends Controller
         );
 
         if ($attempt->status == 'completed') {
-             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
-             return redirect($route)->with('error', 'Ujian sudah selesai.');
+            $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
+            return redirect($route)->with('error', 'Ujian sudah selesai.');
         }
 
         if ($request->route('subdomain')) {
@@ -102,46 +102,46 @@ class ExamController extends Controller
         $id = $p2 ?? $p1;
         $session = ExamSession::findOrFail($id);
         $studentId = Auth::guard('student')->id();
-        
+
         $attempt = ExamAttempt::where('exam_session_id', $id)
-                    ->where('student_id', $studentId)
-                    ->firstOrFail();
+            ->where('student_id', $studentId)
+            ->firstOrFail();
 
         if ($attempt->status == 'completed') {
-             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
-             return redirect($route)->with('error', 'Ujian sudah selesai.');
+            $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
+            return redirect($route)->with('error', 'Ujian sudah selesai.');
         }
 
         // Fetch questions properly ordered
         // If package is set, use package questions. Otherwise use all subject questions.
         if ($session->exam_package_id) {
-             $questions = $session->examPackage->questions()->with(['options', 'readingText'])->get();
+            $questions = $session->examPackage->questions()->with(['options', 'readingText'])->get();
         } else {
-             $questions = \App\Models\Question::where('subject_id', $session->subject_id)->with(['options', 'readingText'])->get();
+            $questions = \App\Models\Question::where('subject_id', $session->subject_id)->with(['options', 'readingText'])->get();
         }
 
         // Calculate Remaining Time
         // Duration is in minutes.
         // End time is strictly SESSION END TIME or START TIME + DURATION?
         // Usually: Least of (Session End Time) OR (Attempt Start + Duration)
-        
+
         $sessionEndTime = $session->end_time;
         $attemptEndTime = $attempt->start_time->copy()->addMinutes($session->duration);
-        
+
         $finalEndTime = $sessionEndTime < $attemptEndTime ? $sessionEndTime : $attemptEndTime;
-        
+
         $remainingSeconds = now()->diffInSeconds($finalEndTime, false);
 
         if ($remainingSeconds <= 0) {
-             // Auto finish if time is up (should act trigger finish)
-             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
-             return redirect($route)->with('error', 'Waktu habis.');
+            // Auto finish if time is up (should act trigger finish)
+            $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
+            return redirect($route)->with('error', 'Waktu habis.');
         }
 
         // Fetch saved answers
         $savedAnswers = ExamAnswer::where('exam_attempt_id', $attempt->id)
-                            ->pluck('question_option_id', 'question_id')
-                            ->toArray();
+            ->pluck('question_option_id', 'question_id')
+            ->toArray();
 
         return view('student.exam.show', compact('session', 'questions', 'attempt', 'remainingSeconds', 'savedAnswers'));
     }
@@ -149,8 +149,8 @@ class ExamController extends Controller
     public function storeAnswer(Request $request)
     {
         $request->validate([
-            'question_id'     => 'required',
-            'option_id'       => 'nullable',
+            'question_id' => 'required',
+            'option_id' => 'nullable',
         ]);
 
         $studentId = Auth::guard('student')->id();
@@ -159,17 +159,17 @@ class ExamController extends Controller
         // Ideally we should pass session_id or attempt_id. 
         // Let's assume student can only have ONE active attempt per session. or pass attempt from view.
         // For simplicity let's require session_id in request.
-        
+
         if (!$request->exam_session_id) {
-             return response()->json(['status' => 'error', 'message' => 'Session ID required'], 400);
+            return response()->json(['status' => 'error', 'message' => 'Session ID required'], 400);
         }
 
         $attempt = ExamAttempt::where('exam_session_id', $request->exam_session_id)
-                    ->where('student_id', $studentId)
-                    ->firstOrFail();
-        
-        if($attempt->status == 'completed') {
-             return response()->json(['status' => 'error', 'message' => 'Ujian sudah selesai.'], 403);
+            ->where('student_id', $studentId)
+            ->firstOrFail();
+
+        if ($attempt->status == 'completed') {
+            return response()->json(['status' => 'error', 'message' => 'Ujian sudah selesai.'], 403);
         }
 
         // Fetch the option to check correctness
@@ -185,7 +185,7 @@ class ExamController extends Controller
             [
                 'question_option_id' => $request->option_id,
                 'is_doubtful' => $request->is_doubtful ?? false,
-                'is_correct' => $isCorrect 
+                'is_correct' => $isCorrect
             ]
         );
 
@@ -197,10 +197,10 @@ class ExamController extends Controller
         $id = $p2 ?? $p1;
         $session = ExamSession::findOrFail($id);
         $studentId = Auth::guard('student')->id();
-        
+
         $attempt = ExamAttempt::where('exam_session_id', $id)
-                    ->where('student_id', $studentId)
-                    ->firstOrFail();
+            ->where('student_id', $studentId)
+            ->firstOrFail();
 
         $attempt->status = 'completed';
         $attempt->end_time = now();
@@ -219,11 +219,15 @@ class ExamController extends Controller
         $attempt->score = $finalScore;
         $attempt->save();
 
-        $message = 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2);
+        if ($session->show_score) {
+            $message = 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2);
+        } else {
+            $message = 'Ujian telah selesai. Jawaban Anda telah disimpan.';
+        }
 
         if ($request->route('subdomain')) {
             return redirect()->route('institution.student.dashboard', $request->route('subdomain'))
-                             ->with('success', $message);
+                ->with('success', $message);
         }
         return redirect()->route('student.dashboard')->with('success', $message);
     }
@@ -232,14 +236,14 @@ class ExamController extends Controller
     {
         if ($session->exam_package_id) {
             return $session->examPackage->questions()
-                            ->with('questionGroup')
-                            ->get()
-                            ->keyBy('id');
+                ->with('questionGroup')
+                ->get()
+                ->keyBy('id');
         } else {
             return \App\Models\Question::where('subject_id', $session->subject_id)
-                            ->with('questionGroup')
-                            ->get()
-                            ->keyBy('id');
+                ->with('questionGroup')
+                ->get()
+                ->keyBy('id');
         }
     }
 
@@ -262,14 +266,14 @@ class ExamController extends Controller
             $q = $questions[$ans->question_id] ?? null;
             if ($q) {
                 $groupId = $q->question_group_id ?? 'default';
-                
+
                 $opt = \App\Models\QuestionOption::find($ans->question_option_id);
                 $isCorrect = $opt && $opt->is_correct;
 
                 // Sync correctness if changed
                 if ($ans->is_correct != $isCorrect) {
-                     $ans->is_correct = $isCorrect;
-                     $ans->save();
+                    $ans->is_correct = $isCorrect;
+                    $ans->save();
                 }
 
                 if ($isCorrect) {
@@ -289,9 +293,9 @@ class ExamController extends Controller
         // Try to determine Institution ID for Scaling
         $student = Auth::guard('student')->user();
         $institutionId = $student && $student->user_id ? \App\Models\Institution::where('user_id', $student->user_id)->value('id') : null;
-        
+
         if (!$institutionId && $session->subject && $session->subject->created_by) {
-             $institutionId = \App\Models\Institution::where('user_id', $session->subject->created_by)->value('id');
+            $institutionId = \App\Models\Institution::where('user_id', $session->subject->created_by)->value('id');
         }
 
         foreach ($groups as $groupId => $stats) {
@@ -304,9 +308,9 @@ class ExamController extends Controller
             $scale = null;
             if ($institutionId) {
                 $scale = \App\Models\ScoreScale::where('institution_id', $institutionId)
-                            ->where('question_group_id', $groupId)
-                            ->where('correct_count', $stats['correct'])
-                            ->first();
+                    ->where('question_group_id', $groupId)
+                    ->where('correct_count', $stats['correct'])
+                    ->first();
             }
 
             if ($scale) {

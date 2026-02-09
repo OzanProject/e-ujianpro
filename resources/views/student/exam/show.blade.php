@@ -314,32 +314,47 @@
                                 {!! $question->content !!}
                             </div>
                             
-                            <!-- Options -->
-                            <div class="options-group">
-                                @foreach($question->options as $option)
-                                    <div>
-                                        <input class="option-input answer-option" 
-                                               type="radio" 
-                                               id="opt-{{ $question->id }}-{{ $option->id }}" 
-                                               name="question_{{ $question->id }}" 
-                                               value="{{ $option->id }}"
-                                               data-question-id="{{ $question->id }}"
-                                               data-index="{{ $index + 1 }}"
-                                               {{ isset($savedAnswers[$question->id]) && $savedAnswers[$question->id] == $option->id ? 'checked' : '' }}>
-                                        
-                                        <label for="opt-{{ $question->id }}-{{ $option->id }}" class="option-label">
-                                            <div class="option-indicator"></div>
-                                            <div class="option-content">{!! $option->content !!}</div>
-                                        </label>
+                            <!-- Options or Essay Input -->
+                            <div class="answer-section">
+                                @if($question->type == 'essay')
+                                    <div class="form-group">
+                                        <label class="font-weight-bold mb-2">Jawaban Esai Anda:</label>
+                                        <textarea class="form-control essay-input" 
+                                                  id="essay-{{ $question->id }}" 
+                                                  rows="6" 
+                                                  placeholder="Tulis jawaban Anda di sini..."
+                                                  data-question-id="{{ $question->id }}"
+                                                  data-index="{{ $index + 1 }}">{{ isset($savedAnswers[$question->id]) ? $savedAnswers[$question->id] : '' }}</textarea>
+                                        <small class="text-muted mt-2 d-block"><i class="fas fa-info-circle mr-1"></i> Jawaban akan tersimpan otomatis saat Anda mengetik.</small>
                                     </div>
-                                @endforeach
+                                @else
+                                    <div class="options-group">
+                                        @foreach($question->options as $option)
+                                            <div>
+                                                <input class="option-input answer-option" 
+                                                       type="radio" 
+                                                       id="opt-{{ $question->id }}-{{ $option->id }}" 
+                                                       name="question_{{ $question->id }}" 
+                                                       value="{{ $option->id }}"
+                                                       data-question-id="{{ $question->id }}"
+                                                       data-index="{{ $index + 1 }}"
+                                                       {{ isset($savedAnswers[$question->id]) && $savedAnswers[$question->id] == $option->id ? 'checked' : '' }}>
+                                                
+                                                <label for="opt-{{ $question->id }}-{{ $option->id }}" class="option-label">
+                                                    <div class="option-indicator"></div>
+                                                    <div class="option-content">{!! $option->content !!}</div>
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach
                 </div>
 
                 <div class="question-footer bg-light p-4 border-top d-flex justify-content-between align-items-center">
-                    <button class="btn btn-action btn-prev" id="prev-btn" onclick="changeQuestion(-1)" disabled>
+                    <button class="btn btn-action btn-prev" id="prev-btn" onclick="changeQuestion(window.currentQuestion - 1)" disabled>
                         <i class="fas fa-arrow-left mr-2"></i> Sebelumnya
                     </button>
                     
@@ -408,7 +423,7 @@
 @push('scripts')
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    let currentQuestion = 1;
+    window.currentQuestion = 1; // Make it global accessible
     const totalQuestions = {{ count($questions) }};
     let remainingSeconds = {{ $remainingSeconds }};
     
@@ -441,44 +456,84 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Navigation Logic
     window.changeQuestion = function(n) {
-        goToQuestion(currentQuestion + n);
+        goToQuestion(n);
     }
 
     window.goToQuestion = function(n) {
         if (n < 1 || n > totalQuestions) return;
 
         // Visual update for Question Block
-        document.getElementById('question-' + currentQuestion).style.display = 'none';
+        document.getElementById('question-' + window.currentQuestion).style.display = 'none';
         
         // Remove active class from old nav
-        document.getElementById('nav-' + currentQuestion).classList.remove('active');
+        document.getElementById('nav-' + window.currentQuestion).classList.remove('active');
         
-        currentQuestion = n;
+        window.currentQuestion = n;
         
-        document.getElementById('question-' + currentQuestion).style.display = 'block';
-        document.getElementById('current-number').textContent = currentQuestion;
+        document.getElementById('question-' + window.currentQuestion).style.display = 'block';
+        document.getElementById('current-number').textContent = window.currentQuestion;
         
         // Add active class to new nav
-        document.getElementById('nav-' + currentQuestion).classList.add('active');
+        document.getElementById('nav-' + window.currentQuestion).classList.add('active');
 
         // Button states
-        document.getElementById('prev-btn').disabled = (currentQuestion === 1);
+        document.getElementById('prev-btn').disabled = (window.currentQuestion === 1);
         const nextBtn = document.getElementById('next-btn');
-        if (currentQuestion === totalQuestions) {
+        if (window.currentQuestion === totalQuestions) {
             nextBtn.style.display = 'none';
         } else {
             nextBtn.style.display = 'inline-block';
             nextBtn.disabled = false;
+            // Update onclick handler for next button
+            nextBtn.onclick = function() { changeQuestion(window.currentQuestion + 1); };
         }
+        
+        // Update prev button handler
+        document.getElementById('prev-btn').onclick = function() { changeQuestion(window.currentQuestion - 1); };
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Initialize first question active state
-    document.getElementById('nav-1').classList.add('active');
+    if(document.getElementById('nav-1')) {
+        document.getElementById('nav-1').classList.add('active');
+    }
 
-    // Answer Saving Logic
+    // Function to save answer
+    function saveAnswer(questionId, answer, type) {
+        // Send AJAX
+        const url = '{{ request()->route("subdomain") ? route("institution.student.exam.store_answer", request()->route("subdomain")) : route("student.exam.store_answer") }}';
+        
+        // Payload
+        let payload = {
+            exam_session_id: '{{ $session->id }}',
+            question_id: questionId,
+            type: type // 'multiple_choice' or 'essay' - Backend should infer or we explicitly send
+        };
+
+        if (type === 'multiple_choice') {
+            payload.option_id = answer;
+        } else {
+            payload.essay_answer = answer; // Matches backend expectation
+        }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log('Saved', data);
+        })
+        .catch(err => console.error('Error:', err));
+    }
+
+    // Multiple Choice Handler
     document.querySelectorAll('.answer-option').forEach(item => {
         item.addEventListener('change', event => {
             let questionId = event.target.getAttribute('data-question-id');
@@ -488,34 +543,38 @@ document.addEventListener("DOMContentLoaded", function() {
             // Mark nav as answered
             const navBtn = document.getElementById('nav-' + index);
             navBtn.classList.add('answered');
-            navBtn.classList.remove('btn-outline-secondary'); // fallback removal
-
-            // Send AJAX
-            // Note: We use flexible route for subdomain support
-            const url = '{{ request()->route("subdomain") ? route("institution.student.exam.store_answer", request()->route("subdomain")) : route("student.exam.store_answer") }}';
             
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    exam_session_id: '{{ $session->id }}',
-                    question_id: questionId,
-                    option_id: optionId
-                })
-            })
-            .then(res => res.json())
-            .then(data => console.log('Saved'))
-            .catch(err => console.error('Error:', err));
+            saveAnswer(questionId, optionId, 'multiple_choice');
         });
     });
 
-    // Doubtful Toggle Logic (Visual only for now, unless backed by DB later)
+    // Essay Handler (Debounced)
+    let essayTimeout = null;
+    document.querySelectorAll('.essay-input').forEach(item => {
+        item.addEventListener('input', event => {
+            let questionId = event.target.getAttribute('data-question-id');
+            let answer = event.target.value;
+            let index = event.target.getAttribute('data-index');
+
+            // Mark visually as answered if not empty
+            const navBtn = document.getElementById('nav-' + index);
+            if(answer.trim().length > 0) {
+                navBtn.classList.add('answered');
+            } else {
+                navBtn.classList.remove('answered');
+            }
+
+            clearTimeout(essayTimeout);
+            essayTimeout = setTimeout(() => {
+                saveAnswer(questionId, answer, 'essay');
+            }, 1000); // Save after 1 second of inactivity
+        });
+    });
+
+    // Doubtful Toggle Logic
     const raguCheck = document.getElementById('ragu-check');
     raguCheck.addEventListener('change', function() {
-        const navBtn = document.getElementById('nav-' + currentQuestion);
+        const navBtn = document.getElementById('nav-' + window.currentQuestion);
         if(this.checked) {
             navBtn.classList.add('doubtful');
         } else {

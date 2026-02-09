@@ -17,7 +17,7 @@ class ExamSessionController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         // Scope by Subjects owned by this user (Admin Lembaga) or Assigned (Teacher)
         if ($user->role === 'pengajar') {
             $subjectIds = $user->subjects->pluck('id');
@@ -27,9 +27,9 @@ class ExamSessionController extends Controller
         }
 
         $examSessions = ExamSession::whereIn('subject_id', $subjectIds)
-                            ->with('subject')
-                            ->latest()
-                            ->get();
+            ->with('subject')
+            ->latest()
+            ->get();
 
         // Lazy Backfill: Generate token if missing
         foreach ($examSessions as $session) {
@@ -40,27 +40,27 @@ class ExamSessionController extends Controller
         }
 
         $examSessions = ExamSession::whereIn('subject_id', $subjectIds)
-                            ->with('subject')
-                            ->latest()
-                            ->paginate(10);
-                            
+            ->with('subject')
+            ->latest()
+            ->paginate(10);
+
         return view('admin.exam_session.index', compact('examSessions'));
     }
 
     public function create()
     {
         $user = auth()->user();
-        
+
         if ($user->role === 'pengajar') {
             $subjects = $user->subjects;
         } else {
-             // Admin Lembaga: Get subjects created by them
+            // Admin Lembaga: Get subjects created by them
             $subjects = Subject::where('created_by', $user->id)->get();
         }
 
         // Get Packages suitable for these subjects
         $packages = ExamPackage::whereIn('subject_id', $subjects->pluck('id'))->get();
-        
+
         // Get Exam Types
         $examTypes = ExamType::where('created_by', $user->id)->where('is_active', true)->get();
 
@@ -81,14 +81,14 @@ class ExamSessionController extends Controller
 
         try {
             $data = $request->all();
-            
+
             // Get Title from Exam Type
             $examType = ExamType::find($request->exam_type_id);
             $data['title'] = $examType->name; // Save title for backward compatibility
-            
+
             // Generate a 5-character uppercase random token
             $data['token'] = strtoupper(\Illuminate\Support\Str::random(5));
-            
+
             ExamSession::create($data);
 
             return redirect()->route('admin.exam_session.index')->with('success', 'Jadwal ujian berhasil ditambahkan.');
@@ -124,7 +124,7 @@ class ExamSessionController extends Controller
         } else {
             $subjects = Subject::where('created_by', $user->id)->get();
         }
-        
+
         $packages = ExamPackage::where('subject_id', $examSession->subject_id)->get();
         $examTypes = ExamType::where('created_by', $user->id)->where('is_active', true)->get();
 
@@ -162,9 +162,10 @@ class ExamSessionController extends Controller
         ]);
 
         try {
-            $data = $request->except(['_token', '_method', 'is_active']);
+            $data = $request->except(['_token', '_method', 'is_active', 'show_score']);
             $data['is_active'] = $request->has('is_active') ? 1 : 0;
-            
+            $data['show_score'] = $request->has('show_score') ? 1 : 0; // Handle checkbox
+
             // Update Title from Exam Type
             $examType = ExamType::find($request->exam_type_id);
             $data['title'] = $examType->name;
@@ -195,7 +196,7 @@ class ExamSessionController extends Controller
         $examSession = ExamSession::findOrFail($id);
         $examSession->token = strtoupper(\Illuminate\Support\Str::random(5));
         $examSession->save();
-        
+
         return redirect()->back()->with('success', 'Token ujian berhasil diperbarui.');
     }
 }

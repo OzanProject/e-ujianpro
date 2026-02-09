@@ -15,6 +15,7 @@ class ExamSession extends Model
         'duration',
         'description',
         'is_active',
+        'show_score', // Added
         'token',
         'exam_type_id',
     ];
@@ -23,6 +24,7 @@ class ExamSession extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'is_active' => 'boolean',
+        'show_score' => 'boolean', // Added
         'duration' => 'integer',
     ];
 
