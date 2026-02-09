@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         if (Auth::guard('student')->attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            
+
             // Redirect to Subdomain Dashboard if login was from subdomain
             if ($request->route('subdomain')) {
                 // Force redirect to dashboard to prevent implicit 'intended' redirect to main domain
@@ -46,7 +46,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'nis' => 'NIS atau Password salah (Pastikan Anda login di sekolah yang benar).',
+            'nis' => trans('auth.failed') . ' ' . trans('auth.student_login_hint'),
         ])->onlyInput('nis');
     }
 
