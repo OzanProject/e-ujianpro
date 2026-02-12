@@ -108,6 +108,7 @@ Route::prefix('siswa')->name('student.')->group(function () {
         // Exam Routes
         Route::get('exam/{id}/confirmation', [App\Http\Controllers\Student\ExamController::class, 'confirmation'])->name('exam.confirmation');
         Route::post('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'start'])->name('exam.start');
+        Route::get('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'confirmation']); // Fallback for refresh
         Route::get('exam/{id}/show', [App\Http\Controllers\Student\ExamController::class, 'show'])->name('exam.show');
         Route::post('exam/store-answer', [App\Http\Controllers\Student\ExamController::class, 'storeAnswer'])->name('exam.store_answer');
         Route::post('exam/{id}/finish', [App\Http\Controllers\Student\ExamController::class, 'finish'])->name('exam.finish');
@@ -135,6 +136,7 @@ Route::prefix('{subdomain}/siswa')->name('institution.student.')->group(function
         // Exam Routes
         Route::get('exam/{id}/confirmation', [App\Http\Controllers\Student\ExamController::class, 'confirmation'])->name('exam.confirmation');
         Route::post('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'start'])->name('exam.start');
+        Route::get('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'confirmation']); // Fallback for refresh
         Route::get('exam/{id}/show', [App\Http\Controllers\Student\ExamController::class, 'show'])->name('exam.show');
         Route::post('exam/store-answer', [App\Http\Controllers\Student\ExamController::class, 'storeAnswer'])->name('exam.store_answer');
         Route::post('exam/{id}/finish', [App\Http\Controllers\Student\ExamController::class, 'finish'])->name('exam.finish');

@@ -216,18 +216,9 @@ class ExamController extends Controller
         $attempt->end_time = now();
         $attempt->save();
 
-        // 1. Fetch Questions & Answers
-        $questions = $this->getQuestionsForSession($session);
-        $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
-
-        // 2. Calculate Stats per Group
-        $groups = $this->calculateGroupStats($questions, $answers);
-
-        // 3. Calculate Final Score (Linear or Scaled)
-        $finalScore = $this->calculateFinalScore($groups, $questions->count(), $session);
-
-        $attempt->score = $finalScore;
-        $attempt->save();
+        // Grade using Service
+        $examService = new \App\Services\ExamService();
+        $finalScore = $examService->gradeAttempt($attempt);
 
         if ($session->show_score) {
             $message = 'Ujian telah selesai. Nilai Anda: ' . number_format($finalScore, 2);
@@ -240,101 +231,5 @@ class ExamController extends Controller
                 ->with('success', $message);
         }
         return redirect()->route('student.dashboard')->with('success', $message);
-    }
-
-    private function getQuestionsForSession($session)
-    {
-        if ($session->exam_package_id) {
-            return $session->examPackage->questions()
-                ->with('questionGroup')
-                ->get()
-                ->keyBy('id');
-        } else {
-            return \App\Models\Question::where('subject_id', $session->subject_id)
-                ->with('questionGroup')
-                ->get()
-                ->keyBy('id');
-        }
-    }
-
-    private function calculateGroupStats($questions, $answers)
-    {
-        $groups = [];
-
-        // Initialize groups
-        foreach ($questions as $q) {
-            $groupId = $q->question_group_id ?? 'default';
-            if (!isset($groups[$groupId])) {
-                $groups[$groupId] = ['total' => 0, 'correct' => 0];
-            }
-            $groups[$groupId]['total']++;
-        }
-
-        // Process Answers
-        foreach ($answers as $ans) {
-            /** @var \App\Models\ExamAnswer $ans */
-            $q = $questions[$ans->question_id] ?? null;
-            if ($q) {
-                $groupId = $q->question_group_id ?? 'default';
-
-                $opt = \App\Models\QuestionOption::find($ans->question_option_id);
-                $isCorrect = $opt && $opt->is_correct;
-
-                // Sync correctness if changed
-                if ($ans->is_correct != $isCorrect) {
-                    $ans->is_correct = $isCorrect;
-                    $ans->save();
-                }
-
-                if ($isCorrect) {
-                    $groups[$groupId]['correct']++;
-                }
-            }
-        }
-        return $groups;
-    }
-
-    private function calculateFinalScore($groups, $totalQuestions, $session)
-    {
-        $finalScore = 0;
-        $activeScalesCount = 0;
-        $totalCorrectGlobal = 0;
-
-        // Try to determine Institution ID for Scaling
-        $student = Auth::guard('student')->user();
-        $institutionId = $student && $student->user_id ? \App\Models\Institution::where('user_id', $student->user_id)->value('id') : null;
-
-        if (!$institutionId && $session->subject && $session->subject->created_by) {
-            $institutionId = \App\Models\Institution::where('user_id', $session->subject->created_by)->value('id');
-        }
-
-        foreach ($groups as $groupId => $stats) {
-            $totalCorrectGlobal += $stats['correct'];
-
-            if ($groupId === 'default') {
-                continue;
-            }
-
-            $scale = null;
-            if ($institutionId) {
-                $scale = \App\Models\ScoreScale::where('institution_id', $institutionId)
-                    ->where('question_group_id', $groupId)
-                    ->where('correct_count', $stats['correct'])
-                    ->first();
-            }
-
-            if ($scale) {
-                $finalScore += $scale->scaled_score;
-                $activeScalesCount++;
-            }
-        }
-
-        if ($activeScalesCount > 0) {
-            // Scaled Mode
-            return $finalScore;
-        } else {
-            // Linear Mode
-            return $totalQuestions > 0 ? ($totalCorrectGlobal / $totalQuestions) * 100 : 0;
-        }
     }
 }
