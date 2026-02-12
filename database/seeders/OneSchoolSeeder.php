@@ -154,15 +154,16 @@ class OneSchoolSeeder extends Seeder
                 $pkg->questions()->attach($question->id);
             }
 
-            // Buat 2 Soal Essay
-            for ($e = 1; $e <= 2; $e++) {
+            // Buat 5 Soal Essay
+            for ($e = 1; $e <= 5; $e++) {
                 $essay = Question::create([
                     'subject_id' => $subject->id,
                     'type' => 'essay',
-                    'content' => "<p>Jelaskan konsep dasar $name tentang topik $e!</p>",
+                    'content' => "<p><strong>Soal Esai No. $e:</strong><br>Jelaskan secara rinci konsep evaluasi $name pada topik ke-$e, berikan contoh kasus nyata!</p>",
                 ]);
                 $pkg->questions()->attach($essay->id);
             }
+            $this->command->info("   - $name: 10 Soal PG & 5 Soal Essay dibuat.");
 
             // 8. Jadwalkan Ujian (Sesi)
             $type = ExamType::firstOrCreate(
