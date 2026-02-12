@@ -52,12 +52,18 @@ class ExamPackageController extends Controller
             'subject_id' => 'required|exists:subjects,id',
         ]);
 
+        // Security Check: Ensure teacher owns the subject
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            return back()->withInput()->with('error', 'Akses Ditolak. Anda tidak dapat membuat paket untuk mata pelajaran ini.');
+        }
+
         $data = $request->all();
         $data['created_by'] = auth()->id();
         $package = ExamPackage::create($data);
 
         return redirect()->route('admin.exam_package.show', $package->id)
-                         ->with('success', 'Paket soal berhasil dibuat. Silakan tambahkan soal.');
+            ->with('success', 'Paket soal berhasil dibuat. Silakan tambahkan soal.');
     }
 
     /**
@@ -66,7 +72,7 @@ class ExamPackageController extends Controller
     public function show(Request $request, ExamPackage $examPackage)
     {
         $examPackage->load(['subject', 'questions']);
-        
+
         $query = Question::where('subject_id', $examPackage->subject_id);
 
         if ($request->has('q')) {
@@ -101,7 +107,7 @@ class ExamPackageController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'pengajar') {
-             if (!$user->subjects->contains($examPackage->subject_id)) {
+            if (!$user->subjects->contains($examPackage->subject_id)) {
                 abort(403, 'Akses Ditolak. Anda tidak mengampu mata pelajaran paket ini.');
             }
             $subjects = $user->subjects;
@@ -121,6 +127,12 @@ class ExamPackageController extends Controller
             'code' => 'nullable|string|max:50',
             'subject_id' => 'required|exists:subjects,id',
         ]);
+
+        // Security Check: Ensure teacher owns the NEW subject id if changed
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            return back()->withInput()->with('error', 'Akses Ditolak. Anda tidak dapat mengubah paket ke mata pelajaran ini.');
+        }
 
         $examPackage->update($request->all());
 
@@ -160,7 +172,7 @@ class ExamPackageController extends Controller
         }
 
         $randomQuestions = $query->inRandomOrder()->limit($limit)->pluck('id');
-        
+
         $examPackage->questions()->sync($randomQuestions);
 
         return redirect()->back()->with('success', "Berhasil menambahkan $limit soal acak ke paket.");

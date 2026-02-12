@@ -79,6 +79,12 @@ class ExamSessionController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        // Security Check
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            return back()->withInput()->with('error', 'Akses Ditolak. Anda tidak mengampu mata pelajaran ini.');
+        }
+
         try {
             $data = $request->all();
 
@@ -160,6 +166,11 @@ class ExamSessionController extends Controller
             'duration' => 'required|integer|min:1',
             'description' => 'nullable|string',
         ]);
+
+        // Security Check
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            return back()->withInput()->with('error', 'Akses Ditolak. Anda tidak mengampu mata pelajaran ini.');
+        }
 
         try {
             $data = $request->except(['_token', '_method', 'is_active', 'show_score']);
