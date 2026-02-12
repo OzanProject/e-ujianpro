@@ -21,7 +21,7 @@ Route::get('/dashboard', function () {
         } elseif ($user->role === 'admin_lembaga') {
             return redirect()->route('admin.dashboard');
         } elseif ($user->role === 'pengajar') {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('pengajar.dashboard');
         } elseif ($user->role === 'peserta_ujian') {
             return redirect()->route('peserta.dashboard');
         } elseif ($user->role === 'operator') {
@@ -37,7 +37,7 @@ Route::get('/dashboard', function () {
             return redirect()->route('proctor.dashboard', ['subdomain' => $subdomain]);
         }
     }
-    
+
     // Jika tidak ada peran spesifik (atau jika Breeze default dashboard digunakan)
     return view('dashboard');
 
@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
 // Memuat route otentikasi (login, register, dll) dari Laravel Breeze
 Route::get('/page/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('page.show');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // Route Super Admin
 Route::prefix('admin/super')->name('admin.super.')->middleware(['auth', 'role:super_admin'])->group(function () {
@@ -70,7 +70,7 @@ Route::prefix('admin/super')->name('admin.super.')->middleware(['auth', 'role:su
     Route::post('/institutions/{id}/suspend', [App\Http\Controllers\Admin\SuperAdminController::class, 'suspend'])->name('institutions.suspend');
     Route::post('/institutions/{id}/activate', [App\Http\Controllers\Admin\SuperAdminController::class, 'activate'])->name('institutions.activate');
     Route::delete('/institutions/{id}', [App\Http\Controllers\Admin\SuperAdminController::class, 'destroy'])->name('institutions.destroy');
-    
+
     // Points Verification
     Route::get('/points', [App\Http\Controllers\Admin\SuperAdminPointController::class, 'index'])->name('points.index');
     Route::post('/points/{id}/approve', [App\Http\Controllers\Admin\SuperAdminPointController::class, 'approve'])->name('points.approve');
@@ -89,7 +89,7 @@ Route::prefix('admin/super')->name('admin.super.')->middleware(['auth', 'role:su
 // Kita akan menggunakan prefix 'admin' untuk memuat routes/admin.php
 // meskipun di dalamnya ada route untuk pengajar dan peserta
 Route::prefix('admin')->group(function () {
-    require __DIR__.'/admin.php';
+    require __DIR__ . '/admin.php';
 });
 
 // 5. Route for Student Area
@@ -155,7 +155,7 @@ Route::group(['prefix' => '{subdomain}'], function () {
     // Admin/Staff Login
     Route::get('/login', [App\Http\Controllers\InstitutionLandingController::class, 'login'])->name('institution.login');
     Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']); // Handle POST same as generic
-    
+
     // Landing Page (Must be last in this group or handled carefully)
     Route::get('/', [App\Http\Controllers\InstitutionLandingController::class, 'index'])->name('institution.landing');
 });
@@ -166,4 +166,9 @@ Route::group(['prefix' => '{subdomain}/proctor', 'middleware' => ['auth', 'role:
     Route::get('/monitor/{session}/data', [\App\Http\Controllers\Proctor\MonitorController::class, 'getData'])->name('monitor.data');
     Route::post('/monitor/reset/{attempt}', [\App\Http\Controllers\Proctor\MonitorController::class, 'reset'])->name('monitor.reset');
     Route::post('/monitor/stop/{attempt}', [\App\Http\Controllers\Proctor\MonitorController::class, 'stop'])->name('monitor.stop');
+});
+
+// Route Group untuk Pengajar (Guru)
+Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('pengajar.dashboard');
 });
