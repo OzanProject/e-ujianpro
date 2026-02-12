@@ -598,13 +598,20 @@
                 }
             }
 
-            // Anti-Cheat: Visibility Check
+            // Anti-Cheat: Visibility Check & Focus Loss (Mobile Friendly)
             document.addEventListener("visibilitychange", function () {
                 if (document.hidden) {
-                    console.warn("Tab switch detected!");
+                    console.warn("Tab switch detected (Hidden)!");
                     // Optional: Send log to server or alert user
                     // alert("Dilarang berpindah tab selama ujian!");
                 }
+            });
+
+            // Fallback for some mobile browsers that might not trigger visibilitychange on app switch
+            window.addEventListener("blur", function () {
+                console.warn("Window focus lost (Blur)!");
+                // Optional: Send log to server or alert user
+                // alert("Dilarang berpindah aplikasi/tab selama ujian!");
             });
 
             // Anti-Cheat: Prevent Right Click
