@@ -14,17 +14,17 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
 
     // Route Resource Operator
     Route::resource('operator', \App\Http\Controllers\Admin\OperatorController::class)->names('admin.operator');
-    
+
     // Route Resource Pengawas (Proctor)
     Route::resource('proctor', \App\Http\Controllers\Admin\ProctorController::class)->names('admin.proctor');
-Route::prefix('exam_room')->name('admin.exam_room.')->group(function() {
-    Route::get('fix_data', [\App\Http\Controllers\Admin\ExamRoomController::class, 'fixData'])->name('fix_data');
-    Route::get('{id}/assignments', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignments'])->name('assignments');
-    Route::post('{id}/assign_random', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignRandom'])->name('assign_random');
-    Route::delete('{id}/bulk_remove', [\App\Http\Controllers\Admin\ExamRoomController::class, 'bulkRemove'])->name('bulk_remove');
-    Route::delete('{id}/student/{student_id}', [\App\Http\Controllers\Admin\ExamRoomController::class, 'removeStudent'])->name('remove_student');
-});
-Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::class)->names('admin.exam_room');
+    Route::prefix('exam_room')->name('admin.exam_room.')->group(function () {
+        Route::get('fix_data', [\App\Http\Controllers\Admin\ExamRoomController::class, 'fixData'])->name('fix_data');
+        Route::get('{id}/assignments', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignments'])->name('assignments');
+        Route::post('{id}/assign_random', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignRandom'])->name('assign_random');
+        Route::delete('{id}/bulk_remove', [\App\Http\Controllers\Admin\ExamRoomController::class, 'bulkRemove'])->name('bulk_remove');
+        Route::delete('{id}/student/{student_id}', [\App\Http\Controllers\Admin\ExamRoomController::class, 'removeStudent'])->name('remove_student');
+    });
+    Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::class)->names('admin.exam_room');
 
     // Route Resource Mata Pelajaran
     Route::resource('subject', \App\Http\Controllers\Admin\SubjectController::class)->names('admin.subject');
@@ -36,7 +36,7 @@ Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::cla
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class)->names('admin.question');
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class)->names('admin.reading_text');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class)->names('admin.question_group');
-    
+
     // Route Poin / Dompet
     Route::get('point', [\App\Http\Controllers\Admin\PointController::class, 'index'])->name('admin.point.index');
     Route::get('point/topup', [\App\Http\Controllers\Admin\PointController::class, 'topup'])->name('admin.point.topup');
@@ -109,7 +109,7 @@ Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::cla
     Route::get('report/desk-card/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDeskCard'])->name('admin.report.desk_card.print');
     Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('admin.report.attendance.index');
     Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('admin.report.attendance.print');
-    
+
     // Route Attendance Proctor (Dedicated)
     Route::get('report/attendance-proctor', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceProctorIndex'])->name('admin.report.attendance_proctor.index');
 
@@ -128,10 +128,4 @@ Route::resource('exam_room', \App\Http\Controllers\Admin\ExamRoomController::cla
     // Nanti akan kita tambahkan route untuk Operator, Lembaga, Materi, dll.
 });
 
-// Group Route untuk Pengajar/Guru (yang juga mengakses panel admin)
-Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->group(function () {
-    // Route Dashboard Pengajar
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('pengajar.dashboard'); // Atau buat controller terpisah: Pengajar/DashboardController
 
-    // Nanti akan kita tambahkan route untuk membuat soal, paket, dll.
-});
