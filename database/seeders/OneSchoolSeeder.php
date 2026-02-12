@@ -182,7 +182,7 @@ class OneSchoolSeeder extends Seeder
             $timeSlot = $index % 2; // 0 (Pagi), 1 (Siang)
 
             // Mulai besok
-            $date = now()->addDay(1)->addDays($dayOffset)->format('Y-m-d');
+            $date = now()->addDays(1)->addDays($dayOffset)->format('Y-m-d');
 
             if ($timeSlot == 0) {
                 $start = "$date 08:00:00";

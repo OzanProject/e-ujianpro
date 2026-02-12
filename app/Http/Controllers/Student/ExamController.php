@@ -151,6 +151,8 @@ class ExamController extends Controller
         $request->validate([
             'question_id' => 'required',
             'option_id' => 'nullable',
+            'essay_answer' => 'nullable|string',
+            'answer_text' => 'nullable|string',
         ]);
 
         $studentId = Auth::guard('student')->id();
@@ -177,16 +179,24 @@ class ExamController extends Controller
         $isCorrect = $option ? $option->is_correct : false;
 
         // 2. Save/Update Answer
+        // 2. Save/Update Answer
+        $data = [
+            'question_option_id' => $request->option_id,
+            'is_doubtful' => $request->is_doubtful ?? false,
+            'is_correct' => $isCorrect
+        ];
+
+        // If essay answer is provided (either as 'essay_answer' or 'answer_text'), save it
+        if ($request->has('essay_answer') || $request->has('answer_text')) {
+            $data['answer_text'] = $request->input('essay_answer') ?? $request->input('answer_text');
+        }
+
         ExamAnswer::updateOrCreate(
             [
                 'exam_attempt_id' => $attempt->id,
                 'question_id' => $request->question_id,
             ],
-            [
-                'question_option_id' => $request->option_id,
-                'is_doubtful' => $request->is_doubtful ?? false,
-                'is_correct' => $isCorrect
-            ]
+            $data
         );
 
         return response()->json(['status' => 'success']);

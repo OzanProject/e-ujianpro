@@ -72,9 +72,9 @@
                                         @else
                                             <i class="fas fa-times-circle text-danger"></i> (Salah)
                                         @endif
-                                    @elseif($answer->essay_answer)
+                                    @elseif($answer->answer_text)
                                         <div class="p-2 bg-light border rounded">
-                                            {!! nl2br(e($answer->essay_answer)) !!}
+                                            {!! nl2br(e($answer->answer_text)) !!}
                                         </div>
                                         <small class="text-muted"><i class="fas fa-pencil-alt ml-1"></i> Soal Esai (Menunggu Koreksi)</small>
                                     @else
