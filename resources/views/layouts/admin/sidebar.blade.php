@@ -78,7 +78,7 @@
                 {{-- Group: Manajemen Data (System) --}}
 
                 {{-- Group: Manajemen Data (Master) --}}
-                @if($user->role === 'admin_lembaga')
+                @if(in_array($user->role, ['admin_lembaga', 'operator']))
                 <li class="nav-item {{ request()->routeIs('admin.institution.*') || request()->routeIs('admin.subject.*') || request()->routeIs('admin.exam_type.*') || request()->routeIs('admin.student_group.*') || request()->routeIs('admin.student.*') || request()->routeIs('admin.operator.*') || request()->routeIs('admin.point.*') || request()->routeIs('admin.score-scales.*') || request()->routeIs('admin.teacher.*') || request()->routeIs('admin.exam_room.*') || request()->routeIs('admin.proctor.*') ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('admin.institution.*') || request()->routeIs('admin.subject.*') || request()->routeIs('admin.exam_type.*') || request()->routeIs('admin.student_group.*') || request()->routeIs('admin.student.*') || request()->routeIs('admin.operator.*') || request()->routeIs('admin.point.*') || request()->routeIs('admin.score-scales.*') || request()->routeIs('admin.teacher.*') || request()->routeIs('admin.exam_room.*') || request()->routeIs('admin.proctor.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-database"></i>
@@ -88,6 +88,7 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        @if($user->role === 'admin_lembaga')
                         <li class="nav-item">
                             <a href="{{ route('admin.score-scales.index') }}" class="nav-link {{ request()->routeIs('admin.score-scales.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
@@ -100,6 +101,8 @@
                                 <p>Data Lembaga</p>
                             </a>
                         </li>
+                        @endif
+
                         <li class="nav-item">
                             <a href="{{ route('admin.subject.index') }}" class="nav-link {{ request()->routeIs('admin.subject.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
@@ -118,12 +121,16 @@
                                 <p>Kelompok Peserta</p>
                             </a>
                         </li>
+                        
+                        @if($user->role === 'admin_lembaga')
                         <li class="nav-item">
                             <a href="{{ route('admin.teacher.index') }}" class="nav-link {{ request()->routeIs('admin.teacher.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
                                 <p>Data Guru</p>
                             </a>
                         </li>
+                        @endif
+
                         <li class="nav-item">
                             <a href="{{ route('admin.exam_room.index') }}" class="nav-link {{ request()->routeIs('admin.exam_room.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
@@ -142,6 +149,8 @@
                                 <p>Data Peserta</p>
                             </a>
                         </li>
+                        
+                        @if($user->role === 'admin_lembaga')
                         <li class="nav-item">
                             <a href="{{ route('admin.operator.index') }}" class="nav-link {{ request()->routeIs('admin.operator.*') ? 'active' : '' }}">
                                 <i class="far fa-circle nav-icon"></i>
@@ -154,6 +163,7 @@
                                 <p>Dompet Poin</p>
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </li>
                 @endif
