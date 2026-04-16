@@ -45,12 +45,10 @@
             height: 100%;
             z-index: -1;
             background: 
-                radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
-                url('https://s3.ap-southeast-1.amazonaws.com/cdn.e-ujian.com/static-assets/images/bg-auth.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+                radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(124, 58, 237, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.05) 0%, transparent 70%),
+                #f8fafc;
             background-attachment: fixed;
         }
 
@@ -158,22 +156,17 @@
         <div class="text-center mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
             <a href="/" class="inline-block mb-4">
                 @php
-                    $logoPath = $globalInstitution && $globalInstitution->logo
-                        ? asset('storage/' . $globalInstitution->logo)
-                        : null;
-                    $showLogo = $logoPath
-                        && !str_contains(strtolower($globalInstitution->logo ?? ''), 'wc')
-                        && !str_contains(strtolower($globalInstitution->logo ?? ''), 'placeholder');
+                    $rawLogo = \App\Models\Setting::getValue('app_logo', 'img/logo-placeholder.png');
+                    $logoPath = url($rawLogo);
                 @endphp
 
-                @if($showLogo)
-                    <img class="h-24 w-auto object-contain drop-shadow-2xl transition transform hover:scale-110 duration-500"
-                         src="{{ $logoPath }}" alt="Logo"
-                         onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
-                @endif
+                <img class="h-24 w-auto object-contain drop-shadow-2xl transition transform hover:scale-110 duration-500"
+                     src="{{ $logoPath }}" alt="Logo"
+                     id="main-logo"
+                     onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='flex';">
 
-                {{-- Fallback: shown when logo missing, filtered, or fails to load --}}
-                <div id="logo-fallback" style="{{ $showLogo ? 'display:none' : 'display:flex' }}" class="h-24 w-24 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl items-center justify-center shadow-2xl transform hover:rotate-6 transition duration-500 mx-auto">
+                {{-- Fallback: shown when logo fails to load --}}
+                <div id="logo-fallback" style="display:none" class="h-24 w-24 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl items-center justify-center shadow-2xl transform hover:rotate-6 transition duration-500 mx-auto">
                     <svg class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                     </svg>

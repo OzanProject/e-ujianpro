@@ -8,43 +8,57 @@
 @section('header_subtitle', 'Silakan pilih portal masuk sesuai dengan peran dan kebutuhan Anda.')
 
 @section('content')
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
 
     <!-- Portal Peserta / Siswa -->
     <a href="{{ route('student.login') }}"
-       class="group flex flex-col items-center gap-4 p-8 rounded-2xl border border-gray-200 bg-white/70 hover:bg-white hover:border-indigo-300 hover:shadow-xl transition-all duration-300 text-center">
+       class="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-gray-100 bg-white shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 text-center overflow-hidden">
         
-        <div style="width:4rem;height:4rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(79,70,229,0.3);" class="group-hover:scale-110 transition-transform duration-300">
-            <svg style="width:2rem;height:2rem" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+        <!-- Decorative background blob -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-50 rounded-full blur-3xl group-hover:bg-indigo-100 transition-all duration-500"></div>
+
+        <div class="relative w-24 h-24 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
             </svg>
         </div>
 
-        <h3 class="text-xl font-bold text-gray-900">Portal Peserta</h3>
-        <p class="text-sm text-gray-500 leading-relaxed">Masuk sebagai siswa untuk mengerjakan ujian dan melihat hasil penilaian.</p>
+        <div class="relative">
+            <h3 class="text-2xl font-black text-gray-900 mb-2">Siswa</h3>
+            <p class="text-sm text-gray-500 leading-relaxed px-2">Masuk untuk mengerjakan ujian & pantau hasil belajar Anda secara realtime.</p>
+        </div>
 
-        <span class="mt-2 text-sm font-bold text-indigo-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-            Masuk Sekarang <span>&rarr;</span>
-        </span>
+        <div class="pt-2">
+            <span class="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-indigo-50 text-indigo-700 text-sm font-bold group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                Masuk Member &rarr;
+            </span>
+        </div>
     </a>
 
     <!-- Portal Admin / Guru -->
     <a href="{{ route('login') }}"
-       class="group flex flex-col items-center gap-4 p-8 rounded-2xl border border-gray-200 bg-white/70 hover:bg-white hover:border-purple-300 hover:shadow-xl transition-all duration-300 text-center">
+       class="group relative flex flex-col items-center gap-6 p-10 rounded-[2.5rem] border border-gray-100 bg-white shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 text-center overflow-hidden">
+        
+        <!-- Decorative background blob -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-50 rounded-full blur-3xl group-hover:bg-purple-100 transition-all duration-500"></div>
 
-        <div style="width:4rem;height:4rem;background:linear-gradient(135deg,#7c3aed,#a21caf);border-radius:1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(124,58,237,0.3);" class="group-hover:scale-110 transition-transform duration-300">
-            <svg style="width:2rem;height:2rem" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+        <div class="relative w-24 h-24 bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-3xl flex items-center justify-center shadow-xl shadow-purple-200 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500">
+            <svg class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
         </div>
 
-        <h3 class="text-xl font-bold text-gray-900">Portal Pengajar</h3>
-        <p class="text-sm text-gray-500 leading-relaxed">Masuk sebagai admin, guru, atau staf untuk mengelola ujian dan institusi.</p>
+        <div class="relative">
+            <h3 class="text-2xl font-black text-gray-900 mb-2">Lembaga</h3>
+            <p class="text-sm text-gray-500 leading-relaxed px-2">Kelola bank soal, sesi ujian, dan administrasi sekolah dalam satu platform.</p>
+        </div>
 
-        <span class="mt-2 text-sm font-bold text-purple-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-            Masuk Sekarang <span>&rarr;</span>
-        </span>
+        <div class="pt-2">
+            <span class="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-purple-50 text-purple-700 text-sm font-bold group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                Masuk Staf &rarr;
+            </span>
+        </div>
     </a>
 
 </div>

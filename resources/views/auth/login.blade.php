@@ -6,49 +6,49 @@
 @section('header_subtitle', 'Silakan masuk untuk mengelola ujian dan institusi Anda.')
 
 @section('content')
-<form class="space-y-5" action="{{ request()->route('subdomain') ? url(request()->route('subdomain') . '/login') : route('login') }}" method="POST">
+<form class="space-y-6" action="{{ request()->route('subdomain') ? url(request()->route('subdomain') . '/login') : route('login') }}" method="POST">
     @csrf
 
     <!-- Email / Username -->
-    <div>
-        <label for="email" class="block text-sm font-bold text-gray-700 mb-2">Email / Username</label>
-        <div class="flex items-center rounded-2xl border @error('email') border-red-400 bg-red-50 @else border-gray-200 bg-gray-50 @enderror transition-all duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.1)]">
-            <span class="pl-4 pr-2 text-gray-400 flex-shrink-0">
+    <div class="group">
+        <label for="email" class="block text-sm font-bold text-gray-700 mb-2 transition-colors group-focus-within:text-indigo-600">Email atau Username</label>
+        <div class="relative flex items-center rounded-2xl border border-gray-200 bg-gray-50/50 hover:border-gray-300 focus-within:border-indigo-500 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.1)] transition-all duration-300">
+            <div class="flex items-center justify-center w-12 h-12 ml-1 text-gray-400 group-focus-within:text-indigo-500 transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-            </span>
+            </div>
             <input id="email" name="email" type="text" autocomplete="username" required
                    value="{{ old('email') }}"
-                   class="flex-1 bg-transparent py-3.5 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none border-0 ring-0"
+                   class="flex-1 bg-transparent py-4 pr-6 text-sm text-gray-900 border-0 focus:ring-0 placeholder-gray-400"
                    placeholder="Masukkan Email atau Username">
         </div>
         @error('email')
-            <p class="mt-1.5 flex items-center gap-1 text-xs font-semibold text-red-600">
-                <svg class="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <p class="mt-1.5 flex items-center gap-1 text-xs font-semibold text-red-600 animate-in fade-in slide-in-from-left-2 duration-300">
+                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                 {{ $message }}
             </p>
         @enderror
     </div>
 
     <!-- Password -->
-    <div>
+    <div class="group">
         <div class="flex items-center justify-between mb-2">
-            <label for="password" class="block text-sm font-bold text-gray-700">Password</label>
+            <label for="password" class="block text-sm font-bold text-gray-700 transition-colors group-focus-within:text-indigo-600">Kata Sandi</label>
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-500 transition">Lupa password?</a>
             @endif
         </div>
-        <div class="flex items-center rounded-2xl border @error('password') border-red-400 bg-red-50 @else border-gray-200 bg-gray-50 @enderror transition-all duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.1)]">
-            <span class="pl-4 pr-2 text-gray-400 flex-shrink-0">
+        <div class="relative flex items-center rounded-2xl border border-gray-200 bg-gray-50/50 hover:border-gray-300 focus-within:border-indigo-500 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.1)] transition-all duration-300">
+            <div class="flex items-center justify-center w-12 h-12 ml-1 text-gray-400 group-focus-within:text-indigo-500 transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-            </span>
+            </div>
             <input id="password" name="password" type="password" autocomplete="current-password" required
-                   class="flex-1 bg-transparent py-3.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none border-0 ring-0"
+                   class="flex-1 bg-transparent py-4 text-sm text-gray-900 border-0 focus:ring-0 placeholder-gray-400"
                    placeholder="••••••••">
-            <button type="button" onclick="togglePassword()" class="px-4 text-gray-400 hover:text-indigo-600 transition flex-shrink-0">
+            <button type="button" onclick="togglePassword()" class="px-4 text-gray-400 hover:text-indigo-600 transition outline-none">
                 <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -56,24 +56,26 @@
             </button>
         </div>
         @error('password')
-            <p class="mt-1.5 flex items-center gap-1 text-xs font-semibold text-red-600">
-                <svg class="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <p class="mt-1.5 flex items-center gap-1 text-xs font-semibold text-red-600 animate-in fade-in slide-in-from-left-2 duration-300">
+                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                 {{ $message }}
             </p>
         @enderror
     </div>
 
-    <!-- Remember Me -->
-    <div class="flex items-center pt-1">
-        <input id="remember" name="remember" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-        <label for="remember" class="ml-3 text-sm font-bold text-gray-500 cursor-pointer hover:text-indigo-600 transition">Ingat Saya</label>
+    <!-- Options -->
+    <div class="flex items-center justify-between pt-1">
+        <label class="flex items-center cursor-pointer group">
+            <input id="remember" name="remember" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 transition cursor-pointer">
+            <span class="ml-2 text-sm font-bold text-gray-500 group-hover:text-gray-700 transition">Ingat saya</span>
+        </label>
     </div>
 
-    <!-- Submit -->
-    <div class="pt-2">
-        <button type="submit" class="premium-btn w-full flex justify-center items-center gap-2 rounded-2xl px-6 py-4 text-base font-bold text-white transition duration-300">
-            <span>Masuk Sekarang</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+    <!-- CTA -->
+    <div class="pt-4">
+        <button type="submit" class="premium-btn w-full flex justify-center items-center gap-2 rounded-2xl px-6 py-4 text-base font-bold text-white transition duration-300 group">
+            <span>Masuk ke Dashboard</span>
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
         </button>
     </div>
 </form>
