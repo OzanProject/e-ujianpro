@@ -22,8 +22,9 @@
                         @endif
 
                         @if ($errors->any())
-                            <div class="alert alert-danger rounded-lg shadow-sm border-0 mb-4">
-                                <ul class="mb-0 pl-4">
+                            <div class="alert alert-danger rounded-lg shadow-sm border-0 mb-4 d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle mr-3 text-lg"></i>
+                                <ul class="mb-0 pl-0 list-unstyled">
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
                                     @endforeach

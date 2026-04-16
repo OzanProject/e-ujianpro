@@ -37,9 +37,19 @@ class ExamController extends Controller
             ->where('student_id', $studentId)
             ->first();
 
+        if ($attempt && $attempt->status == 'in_progress') {
+            // Check if duration expired
+            $attemptEndTime = $attempt->start_time->copy()->addMinutes($session->duration);
+            if (now() > $attemptEndTime || now() > $session->end_time) {
+                $this->autoFinish($attempt, $session);
+                // Refresh attempt status
+                $attempt->refresh();
+            }
+        }
+
         if ($attempt && $attempt->status == 'completed') {
             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
-            return redirect($route)->with('error', 'Anda sudah menyelesaikan ujian ini.');
+            return redirect($route)->with('success', 'Ujian ini sudah selesai.');
         }
 
         return view('student.exam.confirmation', compact('session', 'attempt'));
@@ -77,11 +87,20 @@ class ExamController extends Controller
                 'exam_session_id' => $id,
                 'student_id' => $studentId,
             ],
-            [
-                'start_time' => now(),
-                'status' => 'in_progress'
-            ]
-        );
+                    [
+                        'start_time' => now(),
+                        'status' => 'in_progress'
+                    ]
+                );
+
+        if ($attempt->status == 'in_progress') {
+            // Validation: Duration Check
+            $attemptEndTime = $attempt->start_time->copy()->addMinutes($session->duration);
+            if (now() > $attemptEndTime || now() > $session->end_time) {
+                $this->autoFinish($attempt, $session);
+                $attempt->refresh();
+            }
+        }
 
         if ($attempt->status == 'completed') {
             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
@@ -115,16 +134,17 @@ class ExamController extends Controller
         // Fetch questions properly ordered
         // If package is set, use package questions. Otherwise use all subject questions.
         if ($session->exam_package_id) {
-            $questions = $session->examPackage->questions()->with(['options', 'readingText'])->get();
+            $questions = $session->examPackage->questions()
+                ->with(['options', 'readingText', 'questionGroup'])
+                ->get();
         } else {
-            $questions = \App\Models\Question::where('subject_id', $session->subject_id)->with(['options', 'readingText'])->get();
+            $questions = \App\Models\Question::where('subject_id', $session->subject_id)
+                ->with(['options', 'readingText', 'questionGroup'])
+                ->get();
         }
 
         // Calculate Remaining Time
         // Duration is in minutes.
-        // End time is strictly SESSION END TIME or START TIME + DURATION?
-        // Usually: Least of (Session End Time) OR (Attempt Start + Duration)
-
         $sessionEndTime = $session->end_time;
         $attemptEndTime = $attempt->start_time->copy()->addMinutes($session->duration);
 
@@ -133,15 +153,17 @@ class ExamController extends Controller
         $remainingSeconds = now()->diffInSeconds($finalEndTime, false);
 
         if ($remainingSeconds <= 0) {
-            // Auto finish if time is up (should act trigger finish)
+            // Auto finish if time is up
+            $this->autoFinish($attempt, $session);
+
             $route = request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard');
-            return redirect($route)->with('error', 'Waktu habis.');
+            return redirect($route)->with('success', 'Waktu pengerjaan telah habis. Ujian otomatis disimpan.');
         }
 
-        // Fetch saved answers
+        // Fetch saved answers with more detail
         $savedAnswers = ExamAnswer::where('exam_attempt_id', $attempt->id)
-            ->pluck('question_option_id', 'question_id')
-            ->toArray();
+            ->get()
+            ->keyBy('question_id');
 
         return view('student.exam.show', compact('session', 'questions', 'attempt', 'remainingSeconds', 'savedAnswers'));
     }
@@ -174,30 +196,37 @@ class ExamController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Ujian sudah selesai.'], 403);
         }
 
-        // Fetch the option to check correctness
-        $option = \App\Models\QuestionOption::find($request->option_id);
-        $isCorrect = $option ? $option->is_correct : false;
+        // Fetch/Update Answer
+        $answer = ExamAnswer::where('exam_attempt_id', $attempt->id)
+            ->where('question_id', $request->question_id)
+            ->first();
 
-        // 2. Save/Update Answer
-        // 2. Save/Update Answer
-        $data = [
-            'question_option_id' => $request->option_id,
-            'is_doubtful' => $request->is_doubtful ?? false,
-            'is_correct' => $isCorrect
-        ];
+        $data = [];
+        
+        // Handle Option (Multiple Choice)
+        if ($request->has('option_id')) {
+            $option = \App\Models\QuestionOption::find($request->option_id);
+            $data['question_option_id'] = $request->option_id;
+            $data['is_correct'] = $option ? $option->is_correct : false;
+        }
 
-        // If essay answer is provided (either as 'essay_answer' or 'answer_text'), save it
+        // Handle Doubtful Status
+        if ($request->has('is_doubtful')) {
+            $data['is_doubtful'] = filter_var($request->is_doubtful, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // Handle Essay
         if ($request->has('essay_answer') || $request->has('answer_text')) {
             $data['answer_text'] = $request->input('essay_answer') ?? $request->input('answer_text');
         }
 
-        ExamAnswer::updateOrCreate(
-            [
-                'exam_attempt_id' => $attempt->id,
-                'question_id' => $request->question_id,
-            ],
-            $data
-        );
+        if ($answer) {
+            $answer->update($data);
+        } else {
+            $data['exam_attempt_id'] = $attempt->id;
+            $data['question_id'] = $request->question_id;
+            ExamAnswer::create($data);
+        }
 
         return response()->json(['status' => 'success']);
     }
@@ -231,5 +260,55 @@ class ExamController extends Controller
                 ->with('success', $message);
         }
         return redirect()->route('student.dashboard')->with('success', $message);
+    }
+
+    public function reportCheat(Request $request)
+    {
+        $studentId = Auth::guard('student')->id();
+
+        if (!$request->exam_session_id) {
+            return response()->json(['status' => 'error', 'message' => 'Session ID required'], 400);
+        }
+
+        $attempt = ExamAttempt::where('exam_session_id', $request->exam_session_id)
+            ->where('student_id', $studentId)
+            ->firstOrFail();
+
+        if ($attempt->status == 'completed') {
+            return response()->json(['status' => 'error', 'message' => 'Exam already finished'], 403);
+        }
+
+        // Increment cheat count
+        $attempt->increment('cheat_count');
+
+        return response()->json([
+            'status' => 'success',
+            'current_cheat_count' => $attempt->cheat_count
+        ]);
+    }
+
+    /**
+     * Internal Logic for Auto Finishing Expired Attempts
+     */
+    private function autoFinish(ExamAttempt $attempt, ExamSession $session)
+    {
+        if ($attempt->status !== 'in_progress') return;
+
+        $attempt->status = 'completed';
+        
+        // Calculate logical end time
+        $attemptEndTime = $attempt->start_time->copy()->addMinutes($session->duration);
+        $finalEndTime = $session->end_time < $attemptEndTime ? $session->end_time : $attemptEndTime;
+        
+        $attempt->end_time = $finalEndTime;
+        $attempt->save();
+
+        // Grade attempt
+        try {
+            $examService = new \App\Services\ExamService();
+            $examService->gradeAttempt($attempt);
+        } catch (\Exception $e) {
+            \Log::error("Auto Finish Grading Error: " . $e->getMessage());
+        }
     }
 }

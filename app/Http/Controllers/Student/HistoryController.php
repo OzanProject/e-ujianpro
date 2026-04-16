@@ -28,11 +28,46 @@ class HistoryController extends Controller
         $id = $p2 ?? $p1;
         $studentId = Auth::guard('student')->id();
         
-        $attempt = ExamAttempt::with(['examSession.subject', 'examSession.examPackage', 'answers.question.options', 'answers.option'])
+        // 1. Get fundamental attempt data
+        $attempt = ExamAttempt::with(['examSession.subject', 'examSession.examPackage'])
                     ->where('id', $id)
                     ->where('student_id', $studentId)
                     ->firstOrFail();
 
-        return view('student.history.show', compact('attempt'));
+        // 2. Fetch all answers for statistics (before pagination)
+        $allAnswers = $attempt->answers()->with('option')->get();
+        
+        $stats = [
+            'total' => $allAnswers->count(),
+            'correct' => 0,
+            'wrong' => 0,
+            'empty' => 0,
+            'essay' => 0,
+        ];
+
+        foreach ($allAnswers as $ans) {
+            if ($ans->question_option_id) {
+                // Check if correct (from flag or option)
+                $isCorrect = $ans->is_correct || ($ans->option && $ans->option->is_correct);
+                if ($isCorrect) {
+                    $stats['correct']++;
+                } else {
+                    $stats['wrong']++;
+                }
+            } elseif ($ans->answer_text) {
+                $stats['essay']++;
+            } else {
+                $stats['empty']++;
+            }
+        }
+
+        // 3. Paginate answers for display
+        $perPage = request()->get('per_page', 10);
+        $answers = $attempt->answers()
+                    ->with(['question.options', 'option'])
+                    ->paginate($perPage)
+                    ->appends(['per_page' => $perPage]); // Keep parameter in pagination links
+
+        return view('student.history.show', compact('attempt', 'answers', 'stats', 'perPage'));
     }
 }

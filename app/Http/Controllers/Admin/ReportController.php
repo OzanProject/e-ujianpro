@@ -9,10 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
+    protected function getBaseRoute()
+    {
+        return auth()->user()->role === 'pengajar' ? 'pengajar.report' : 'admin.report';
+    }
 
     public function index()
     {
-        return view('admin.report.index');
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.index', compact('baseRoute'));
     }
 
     public function examSchedule(Request $request)
@@ -29,13 +34,13 @@ class ReportController extends Controller
         if ($user->role === 'pengajar') {
             $query->whereIn('subject_id', $user->subjects->pluck('id'));
         } else {
-             // If Admin Lembaga, view own subjects. If Operator, view parent's subjects.
-             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
              $subjectIds = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
              $query->whereIn('subject_id', $subjectIds);
         }
 
         $sessions = $query->get();
+        $baseRoute = $this->getBaseRoute();
 
         // Stats
         $stats = [
@@ -45,7 +50,7 @@ class ReportController extends Controller
             'finished' => $sessions->filter(fn($s) => $s->end_time < now())->count(),
         ];
 
-        return view('admin.report.exam_schedule', compact('sessions', 'startDate', 'endDate', 'stats'));
+        return view('admin.report.exam_schedule', compact('sessions', 'startDate', 'endDate', 'stats', 'baseRoute'));
     }
 
     public function printExamSchedule(Request $request)
@@ -58,24 +63,21 @@ class ReportController extends Controller
             ->whereBetween('start_time', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->orderBy('start_time');
             
-        // Scoping (Same as main view)
+        // Scoping
         if ($user->role === 'pengajar') {
             $query->whereIn('subject_id', $user->subjects->pluck('id'));
         } else {
-             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
              $subjectIds = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
              $query->whereIn('subject_id', $subjectIds);
         }
 
         $sessions = $query->get();
-        $sessions = $query->get();
-        // Fix Institution: Get creator's institution
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        // Fallback for Teachers: Get institution via assigned subject creator or their own user_id if they belong to one
+        // Fallback for Teachers
         if (!$institution && $user->role === 'pengajar') {
-             // Try to find institution via first subject's creator
              $firstSubject = $user->subjects->first();
              if ($firstSubject) {
                   $institution = \App\Models\Institution::where('user_id', $firstSubject->created_by)->first();
@@ -88,16 +90,17 @@ class ReportController extends Controller
     public function deskCardIndex()
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
         
-        return view('admin.report.desk_card.index', compact('rooms'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.desk_card.index', compact('rooms', 'baseRoute'));
     }
 
     public function printDeskCard(Request $request)
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
         $query = \App\Models\Student::with('examRoom', 'group')
                     ->where('created_by', $creatorId);
@@ -110,15 +113,10 @@ class ReportController extends Controller
             }
         }
         
-        // Logical Sort
-        $students = \App\Models\StudentGroup::sortCollection($query->get()); // Re-use group sort logic? No, sort logic is for groups.
-        // For students, we probably want to sort by Name or NIS? 
-        // Let's sort by Group Name then Name.
         $students = $query->get()->sortBy(function($student) {
              return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
         });
 
-        // Fix Institution
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
         
         $roomName = $request->exam_room_id && $request->exam_room_id != 'all' && $request->exam_room_id != 'null' 
@@ -131,29 +129,28 @@ class ReportController extends Controller
     public function attendanceIndex()
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
-        // Fetch upcoming/recent sessions for selection
-        // Scope by Subjects owned/assigned
+
         $subjectIds = $user->role === 'pengajar' 
                         ? $user->subjects->pluck('id')
                         : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
 
         $sessions = ExamSession::with('subject')
             ->whereIn('subject_id', $subjectIds)
-            ->where('start_time', '>=', now()->subDays(7)) // Show sessions from last week onwards
+            ->where('start_time', '>=', now()->subDays(7)) 
             ->orderBy('start_time', 'asc')
             ->get();
             
-        return view('admin.report.attendance.index', compact('rooms', 'sessions'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.attendance.index', compact('rooms', 'sessions', 'baseRoute'));
     }
 
     public function printAttendance(Request $request)
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
-        // Check if printing Proctor List
         if ($request->has('type') && $request->type == 'proctor') {
              return $this->printAttendanceProctor($request);
         }
@@ -183,7 +180,6 @@ class ReportController extends Controller
             }
         }
         
-        // Logical Sort
         $students = $query->get()->sortBy(function($student) {
              return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
         });
@@ -196,7 +192,7 @@ class ReportController extends Controller
     public function attendanceProctorIndex()
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
         $subjectIds = $user->role === 'pengajar' 
                         ? $user->subjects->pluck('id')
@@ -208,15 +204,15 @@ class ReportController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
             
-        return view('admin.report.attendance_proctor.index', compact('sessions'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.attendance_proctor.index', compact('sessions', 'baseRoute'));
     }
 
     public function printAttendanceProctor(Request $request)
     {
         $user = Auth::user();
-        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
-        // Get Proctors created by this admin
         $proctors = \App\Models\User::where('role', 'proctor')
                     ->where('created_by', $creatorId)
                     ->with('examRoom')

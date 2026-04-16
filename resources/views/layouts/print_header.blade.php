@@ -10,13 +10,15 @@
         {{-- Teks Tengah --}}
         <td style="width: 70%; vertical-align: middle; text-align: center;">
             <div style="font-family: Arial, sans-serif;">
-                <div style="font-size: 18px; font-weight: bold; text-transform: uppercase;">{{ $institution->dinas_name ?? 'PEMERINTAH KABUPATEN ' . strtoupper($institution->city ?? 'KOTA') }}</div>
-                <div style="font-size: 24px; font-weight: bold; margin: 5px 0;">{{ $institution->name ?? 'SEKOLAH DEMO' }}</div>
-                <div style="font-size: 12px; font-style: italic;">{{ $institution->address ?? 'Alamat Sekolah' }}</div>
+                <div style="font-size: 18px; font-weight: bold; text-transform: uppercase;">
+                    {{ ($institution->dinas_name ?? null) ?: 'PEMERINTAH KABUPATEN ' . strtoupper($institution->city ?? 'KOTA') }}
+                </div>
+                <div style="font-size: 24px; font-weight: bold; margin: 5px 0;">{{ $institution->name ?? 'E-UJIAN PRO' }}</div>
+                <div style="font-size: 12px; font-style: italic;">{{ $institution->address ?? 'Alamat Sekolah / Lembaga' }}</div>
                 <div style="font-size: 12px;">
-                    @if($institution->email) Email: {{ $institution->email }} @endif
-                    @if($institution->phone) | Telp: {{ $institution->phone }} @endif
-                    @if($institution->npsn) | NPSN: {{ $institution->npsn }} @endif
+                    @if(isset($institution->email) && $institution->email) Email: {{ $institution->email }} @endif
+                    @if(isset($institution->phone) && $institution->phone) | Telp: {{ $institution->phone }} @endif
+                    @if(isset($institution->npsn) && $institution->npsn) | NPSN: {{ $institution->npsn }} @endif
                 </div>
             </div>
         </td>

@@ -96,6 +96,26 @@
                 </div>
             </div>
 
+            {{-- Integrations & APIs --}}
+            <div class="col-md-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Integrasi API (Sistem Bank Soal)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label>TinyMCE API Key (Editor Soal)</label>
+                                    <input type="text" name="tinymce_api_key" class="form-control" value="{{ $tinymceApiKey }}" placeholder="Contoh: nuww14eec90ohvwjq67...">
+                                    <small class="text-muted">Abaikan peringatan "This domain is not registered..." dengan memasukkan API Key valid dari <a href="https://www.tiny.cloud/" target="_blank">tiny.cloud</a>.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Point Settings --}}
             <div class="col-md-4">
                 <div class="card shadow mb-4">

@@ -6,7 +6,7 @@
             <div class="card-header">
                 <h3 class="card-title">Edit Grup Soal</h3>
             </div>
-            <form action="{{ route('admin.question_group.update', $questionGroup->id) }}" method="POST">
+            <form action="{{ route($baseRoute . '.update', $questionGroup->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="card-body">
@@ -28,7 +28,7 @@
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-warning">Perbarui</button>
-                    <a href="{{ route('admin.question_group.index') }}" class="btn btn-default">Kembali</a>
+                    <a href="{{ route($baseRoute . '.index') }}" class="btn btn-default">Kembali</a>
                 </div>
             </form>
         </div>

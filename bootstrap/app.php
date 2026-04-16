@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Exclude specific routes from CSRF
+        $middleware->validateCsrfTokens(except: [
+            'admin/question/upload-image'
+        ]);
+
         $middleware->web(append: [
             // \App\Http\Middleware\EncryptCookies::class, // Contoh middleware web
         ]);
@@ -20,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // ... middleware alias yang sudah ada (ex: 'auth', 'verified', dll.)
             'role' => CheckUserRole::class, // <-- Tambahkan alias ini
+            'tenant' => \App\Http\Middleware\EnsureTenantAccess::class,
         ]);
 
         // Smart Redirection for Unauthenticated Users (Guests)

@@ -2,6 +2,8 @@
     @php
         /** @var \App\Models\User $user */
         $user = auth()->user();
+        $baseRoute = $user->role === 'pengajar' ? 'pengajar' : 'admin';
+        $baseRoutePrefix = $user->role === 'pengajar' ? 'pengajar' : 'admin';
     @endphp
     <a href="{{ route('dashboard') }}" class="brand-link">
         <img src="{{ $globalInstitution && $globalInstitution->logo ? asset('storage/' . $globalInstitution->logo) : asset('dist/img/AdminLTELogo.png') }}"
@@ -195,9 +197,9 @@
                 {{-- Group: Bank Soal & Materi --}}
                 @if(in_array($user->role, ['admin_lembaga', 'pengajar']))
                     <li
-                        class="nav-item {{ request()->routeIs('admin.question.*') || request()->routeIs('admin.reading_text.*') || request()->routeIs('admin.question_group.*') || request()->routeIs('admin.learning_material.*') || request()->routeIs('admin.exam_package.*') ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->routeIs($baseRoute . '.question.*') || request()->routeIs($baseRoute . '.reading_text.*') || request()->routeIs($baseRoute . '.question_group.*') || request()->routeIs($baseRoute . '.learning_material.*') || request()->routeIs($baseRoute . '.exam_package.*') ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->routeIs('admin.question.*') || request()->routeIs('admin.reading_text.*') || request()->routeIs('admin.question_group.*') || request()->routeIs('admin.learning_material.*') || request()->routeIs('admin.exam_package.*') ? 'active' : '' }}">
+                            class="nav-link {{ request()->routeIs($baseRoute . '.question.*') || request()->routeIs($baseRoute . '.reading_text.*') || request()->routeIs($baseRoute . '.question_group.*') || request()->routeIs($baseRoute . '.learning_material.*') || request()->routeIs($baseRoute . '.exam_package.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-book"></i>
                             <p>
                                 Bank & Materi
@@ -206,36 +208,36 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ route('admin.question.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.question.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.question.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.question.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Bank Soal</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.reading_text.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.reading_text.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.reading_text.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.reading_text.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Data Bacaan</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.question_group.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.question_group.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.question_group.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.question_group.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Grup Soal</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.learning_material.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.learning_material.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.learning_material.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.learning_material.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Modul Materi</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.exam_package.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.exam_package.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.exam_package.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.exam_package.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Paket Soal</p>
                                 </a>
@@ -247,9 +249,9 @@
                 {{-- Group: Pelaksanaan Ujian --}}
                 @if(in_array($user->role, ['admin_lembaga', 'pengajar', 'operator']))
                     <li
-                        class="nav-item {{ request()->routeIs('admin.exam_session.*') || request()->routeIs('admin.correction.*') ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->routeIs($baseRoute . '.exam_session.*') || request()->routeIs($baseRoute . '.correction.*') || request()->routeIs('proctor.*') || request()->routeIs($baseRoute . '.monitoring.index') ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->routeIs('admin.exam_session.*') || request()->routeIs('admin.correction.*') ? 'active' : '' }}">
+                            class="nav-link {{ request()->routeIs($baseRoute . '.exam_session.*') || request()->routeIs($baseRoute . '.correction.*') || request()->routeIs('proctor.*') || request()->routeIs($baseRoute . '.monitoring.index') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-laptop-code"></i>
                             <p>
                                 Pelaksanaan Ujian
@@ -258,15 +260,22 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ route('admin.exam_session.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.exam_session.*') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.exam_session.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.exam_session.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Jadwal Ujian</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.correction.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.correction.*') ? 'active' : '' }}">
+                                <a href="{{ in_array($user->role, ['admin_lembaga', 'operator', 'pengajar']) ? route($baseRoute . '.monitoring.index') : route('proctor.dashboard', ['subdomain' => request()->route('subdomain') ?? ($globalInstitution->subdomain ?? 'default')]) }}"
+                                    class="nav-link {{ request()->routeIs('proctor.dashboard') || request()->routeIs($baseRoute . '.monitoring.index') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Monitoring Ujian</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route($baseRoute . '.correction.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.correction.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Koreksi Ujian</p>
                                 </a>
@@ -278,9 +287,9 @@
                 {{-- Group: Laporan & Hasil --}}
                 @if(in_array($user->role, ['admin_lembaga', 'pengajar', 'operator']))
                     <li
-                        class="nav-item {{ request()->routeIs('admin.report.*') || request()->routeIs('admin.recap.*') ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->routeIs($baseRoute . '.report.*') || request()->routeIs($baseRoute . '.recap.*') ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->routeIs('admin.report.*') || request()->routeIs('admin.recap.*') ? 'active' : '' }}">
+                            class="nav-link {{ request()->routeIs($baseRoute . '.report.*') || request()->routeIs($baseRoute . '.recap.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-print"></i>
                             <p>
                                 Laporan & Hasil
@@ -289,15 +298,15 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="{{ route('admin.report.exam_schedule') }}"
-                                    class="nav-link {{ request()->routeIs('admin.report.exam_schedule') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.report.exam_schedule') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.report.exam_schedule') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Cetak Jadwal Ujian</p>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.recap.exam_result') }}"
-                                    class="nav-link {{ request()->routeIs('admin.recap.exam_result') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.recap.exam_result') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.recap.exam_result') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Hasil Ujian</p>
                                 </a>
@@ -305,8 +314,8 @@
 
                             @if($user->role !== 'pengajar')
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.report.desk_card.index') }}"
-                                        class="nav-link {{ request()->routeIs('admin.report.desk_card.*') ? 'active' : '' }}">
+                                    <a href="{{ route($baseRoute . '.report.desk_card.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.desk_card.*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Cetak Kartu Meja</p>
                                     </a>

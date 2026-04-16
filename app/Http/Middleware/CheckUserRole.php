@@ -16,10 +16,8 @@ class CheckUserRole
         }
 
         // Cek apakah peran pengguna ada dalam daftar peran yang diizinkan
-        // Jika $roles kosong, berarti tidak ada pembatasan peran spesifik (opsional, tergantung logic)
-        // Tapi di sini kita asumsikan middleware ini selalu dipanggil dengan parameter peran.
         if (!in_array(auth()->user()->role, $roles)) {
-             abort(403, 'Akses Dilarang. Anda tidak memiliki hak akses (Role: ' . auth()->user()->role . ').');
+             return redirect()->route('dashboard')->with('error', 'Akses Dilarang. Anda tidak memiliki hak akses (Role: ' . auth()->user()->role . ') untuk menu tersebut.');
         }
 
         return $next($request);

@@ -30,6 +30,9 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::resource('subject', \App\Http\Controllers\Admin\SubjectController::class)->names('admin.subject');
 
     // Route Resource Bank Soal
+    Route::post('question/bulk-destroy', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkDestroy'])->name('admin.question.bulk_destroy');
+    Route::post('question/upload-image', [\App\Http\Controllers\Admin\QuestionController::class, 'uploadImage'])->name('admin.question.upload_image');
+    Route::get('question/{question}/preview', [\App\Http\Controllers\Admin\QuestionController::class, 'preview'])->name('admin.question.preview');
     Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('admin.question.import');
     Route::get('question/template', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('admin.question.template');
     Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('admin.question.template.word'); // New Route
@@ -60,6 +63,9 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     // Route Resource Jadwal Ujian
     Route::post('exam_session/{exam_session}/regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'regenerateToken'])->name('admin.exam_session.regenerate_token');
     Route::resource('exam_session', \App\Http\Controllers\Admin\ExamSessionController::class)->names('admin.exam_session');
+
+    // Route Monitoring (Full List for Admin)
+    Route::get('monitoring', [\App\Http\Controllers\Admin\MonitoringController::class, 'index'])->name('admin.monitoring.index');
 
     // Route Resource Jenis Ujian (Master Data)
     Route::resource('exam_type', \App\Http\Controllers\Admin\ExamTypeController::class)->names('admin.exam_type');

@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class LearningMaterialController extends Controller
 {
+    protected function getBaseRoute()
+    {
+        return auth()->user()->role === 'pengajar' ? 'pengajar.learning_material' : 'admin.learning_material';
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -19,7 +24,9 @@ class LearningMaterialController extends Controller
             $subjects = $user->subjects;
             $query->whereIn('subject_id', $subjects->pluck('id'));
         } else {
-            $subjects = Subject::orderBy('name')->get();
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->orderBy('name')->get();
+            $query->whereIn('subject_id', $subjects->pluck('id'));
         }
         
         if ($request->has('subject_id') && $request->subject_id != '') {
@@ -27,8 +34,9 @@ class LearningMaterialController extends Controller
         }
         
         $materials = $query->latest()->paginate(10);
+        $baseRoute = $this->getBaseRoute();
         
-        return view('admin.learning_material.index', compact('materials', 'subjects'));
+        return view('admin.learning_material.index', compact('materials', 'subjects', 'baseRoute'));
     }
 
     public function store(Request $request)
@@ -54,9 +62,10 @@ class LearningMaterialController extends Controller
             'description' => $request->description,
             'file_path' => $path,
             'file_type' => $extension,
+            'created_by' => $user->id,
         ]);
 
-        return redirect()->back()->with('success', 'Materi belajar berhasil diunggah.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Materi belajar berhasil diunggah.');
     }
 
     public function destroy(LearningMaterial $learningMaterial)
@@ -73,6 +82,6 @@ class LearningMaterialController extends Controller
         
         $learningMaterial->delete();
         
-        return redirect()->back()->with('success', 'Materi belajar berhasil dihapus.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Materi belajar berhasil dihapus.');
     }
 }

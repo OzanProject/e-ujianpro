@@ -33,7 +33,7 @@
                                     <span class="badge badge-info">{{ $session->attempts_count }} Peserta</span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.correction.show', $session->id) }}" class="btn btn-primary btn-sm">
+                                    <a href="{{ route($baseRoute . '.show', $session->id) }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-eye"></i> Lihat
                                     </a>
                                 </td>

@@ -52,25 +52,20 @@ class DashboardController extends Controller
         // Assuming 'created_by' was added for this exact purpose in Module 300.
         $pesertaCount = \App\Models\Student::where('created_by', $institutionId)->count();
 
-        // 2. Data Pengajar (Guru) - Scoped to Institution
+        // 2. Data Pengajar (Guru) - Scoped automatically via Multitenantable
         $guruCount = \App\Models\User::where('role', 'pengajar')
-                                     ->where('created_by', $institutionId)
                                      ->count();
 
-        // 3. Data Paket Soal - Scoped to User (Personal Work)
-        // If Admin, sees their own. If Teacher, sees their own.
-        $paketSoalCount = \App\Models\ExamPackage::where('created_by', $userId)->count();
+        // 3. Data Paket Soal - Scoped automatically via Multitenantable
+        $paketSoalCount = \App\Models\ExamPackage::count();
 
-        // 4. Sesi Ujian Aktif
-        // Filter sessions where the related package belongs to this user
-        $activeExamSessionCount = \App\Models\ExamSession::whereHas('examPackage', function ($query) use ($userId) {
-            $query->where('created_by', $userId);
-        })->where('is_active', true)->count();
+        // 4. Sesi Ujian Aktif - Scoped via ExamPackage relation
+        $activeExamSessionCount = \App\Models\ExamSession::whereHas('examPackage')
+                                ->where('is_active', true)
+                                ->count();
 
         // 5. Total Sesi (Optional)
-        $totalExamSessionCount = \App\Models\ExamSession::whereHas('examPackage', function ($query) use ($userId) {
-            $query->where('created_by', $userId);
-        })->count();
+        $totalExamSessionCount = \App\Models\ExamSession::whereHas('examPackage')->count();
 
         // Get Max Students Quota (From Institution Admin)
         $institutionUser = ($user->role == 'admin_lembaga') ? $user : \App\Models\User::find($institutionId);

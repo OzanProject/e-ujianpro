@@ -46,16 +46,18 @@ class AppServiceProvider extends ServiceProvider
                     $globalInstitution = (object) [
                         'name' => \App\Models\Setting::getValue('app_name', 'E-Ujian PRO'),
                         'logo' => $platformLogo,
+                        'subdomain' => 'admin',
                     ];
                 } elseif (in_array($user->role, ['admin_lembaga', 'pengajar', 'operator', 'siswa'])) {
                     // For others, try to find their linked institution
-                    if (method_exists($user, 'institution') && $user->institution) {
+                    if ($user->institution) {
                          $globalInstitution = $user->institution;
                     } elseif ($user->role === 'admin_lembaga') {
                          $globalInstitution = \App\Models\Institution::where('user_id', $user->id)->first();
+                    } elseif ($user->role === 'pengajar' || $user->role === 'operator') {
+                        // Inherit from creator (School Admin)
+                        $globalInstitution = \App\Models\Institution::where('user_id', $user->created_by)->first();
                     }
-                    // For Student, we might need a more complex lookup if not directly linked, 
-                    // but usually the subdomain should handle the branding needs.
                 }
             }
             
@@ -64,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
                 $globalInstitution = (object) [
                     'name' => \App\Models\Setting::getValue('app_name', 'E-Ujian PRO'),
                     'logo' => $platformLogo,
+                    'subdomain' => 'portal',
                 ];
             }
 

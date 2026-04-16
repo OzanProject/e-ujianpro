@@ -6,7 +6,7 @@
             <div class="card-header">
                 <h3 class="card-title">Tambah Grup Soal</h3>
             </div>
-            <form action="{{ route('admin.question_group.store') }}" method="POST">
+            <form action="{{ route($baseRoute . '.store') }}" method="POST">
                 @csrf
                 <div class="card-body">
                     <div class="form-group">
@@ -25,7 +25,7 @@
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Simpan</button>
-                    <a href="{{ route('admin.question_group.index') }}" class="btn btn-default">Kembali</a>
+                    <a href="{{ route($baseRoute . '.index') }}" class="btn btn-default">Kembali</a>
                 </div>
             </form>
         </div>

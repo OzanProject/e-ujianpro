@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 class RecapController extends Controller
 {
+    protected function getBaseRoute()
+    {
+        return auth()->user()->role === 'pengajar' ? 'pengajar.recap' : 'admin.recap';
+    }
 
     public function examResult(Request $request)
     {
@@ -21,9 +25,7 @@ class RecapController extends Controller
                                 ->orderByDesc('start_time')
                                 ->get();
         } else {
-            // Admin Lembaga & Operator scopes by Subject ownership
-            // If Admin Lembaga, view own subjects. If Operator, view parent's subjects.
-            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
             $subjects = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
             $examSessions = ExamSession::whereIn('subject_id', $subjects)
                                 ->with(['subject', 'examPackage'])
@@ -50,23 +52,23 @@ class RecapController extends Controller
                 $selectedSession = ExamSession::with('examPackage')->find($request->exam_session_id);
                 
                 $attempts = $selectedSession->attempts()
-                    ->with(['student.group', 'student', 'answers.option', 'answers.question.options']) // Optimization for verification
+                    ->with(['student.group', 'student', 'answers.option', 'answers.question.options']) 
                     ->orderByDesc('score')
                     ->get();
 
-                // Calculate Summary
                 if ($attempts->count() > 0) {
                     $summary['total_students'] = $attempts->count();
                     $summary['avg_score'] = $attempts->avg('score');
                     $summary['max_score'] = $attempts->max('score');
                     $summary['min_score'] = $attempts->min('score');
-                    $summary['passed'] = $attempts->where('score', '>=', 75)->count(); // Assuming KKM 75 for now, or dynamic?
+                    $summary['passed'] = $attempts->where('score', '>=', 75)->count(); 
                     $summary['failed'] = $attempts->where('score', '<', 75)->count();
                 }
             }
         }
 
-        return view('admin.recap.exam_result', compact('examSessions', 'selectedSession', 'attempts', 'summary'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.recap.exam_result', compact('examSessions', 'selectedSession', 'attempts', 'summary', 'baseRoute'));
     }
 
     public function printExamResult(Request $request)
@@ -78,30 +80,21 @@ class RecapController extends Controller
             abort(404);
         }
 
-        // Security Check: Verify user can access this session
-        // Logic: 
-        // 1. If Teacher: Session's Subject must be one of Teacher's subjects OR Session owned by Teacher (if supported)
-        // 2. If Admin/Operator: Session's Subject must be owned by Admin (creatorId)
-        
         $hasAccess = false;
         if ($user->role === 'pengajar') {
-             // Check if subject is assigned to teacher or created by them (if applicable, though subjects usually admin's)
-             // Simplified: Check if subject_id is in user's assigned subjects
-             // Note: In typical logic, Teacher can only view sessions for their subjects.
              $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
              if (in_array($selectedSession->subject_id, $allowedSubjectIds)) {
                  $hasAccess = true;
              }
         } else {
-             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
-             // Check if session's subject is created by this Admin
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
              if ($selectedSession->subject->created_by == $creatorId) {
                  $hasAccess = true;
              }
         }
 
         if (!$hasAccess && $user->role !== 'super_admin') {
-            abort(403, 'Unauthorized access to this exam session.');
+            abort(403, 'Unauthorized access.');
         }
 
         $attempts = $selectedSession->attempts()
@@ -109,16 +102,12 @@ class RecapController extends Controller
             ->orderByDesc('score')
             ->get();
 
-
-        // Fix: Get Institution from Session Owner (Subject Creator -> User -> Institution)
-        // OR get from the current User's institution (since they must be related to view it)
-        // Best approach: Get Institution of the Admin who owns the Subject.
         $subjectOwnerId = $selectedSession->subject->created_by;
         $institution = \App\Models\Institution::where('user_id', $subjectOwnerId)->first();
 
         if (!$institution) {
-             // Fallback current user
-             $institution = \App\Models\Institution::where('user_id', $user->id)->first();
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+             $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
         }
 
         return view('admin.recap.print_exam_result', compact('selectedSession', 'attempts', 'institution'));

@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class ExamPackageController extends Controller
 {
+    protected function getBaseRoute()
+    {
+        return auth()->user()->role === 'pengajar' ? 'pengajar.exam_package' : 'admin.exam_package';
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -21,10 +26,12 @@ class ExamPackageController extends Controller
             $packages = ExamPackage::whereIn('subject_id', $subjects)->with(['subject', 'questions'])->latest()->paginate(10);
         } else {
             // Admin Lembaga: Only packages for their subjects
-            $subjects = Subject::where('created_by', $user->id)->pluck('id');
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->pluck('id');
             $packages = ExamPackage::whereIn('subject_id', $subjects)->with(['subject', 'questions'])->latest()->paginate(10);
         }
-        return view('admin.exam_package.index', compact('packages'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.exam_package.index', compact('packages', 'baseRoute'));
     }
 
     /**
@@ -36,9 +43,11 @@ class ExamPackageController extends Controller
         if ($user->role === 'pengajar') {
             $subjects = $user->subjects;
         } else {
-            $subjects = Subject::where('created_by', $user->id)->get();
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->get();
         }
-        return view('admin.exam_package.create', compact('subjects'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.exam_package.create', compact('subjects', 'baseRoute'));
     }
 
     /**
@@ -62,7 +71,7 @@ class ExamPackageController extends Controller
         $data['created_by'] = auth()->id();
         $package = ExamPackage::create($data);
 
-        return redirect()->route('admin.exam_package.show', $package->id)
+        return redirect()->route($this->getBaseRoute() . '.show', $package->id)
             ->with('success', 'Paket soal berhasil dibuat. Silakan tambahkan soal.');
     }
 
@@ -71,6 +80,12 @@ class ExamPackageController extends Controller
      */
     public function show(Request $request, ExamPackage $examPackage)
     {
+        // Security check for Pengajar
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($examPackage->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
+
         $examPackage->load(['subject', 'questions']);
 
         $query = Question::where('subject_id', $examPackage->subject_id);
@@ -81,8 +96,9 @@ class ExamPackageController extends Controller
 
         // Limit to 200 to prevent crash, let user search specifically
         $questions = $query->latest()->limit(200)->get();
+        $baseRoute = $this->getBaseRoute();
 
-        return view('admin.exam_package.show', compact('examPackage', 'questions'));
+        return view('admin.exam_package.show', compact('examPackage', 'questions', 'baseRoute'));
     }
 
     /**
@@ -112,9 +128,11 @@ class ExamPackageController extends Controller
             }
             $subjects = $user->subjects;
         } else {
-            $subjects = Subject::where('created_by', $user->id)->get();
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->get();
         }
-        return view('admin.exam_package.edit', compact('examPackage', 'subjects'));
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.exam_package.edit', compact('examPackage', 'subjects', 'baseRoute'));
     }
 
     /**
@@ -136,7 +154,7 @@ class ExamPackageController extends Controller
 
         $examPackage->update($request->all());
 
-        return redirect()->route('admin.exam_package.index')->with('success', 'Paket soal berhasil diperbarui.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Paket soal berhasil diperbarui.');
     }
 
     /**
@@ -145,7 +163,7 @@ class ExamPackageController extends Controller
     public function destroy(ExamPackage $examPackage)
     {
         $examPackage->delete();
-        return redirect()->back()->with('success', 'Paket soal berhasil dihapus.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Paket soal berhasil dihapus.');
     }
 
     /**

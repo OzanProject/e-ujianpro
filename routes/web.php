@@ -111,6 +111,7 @@ Route::prefix('siswa')->name('student.')->group(function () {
         Route::get('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'confirmation']); // Fallback for refresh
         Route::get('exam/{id}/show', [App\Http\Controllers\Student\ExamController::class, 'show'])->name('exam.show');
         Route::post('exam/store-answer', [App\Http\Controllers\Student\ExamController::class, 'storeAnswer'])->name('exam.store_answer');
+        Route::post('exam/report-cheat', [App\Http\Controllers\Student\ExamController::class, 'reportCheat'])->name('exam.report_cheat');
         Route::post('exam/{id}/finish', [App\Http\Controllers\Student\ExamController::class, 'finish'])->name('exam.finish');
 
         // History Routes
@@ -121,7 +122,7 @@ Route::prefix('siswa')->name('student.')->group(function () {
 
 // 5a. Route for Student Area (Subdomain / Institution Specific)
 // Matches: http://127.0.0.1:8000/smpn4kdp/siswa/dashboard
-Route::prefix('{subdomain}/siswa')->name('institution.student.')->group(function () {
+Route::prefix('{subdomain}/siswa')->name('institution.student.')->middleware(['tenant'])->group(function () {
     // Guest Routes
     Route::middleware('guest:student')->group(function () {
         Route::get('login', [App\Http\Controllers\Student\AuthController::class, 'showLoginForm'])->name('login');
@@ -139,6 +140,7 @@ Route::prefix('{subdomain}/siswa')->name('institution.student.')->group(function
         Route::get('exam/{id}/start', [App\Http\Controllers\Student\ExamController::class, 'confirmation']); // Fallback for refresh
         Route::get('exam/{id}/show', [App\Http\Controllers\Student\ExamController::class, 'show'])->name('exam.show');
         Route::post('exam/store-answer', [App\Http\Controllers\Student\ExamController::class, 'storeAnswer'])->name('exam.store_answer');
+        Route::post('exam/report-cheat', [App\Http\Controllers\Student\ExamController::class, 'reportCheat'])->name('exam.report_cheat');
         Route::post('exam/{id}/finish', [App\Http\Controllers\Student\ExamController::class, 'finish'])->name('exam.finish');
 
         // History Routes
@@ -153,7 +155,7 @@ Route::get('/portal', function () {
 })->name('portal');
 
 // Institution Specific Routes (White Label)
-Route::group(['prefix' => '{subdomain}'], function () {
+Route::group(['prefix' => '{subdomain}', 'middleware' => ['tenant']], function () {
     // Admin/Staff Login
     Route::get('/login', [App\Http\Controllers\InstitutionLandingController::class, 'login'])->name('institution.login');
     Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']); // Handle POST same as generic
@@ -162,7 +164,7 @@ Route::group(['prefix' => '{subdomain}'], function () {
     Route::get('/', [App\Http\Controllers\InstitutionLandingController::class, 'index'])->name('institution.landing');
 });
 
-Route::group(['prefix' => '{subdomain}/proctor', 'middleware' => ['auth', 'role:proctor'], 'as' => 'proctor.'], function () {
+Route::group(['prefix' => '{subdomain}/proctor', 'middleware' => ['auth', 'role:proctor,admin_lembaga,pengajar,operator', 'tenant'], 'as' => 'proctor.'], function () {
     Route::get('/dashboard', [\App\Http\Controllers\Proctor\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/monitor/{session}', [\App\Http\Controllers\Proctor\MonitorController::class, 'show'])->name('monitor.show');
     Route::get('/monitor/{session}/data', [\App\Http\Controllers\Proctor\MonitorController::class, 'getData'])->name('monitor.data');
@@ -171,6 +173,46 @@ Route::group(['prefix' => '{subdomain}/proctor', 'middleware' => ['auth', 'role:
 });
 
 // Route Group untuk Pengajar (Guru)
-Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('pengajar.dashboard');
+Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Bank Soal Khusus Pengajar
+    Route::post('question/bulk-destroy', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkDestroy'])->name('question.bulk_destroy');
+    Route::post('question/upload-image', [\App\Http\Controllers\Admin\QuestionController::class, 'uploadImage'])->name('question.upload_image');
+    Route::get('question/{question}/preview', [\App\Http\Controllers\Admin\QuestionController::class, 'preview'])->name('question.preview');
+    Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('question.import');
+    Route::get('question/template', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('question.template');
+    Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('question.template.word');
+    Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class);
+
+    // Additional Teaching Resources
+    Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class);
+    Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class);
+    Route::resource('learning_material', \App\Http\Controllers\Admin\LearningMaterialController::class);
+    Route::resource('exam_package', \App\Http\Controllers\Admin\ExamPackageController::class);
+    Route::post('exam_package/{exam_package}/assign', [\App\Http\Controllers\Admin\ExamPackageController::class, 'assignQuestions'])->name('exam_package.assign');
+    Route::post('exam_package/{exam_package}/random', [\App\Http\Controllers\Admin\ExamPackageController::class, 'generateRandomQuestions'])->name('exam_package.random');
+    Route::get('exam_package/{exam_package}/preview', [\App\Http\Controllers\Admin\ExamPackageController::class, 'preview'])->name('exam_package.preview');
+
+    // Exam Sessions & Monitoring
+    Route::resource('exam_session', \App\Http\Controllers\Admin\ExamSessionController::class);
+    Route::post('exam_session/{exam_session}/regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'regenerateToken'])->name('exam_session.regenerate_token');
+    Route::get('monitoring', [\App\Http\Controllers\Admin\MonitoringController::class, 'index'])->name('monitoring.index');
+
+    // Corrections & Scoring
+    Route::get('correction', [\App\Http\Controllers\Admin\ExamCorrectionController::class, 'index'])->name('correction.index');
+    Route::get('correction/{session}', [\App\Http\Controllers\Admin\ExamCorrectionController::class, 'show'])->name('correction.show');
+    Route::get('correction/{attempt}/grade', [\App\Http\Controllers\Admin\ExamCorrectionController::class, 'edit'])->name('correction.edit');
+    Route::put('correction/{attempt}', [\App\Http\Controllers\Admin\ExamCorrectionController::class, 'update'])->name('correction.update');
+
+    // Reports & Analytics
+    Route::get('report', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('report.index');
+    Route::get('report/exam-schedule', [\App\Http\Controllers\Admin\ReportController::class, 'examSchedule'])->name('report.exam_schedule');
+    Route::get('report/exam-schedule/print', [\App\Http\Controllers\Admin\ReportController::class, 'printExamSchedule'])->name('report.print_exam_schedule');
+    Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('report.attendance.index');
+    Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('report.attendance.print');
+    
+    // Recap results
+    Route::get('recap/exam-result', [\App\Http\Controllers\Admin\RecapController::class, 'examResult'])->name('recap.exam_result');
+    Route::get('recap/exam-result/print', [\App\Http\Controllers\Admin\RecapController::class, 'printExamResult'])->name('recap.print_exam_result');
 });

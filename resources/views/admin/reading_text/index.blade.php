@@ -7,7 +7,7 @@
             <div class="card-header">
                 <h3 class="card-title">Daftar Bacaan / Wacana Soal</h3>
                 <div class="card-tools">
-                    <a href="{{ route('admin.reading_text.create') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Bacaan
                     </a>
                 </div>
@@ -34,10 +34,10 @@
                                 <td>{{ $text->title }}</td>
                                 <td>{{ Str::limit(strip_tags($text->content), 100) }}</td>
                                 <td>
-                                    <form action="{{ route('admin.reading_text.destroy', $text->id) }}" method="POST" onsubmit="return confirm('Hapus bacaan ini?');">
+                                    <form action="{{ route($baseRoute . '.destroy', $text->id) }}" method="POST" onsubmit="return confirm('Hapus bacaan ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <a href="{{ route('admin.reading_text.edit', $text->id) }}" class="btn btn-warning btn-xs"><i class="fas fa-edit"></i> Edit</a>
+                                        <a href="{{ route($baseRoute . '.edit', $text->id) }}" class="btn btn-warning btn-xs"><i class="fas fa-edit"></i> Edit</a>
                                         <button type="submit" class="btn btn-danger btn-xs"><i class="fas fa-trash"></i> Hapus</button>
                                     </form>
                                 </td>

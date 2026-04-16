@@ -13,7 +13,7 @@
                     <p class="text-muted text-sm mb-0">Kelola sesi ujian, waktu, dan token akses siswa.</p>
                 </div>
                 <div>
-                    <a href="{{ route('admin.exam_session.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4 font-weight-bold">
+                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4 font-weight-bold">
                         <i class="fas fa-plus mr-2"></i> Buat Jadwal Baru
                     </a>
                 </div>
@@ -74,7 +74,7 @@
                                     <td class="px-4 py-3 text-center">
                                         <div class="bg-light rounded py-1 px-2 border d-inline-flex align-items-center justify-content-center">
                                             <span class="font-weight-bolder text-dark text-sm mr-2" style="letter-spacing: 2px;">{{ $session->token ?? '---' }}</span>
-                                            <form action="{{ route('admin.exam_session.regenerate_token', $session->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Regenerate Token?');">
+                                            <form action="{{ route($baseRoute . '.regenerate_token', $session->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Regenerate Token?');">
                                                 @csrf
                                                 <button type="submit" class="btn btn-link text-primary p-0 m-0" title="Refresh Token">
                                                     <i class="fas fa-sync-alt fa-xs"></i>
@@ -91,10 +91,13 @@
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="d-flex justify-content-center">
-                                            <a href="{{ route('admin.exam_session.edit', $session->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit Jadwal" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                            <a href="{{ route('proctor.monitor.show', ['subdomain' => request()->route('subdomain') ?? ($globalInstitution->subdomain ?? 'portal'), 'session' => $session->id]) }}" class="btn btn-sm btn-outline-primary rounded-circle mr-2 shadow-sm" title="Monitor Ujian" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-desktop text-xs"></i>
+                                            </a>
+                                            <a href="{{ route($baseRoute . '.edit', $session->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit Jadwal" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                 <i class="fas fa-pencil-alt text-xs"></i>
                                             </a>
-                                            <form action="{{ route('admin.exam_session.destroy', $session->id) }}" method="POST" onsubmit="return confirm('Hapus jadwal ujian ini?');">
+                                            <form action="{{ route($baseRoute . '.destroy', $session->id) }}" method="POST" onsubmit="return confirm('Hapus jadwal ujian ini?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">

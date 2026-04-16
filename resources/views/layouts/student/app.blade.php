@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="{{ asset('plugins/fontawesome-free/css/all.min.css') }}">
     <!-- Theme style -->
     <link rel="stylesheet" href="{{ asset('dist/css/adminlte.min.css') }}">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f4f6f9; }
         .navbar-light { background-color: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-bottom: none; }

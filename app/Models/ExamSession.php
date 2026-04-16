@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ExamSession extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'subject_id',

@@ -9,16 +9,43 @@ use Illuminate\Http\Request;
 
 class QuestionGroupController extends Controller
 {
+    protected function getBaseRoute()
+    {
+        return auth()->user()->role === 'pengajar' ? 'pengajar.question_group' : 'admin.question_group';
+    }
+
     public function index()
     {
-        $questionGroups = QuestionGroup::with('subject')->latest()->paginate(10);
-        return view('admin.question_group.index', compact('questionGroups'));
+        $user = auth()->user();
+        $query = QuestionGroup::with('subject')->latest();
+
+        if ($user->role === 'pengajar') {
+            $query->whereIn('subject_id', $user->subjects->pluck('id'));
+        } else {
+            // Admin/Operator: Filter by their subjects
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjectIds = Subject::where('created_by', $creatorId)->pluck('id');
+            $query->whereIn('subject_id', $subjectIds);
+        }
+
+        $questionGroups = $query->paginate(10);
+        $baseRoute = $this->getBaseRoute();
+
+        return view('admin.question_group.index', compact('questionGroups', 'baseRoute'));
     }
 
     public function create()
     {
-        $subjects = Subject::all();
-        return view('admin.question_group.create', compact('subjects'));
+        $user = auth()->user();
+        if ($user->role === 'pengajar') {
+            $subjects = $user->subjects;
+        } else {
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->get();
+        }
+
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.question_group.create', compact('subjects', 'baseRoute'));
     }
 
     public function store(Request $request)
@@ -28,15 +55,36 @@ class QuestionGroupController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        QuestionGroup::create($request->all());
+        $user = auth()->user();
+        // Security check
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
 
-        return redirect()->route('admin.question_group.index')->with('success', 'Grup soal berhasil ditambahkan.');
+        QuestionGroup::create([
+            'subject_id' => $request->subject_id,
+            'name' => $request->name,
+            'created_by' => $user->id
+        ]);
+
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Grup soal berhasil ditambahkan.');
     }
 
     public function edit(QuestionGroup $questionGroup)
     {
-        $subjects = Subject::all();
-        return view('admin.question_group.edit', compact('questionGroup', 'subjects'));
+        $user = auth()->user();
+        if ($user->role === 'pengajar') {
+            if (!$user->subjects->contains($questionGroup->subject_id)) {
+                abort(403, 'Akses Ditolak.');
+            }
+            $subjects = $user->subjects;
+        } else {
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->get();
+        }
+
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.question_group.edit', compact('questionGroup', 'subjects', 'baseRoute'));
     }
 
     public function update(Request $request, QuestionGroup $questionGroup)
@@ -46,14 +94,24 @@ class QuestionGroupController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
+
         $questionGroup->update($request->all());
 
-        return redirect()->route('admin.question_group.index')->with('success', 'Grup soal berhasil diperbarui.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Grup soal berhasil diperbarui.');
     }
 
     public function destroy(QuestionGroup $questionGroup)
     {
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($questionGroup->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
+
         $questionGroup->delete();
-        return redirect()->back()->with('success', 'Grup soal berhasil dihapus.');
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Grup soal berhasil dihapus.');
     }
 }

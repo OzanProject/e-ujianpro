@@ -9,7 +9,7 @@
     <div class="col-md-12 mb-4">
         <div class="card border-0 shadow-sm" style="border-radius: 16px;">
             <div class="card-body p-4">
-                <form action="{{ route('admin.recap.exam_result') }}" method="GET" id="filterForm">
+                <form action="{{ route($baseRoute . '.exam_result') }}" method="GET" id="filterForm">
                     <div class="d-flex flex-column flex-md-row gap-3 align-items-end">
                         <div class="flex-grow-1 w-100">
                             <label class="font-weight-bold text-muted mb-2">Pilih Sesi Ujian</label>
@@ -40,7 +40,7 @@
     <div class="col-12 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold m-0 text-dark">Ringkasan Hasil</h4>
-            <a href="{{ route('admin.recap.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
+            <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
                 <i class="fas fa-print mr-2"></i> Cetak Laporan
             </a>
         </div>
@@ -197,100 +197,3 @@
     });
 </script>
 @endpush
-@section('title', 'Rekap Hasil Ujian')
-@section('page_title', 'Rekap Hasil Ujian')
-
-@section('content')
-<div class="row">
-    <div class="col-md-12">
-        <div class="card card-outline card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Filter Sesi Ujian</h3>
-            </div>
-            <div class="card-body">
-                <form action="{{ route('admin.recap.exam_result') }}" method="GET">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <label>Pilih Sesi Ujian</label>
-                                <select name="exam_session_id" class="form-control select2" required>
-                                    <option value="">-- Pilih Sesi --</option>
-                                    @foreach($examSessions as $session)
-                                        <option value="{{ $session->id }}" {{ request('exam_session_id') == $session->id ? 'selected' : '' }}>
-                                            {{ $session->subject->name ?? 'Unknown Subject' }} - {{ $session->title }} ({{ \Carbon\Carbon::parse($session->start_time)->format('d M Y H:i') }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>&nbsp;</label>
-                                <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> Tampilkan Hasil</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        @if($selectedSession)
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    Detail Hasil: <strong>{{ $selectedSession->subject->name ?? '-' }} - {{ $selectedSession->title }}</strong>
-                </h3>
-                <div class="card-tools">
-                    @if($attempts->count() > 0)
-                        <a href="{{ route('admin.recap.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-tool text-success">
-                            <i class="fas fa-print"></i> Cetak Rekap
-                        </a>
-                    @endif
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th style="width: 10px">#</th>
-                            <th>Nama Peserta</th>
-                            <th>NIS</th>
-                            <th>Kelompok/Kelas</th>
-                            <th class="text-center">Benar</th>
-                            <th class="text-center">Salah</th>
-                            <th class="text-center">Nilai Akhir</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($attempts as $attempt)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $attempt->student->name }}</td>
-                                <td>{{ $attempt->student->nis ?? '-' }}</td>
-                                <td>
-                                    {{ $attempt->student->group->name ?? '-' }}
-                                    @if($attempt->student->kelas)
-                                        <small class="text-muted">({{ $attempt->student->kelas }})</small>
-                                    @endif
-                                </td>
-                                <td class="text-center text-success">{{ $attempt->answers->where('is_correct', true)->count() }}</td>
-                                <td class="text-center text-danger">{{ $attempt->answers->where('is_correct', false)->count() }}</td>
-                                <td class="text-center">
-                                    <span class="badge {{ $attempt->score >= 75 ? 'badge-success' : 'badge-warning' }}" style="font-size: 1.1em">
-                                        {{ $attempt->score }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center">Belum ada data peserta yang mengerjakan ujian ini.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
-@endsection

@@ -17,6 +17,11 @@ class QuestionsImport implements ToCollection, WithHeadingRow
         $this->subjectId = $subjectId;
     }
 
+    public function headingRow(): int
+    {
+        return 7; // Header starts at row 7 in the new professional template
+    }
+
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
@@ -36,26 +41,29 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                         }
                     }
 
-                    // Find Reading Text by Code
-                    $readingTextId = null;
-                    if (isset($row['kode_bacaan']) && !empty($row['kode_bacaan'])) {
-                         $rt = \App\Models\ReadingText::where('code', trim($row['kode_bacaan']))->first();
-                         if ($rt) {
-                             $readingTextId = $rt->id;
-                         }
+                    // Metadata: Difficulty
+                    $difficulty = 'easy';
+                    if (isset($row['tingkat_kesulitan'])) {
+                        $diffInput = strtolower(trim($row['tingkat_kesulitan']));
+                        if (in_array($diffInput, ['easy', 'medium', 'hard'])) {
+                            $difficulty = $diffInput;
+                        }
                     }
 
-                    // Find/Create Question Group
-                    $questionGroupId = null;
-                    if (isset($row['grup_soal']) && !empty($row['grup_soal'])) {
-                        $groupName = trim($row['grup_soal']);
-                        // Scope to Subject! Migration requires subject_id
-                        $group = \App\Models\QuestionGroup::firstOrCreate([
-                            'name' => $groupName, 
-                            'subject_id' => $this->subjectId // Added subject_id
+                    // Auto Create Reading Text (Petunjuk/Bacaan)
+                    $readingTextId = null;
+                    if (isset($row['petunjuk_bacaan']) && !empty(trim($row['petunjuk_bacaan']))) {
+                        $rt = \App\Models\ReadingText::create([
+                            'subject_id' => $this->subjectId,
+                            'title' => 'Petunjuk Teks Ekstraksi Excel',
+                            'code' => 'PET-XLS-' . time() . '-' . uniqid(),
+                            'content' => nl2br(trim($row['petunjuk_bacaan']))
                         ]);
-                        $questionGroupId = $group->id;
+                        $readingTextId = $rt->id;
                     }
+
+                    // Grup Soal diabaikan sementara untuk simplifikasi template
+                    $questionGroupId = null;
 
                     // Create Question
                     $question = Question::create([
@@ -64,7 +72,20 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                         'question_group_id' => $questionGroupId,
                         'content' => $row['soal'],
                         'type' => $type,
+                        'difficulty' => $difficulty,
+                        'created_by' => auth()->id(),
                     ]);
+
+                    // Handle Tags
+                    if (isset($row['tags']) && !empty($row['tags'])) {
+                        $tagNames = array_map('trim', explode(',', $row['tags']));
+                        $tagIds = [];
+                        foreach ($tagNames as $name) {
+                            $tag = \App\Models\Tag::firstOrCreate(['name' => $name]);
+                            $tagIds[] = $tag->id;
+                        }
+                        $question->tags()->sync($tagIds);
+                    }
 
                     // Create Options if Multiple Choice
                     if ($type === 'multiple_choice') {

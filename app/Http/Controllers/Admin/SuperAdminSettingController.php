@@ -18,8 +18,9 @@ class SuperAdminSettingController extends Controller
         $contentPrivacy = Setting::getValue('content_privacy', '');
         $contentTerms = Setting::getValue('content_terms', '');
         $contentContact = Setting::getValue('content_contact', '');
+        $tinymceApiKey = Setting::getValue('tinymce_api_key', '');
         
-        return view('super_admin.settings.index', compact('pointPrice', 'bankAccounts', 'appName', 'appLogo', 'appWhatsapp', 'contentPrivacy', 'contentTerms', 'contentContact'));
+        return view('super_admin.settings.index', compact('pointPrice', 'bankAccounts', 'appName', 'appLogo', 'appWhatsapp', 'contentPrivacy', 'contentTerms', 'contentContact', 'tinymceApiKey'));
     }
 
     public function update(Request $request)
@@ -38,12 +39,14 @@ class SuperAdminSettingController extends Controller
             'content_terms' => 'nullable|string',
             'content_contact' => 'nullable|string',
             'app_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'tinymce_api_key' => 'nullable|string|max:255',
         ]);
 
         // Save Price
         Setting::setValue('point_price', $request->point_price);
         Setting::setValue('app_name', $request->app_name);
         Setting::setValue('app_whatsapp', $request->app_whatsapp);
+        Setting::setValue('tinymce_api_key', $request->tinymce_api_key);
         
         // Save Page Content
         Setting::setValue('content_privacy', $request->content_privacy);

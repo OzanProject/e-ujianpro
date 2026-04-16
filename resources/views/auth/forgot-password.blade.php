@@ -1,81 +1,69 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lupa Password | {{ $globalInstitution->name ?? 'E-Ujian PRO' }}</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ $globalInstitution && $globalInstitution->logo ? asset('storage/' . $globalInstitution->logo) : asset('favicon.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-50 bg-[url('https://s3.ap-southeast-1.amazonaws.com/cdn.e-ujian.com/static-assets/images/bg-auth.png')] bg-cover bg-center min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="text-center">
-             <img class="mx-auto h-16 w-auto object-contain" src="{{ $globalInstitution && $globalInstitution->logo ? asset('storage/' . $globalInstitution->logo) : asset('img/logo-placeholder.png') }}" alt="Logo">
-            <h2 class="mt-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                Reset Password
-            </h2>
-             <p class="mt-2 text-center text-sm text-gray-600">
-                Masukkan email Anda untuk menerima link reset password
+@extends('layouts.guest')
+
+@section('title', 'Lupa Password | ' . ($globalInstitution->name ?? 'E-Ujian PRO'))
+
+@section('header_title', 'Lupa Password?')
+@section('header_subtitle', 'Masukkan email Anda dan kami akan mengirimkan link untuk mengatur ulang password.')
+
+@section('content')
+
+{{-- Notifikasi sukses --}}
+@if (session('status'))
+    <div class="mb-6 flex items-center gap-3 p-4 rounded-2xl bg-green-50 border border-green-200 text-sm font-semibold text-green-700">
+        <svg class="h-5 w-5 flex-shrink-0 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        {{ session('status') }}
+    </div>
+@endif
+
+<div class="mb-6 flex items-start gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-100 text-xs font-medium text-blue-800">
+    <svg class="h-5 w-5 flex-shrink-0 text-blue-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    Pastikan email yang Anda masukkan terdaftar di sistem kami untuk menerima instruksi selanjutnya.
+</div>
+
+<form method="POST" action="{{ route('password.email') }}" class="space-y-5">
+    @csrf
+
+    <div>
+        <label for="email" class="block text-sm font-bold text-gray-700 mb-2">Alamat Email Terdaftar</label>
+        <div class="flex items-center rounded-2xl border @error('email') border-red-400 bg-red-50 @else border-gray-200 bg-gray-50 @enderror transition-all duration-200 focus-within:border-indigo-400 focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.1)]">
+            <span class="pl-4 pr-2 text-gray-400 flex-shrink-0">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </span>
+            <input id="email" name="email" type="email" autocomplete="email" required
+                   value="{{ old('email') }}"
+                   class="flex-1 bg-transparent py-3.5 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none border-0 ring-0"
+                   placeholder="nama@email.com" autofocus>
+        </div>
+        @error('email')
+            <p class="mt-1.5 flex items-center gap-1 text-xs font-semibold text-red-600">
+                <svg class="h-3.5 w-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                {{ $message }}
             </p>
-        </div>
+        @enderror
     </div>
 
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white/90 backdrop-blur-sm py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-white/50">
-            
-            <div class="mb-4 text-sm text-gray-600">
-                {{ __('Lupa password Anda? Tidak masalah. Beri tahu kami alamat email Anda dan kami akan mengirimkan tautan reset password.') }}
-            </div>
-
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
-
-            <form class="space-y-6" action="{{ route('password.email') }}" method="POST">
-                @csrf
-
-                <!-- Email Address -->
-                 <div>
-                    <label for="email" class="block text-sm font-medium leading-6 text-gray-900">Email</label>
-                    <div class="mt-2">
-                        <input id="email" name="email" type="email" autocomplete="email" required value="{{ old('email') }}" class="block w-full rounded-lg border-0 py-2.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition duration-200">
-                         @error('email')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div>
-                    <button type="submit" class="flex w-full justify-center rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:from-blue-500 hover:to-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition duration-200 transform hover:scale-[1.02]">
-                        {{ __('Kirim Link Reset Password') }}
-                    </button>
-                </div>
-            </form>
-
-            <div class="mt-8">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="bg-white px-2 text-gray-500">Ingat password?</span>
-                    </div>
-                </div>
-
-                <div class="mt-6 text-center">
-                    <a href="{{ route('login') }}" class="font-medium text-blue-600 hover:text-blue-500 transition">
-                        Kembali ke Login
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-         <p class="mt-6 text-center text-xs text-gray-500">
-            &copy; {{ date('Y') }} {{ $globalInstitution->name ?? 'E-Ujian PRO' }}
-        </p>
+    <div class="pt-1">
+        <button type="submit" class="premium-btn w-full flex justify-center items-center gap-2 rounded-2xl px-6 py-4 text-base font-bold text-white transition duration-300">
+            <span>Kirim Link Reset Password</span>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+        </button>
     </div>
-</body>
-</html>
+</form>
+
+<div class="mt-10 pt-8 border-t border-gray-100 flex justify-center">
+    <a href="{{ route('login') }}" class="text-sm font-bold text-gray-400 hover:text-indigo-600 transition inline-flex items-center gap-2 group">
+        <svg class="w-4 h-4 transform transition group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Kembali ke Login
+    </a>
+</div>
+@endsection

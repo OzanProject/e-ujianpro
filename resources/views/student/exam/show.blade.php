@@ -57,6 +57,10 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             overflow: hidden;
             margin-bottom: 2rem;
+            user-select: none; /* Anti-Copy */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .question-header {
@@ -282,6 +286,20 @@
             height: 1.2em;
             accent-color: var(--warning);
         }
+        /* Responsive Images & Media in Content */
+        .question-text img, .reading-text-card img, .option-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        table {
+            width: 100% !important;
+            overflow-x: auto;
+            display: block;
+        }
     </style>
 
     <div class="exam-container">
@@ -304,16 +322,31 @@
                             <div class="question-block" id="question-{{ $index + 1 }}"
                                 style="display: {{ $index == 0 ? 'block' : 'none' }}">
 
+                                <!-- Question Group Indicator -->
+                                @if($question->questionGroup)
+                                    <div class="mb-3">
+                                        <span class="badge badge-lg bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg border border-indigo-200">
+                                            <i class="fas fa-layer-group mr-2"></i>
+                                            Grup: <strong>{{ $question->questionGroup->name }}</strong>
+                                        </span>
+                                    </div>
+                                @endif
+
                                 <!-- Reading Text Block -->
+                                @php
+                                    $savedAnswer = $savedAnswers->get($question->id);
+                                @endphp
+                                
                                 @if($question->readingText)
-                                    <div
-                                        class="reading-text-card mb-4 p-4 bg-blue-50 border-l-4 border-indigo-500 rounded-r-lg shadow-sm">
-                                        <h6 class="font-bold text-gray-800 mb-2 border-b border-blue-200 pb-2 flex items-center">
-                                            <i class="fas fa-book-open mr-2 text-indigo-600"></i>
-                                            Bacaan: {{ $question->readingText->title }}
-                                        </h6>
-                                        <div
-                                            class="prose max-w-none text-gray-700 leading-relaxed text-sm overflow-y-auto max-h-96 pr-2 custom-scrollbar">
+                                    <div class="reading-text-card mb-4 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                        <div class="bg-slate-200 px-4 py-2 flex items-center justify-between border-bottom">
+                                            <h6 class="font-bold text-slate-700 m-0 text-sm">
+                                                <i class="fas fa-book-open mr-2 text-indigo-600"></i>
+                                                Teks Bacaan: {{ $question->readingText->title }}
+                                            </h6>
+                                            <span class="text-xs text-slate-500 font-medium">Geser untuk membaca ↓</span>
+                                        </div>
+                                        <div class="p-4 prose max-w-none text-slate-700 leading-relaxed text-sm overflow-y-auto max-h-96 custom-scrollbar bg-white">
                                             {!! $question->readingText->content !!}
                                         </div>
                                     </div>
@@ -331,7 +364,7 @@
                                             <label class="font-weight-bold mb-2">Jawaban Esai Anda:</label>
                                             <textarea class="form-control essay-input" id="essay-{{ $question->id }}" rows="6"
                                                 placeholder="Tulis jawaban Anda di sini..." data-question-id="{{ $question->id }}"
-                                                data-index="{{ $index + 1 }}">{{ isset($savedAnswers[$question->id]) ? $savedAnswers[$question->id] : '' }}</textarea>
+                                                data-index="{{ $index + 1 }}">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
                                             <small class="text-muted mt-2 d-block"><i class="fas fa-info-circle mr-1"></i> Jawaban
                                                 akan tersimpan otomatis saat Anda mengetik.</small>
                                         </div>
@@ -342,7 +375,8 @@
                                                     <input class="option-input answer-option" type="radio"
                                                         id="opt-{{ $question->id }}-{{ $option->id }}"
                                                         name="question_{{ $question->id }}" value="{{ $option->id }}"
-                                                        data-question-id="{{ $question->id }}" data-index="{{ $index + 1 }}" {{ isset($savedAnswers[$question->id]) && $savedAnswers[$question->id] == $option->id ? 'checked' : '' }}>
+                                                        data-question-id="{{ $question->id }}" data-index="{{ $index + 1 }}" 
+                                                        {{ $savedAnswer && $savedAnswer->question_option_id == $option->id ? 'checked' : '' }}>
 
                                                     <label for="opt-{{ $question->id }}-{{ $option->id }}" class="option-label">
                                                         <div class="option-indicator"></div>
@@ -386,11 +420,13 @@
                     <div class="nav-grid">
                         @foreach($questions as $index => $question)
                             @php
+                                $ans = $savedAnswers->get($question->id);
                                 $statusClass = '';
-                                if (isset($savedAnswers[$question->id])) {
+                                if ($ans) {
                                     $statusClass = 'answered';
-                                    // Note: We don't have is_doubtful in savedAnswers array yet (needs controller update to pass it ideally)
-                                    // For now, simple answered/active logic
+                                    if ($ans->is_doubtful) {
+                                        $statusClass = 'doubtful';
+                                    }
                                 }
                             @endphp
                             <button class="nav-item-btn {{ $statusClass }}" id="nav-{{ $index + 1 }}"
@@ -498,6 +534,14 @@
                 // Update prev button handler
                 document.getElementById('prev-btn').onclick = function () { changeQuestion(window.currentQuestion - 1); };
 
+                // Get current question status (doubtful/answered) for UI
+                const currentBlock = document.getElementById('question-' + window.currentQuestion);
+                const questionId = document.querySelector(`#question-${window.currentQuestion} [data-question-id]`).getAttribute('data-question-id');
+                const navBtn = document.getElementById('nav-' + window.currentQuestion);
+                
+                // Set ragu-check state based on nav button class
+                document.getElementById('ragu-check').checked = navBtn.classList.contains('doubtful');
+
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -582,11 +626,29 @@
             const raguCheck = document.getElementById('ragu-check');
             raguCheck.addEventListener('change', function () {
                 const navBtn = document.getElementById('nav-' + window.currentQuestion);
+                const questionBlock = document.getElementById('question-' + window.currentQuestion);
+                const questionId = questionBlock.querySelector('[data-question-id]').getAttribute('data-question-id');
+                
                 if (this.checked) {
                     navBtn.classList.add('doubtful');
                 } else {
                     navBtn.classList.remove('doubtful');
                 }
+
+                // Save to DB
+                const url = '{{ request()->route("subdomain") ? route("institution.student.exam.store_answer", request()->route("subdomain")) : route("student.exam.store_answer") }}';
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        exam_session_id: '{{ $session->id }}',
+                        question_id: questionId,
+                        is_doubtful: this.checked
+                    })
+                }).catch(err => console.error('Error saving doubtful state:', err));
             });
 
             // Finish Exam
@@ -598,20 +660,82 @@
                 }
             }
 
-            // Anti-Cheat: Visibility Check & Focus Loss (Mobile Friendly)
+            // Anti-Cheat: Advanced Protection Logic
+            let cheatCount = 0;
+            const maxCheat = 3;
+            let lastCheatTime = 0; // Tracking for cooldown
+
+            function reportCheat(triggerType) {
+                const now = Date.now();
+                // Prevent double counting if multiple events trigger at once (e.g. blur + visibilitychange)
+                // 3 seconds cooldown
+                if (now - lastCheatTime < 3000) return;
+                
+                lastCheatTime = now;
+                cheatCount++;
+
+                // Send report to server
+                const url = '{{ request()->route("subdomain") ? route("institution.student.exam.report_cheat", request()->route("subdomain")) : route("student.exam.report_cheat") }}';
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        exam_session_id: '{{ $session->id }}'
+                    })
+                }).catch(err => console.error('Reporting error:', err));
+                
+                if (cheatCount >= maxCheat) {
+                    Swal.fire({
+                        title: 'DISKUALIFIKASI!',
+                        text: 'Anda telah melanggar aturan ujian lebih dari ' + (maxCheat - 1) + ' kali. Ujian dihentikan secara otomatis.',
+                        icon: 'error',
+                        allowOutsideClick: false,
+                        confirmButtonText: 'Keluar'
+                    }).then(() => {
+                        forceFinishExam();
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'PERINGATAN KECURANGAN!',
+                    html: `Dilarang meninggalkan halaman ujian!<br><br>` + 
+                          `<div class="p-3 bg-red-100 text-red-700 rounded-lg">` +
+                          `Pelanggaran: <b>${cheatCount}</b> / ${maxCheat}<br>` +
+                          `Status: <b>Terdeteksi Pindah Tab/Aplikasi</b>` +
+                          `</div><br>` +
+                          `<span class="text-sm text-gray-500">Jika Anda melanggar ${maxCheat} kali, ujian akan diselesaikan otomatis.</span>`,
+                    icon: 'warning',
+                    confirmButtonText: 'Saya Mengerti, Lanjutkan Ujian',
+                    allowOutsideClick: false,
+                    backdrop: `rgba(239, 68, 68, 0.4)` // Red blurred backdrop
+                });
+            }
+
+            function forceFinishExam() {
+                const form = document.getElementById('finish-form');
+                form.action = '{{ request()->route("subdomain") ? route("institution.student.exam.finish", ["subdomain" => request()->route("subdomain"), "id" => $session->id]) : route("student.exam.finish", $session->id) }}';
+                form.submit();
+            }
+
+            // Detect Visibility Change (Tab Switch)
             document.addEventListener("visibilitychange", function () {
                 if (document.hidden) {
-                    console.warn("Tab switch detected (Hidden)!");
-                    // Optional: Send log to server or alert user
-                    // alert("Dilarang berpindah tab selama ujian!");
+                    reportCheat('visibility');
                 }
             });
 
-            // Fallback for some mobile browsers that might not trigger visibilitychange on app switch
+            // Detect Focus Loss (Application Switch / Split Screen)
             window.addEventListener("blur", function () {
-                console.warn("Window focus lost (Blur)!");
-                // Optional: Send log to server or alert user
-                // alert("Dilarang berpindah aplikasi/tab selama ujian!");
+                // Short delay to prevent accidental blur triggers (e.g. system notifications)
+                setTimeout(() => {
+                    if (!document.hasFocus()) {
+                        reportCheat('blur');
+                    }
+                }, 500);
             });
 
             // Anti-Cheat: Prevent Right Click

@@ -13,6 +13,7 @@ class ExamAttempt extends Model
         'end_time',
         'score',
         'status',
+        'cheat_count',
     ];
 
     protected $casts = [

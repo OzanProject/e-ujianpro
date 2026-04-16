@@ -9,7 +9,7 @@
     <div class="col-md-12 mb-4">
         <div class="card border-0 shadow-sm" style="border-radius: 16px;">
             <div class="card-body p-4">
-                <form action="{{ route('admin.report.exam_schedule') }}" method="GET">
+                <form action="{{ route($baseRoute . '.exam_schedule') }}" method="GET">
                     <div class="row align-items-end">
                         <div class="col-md-4 mb-3 mb-md-0">
                             <label class="font-weight-bold text-muted mb-2">Dari Tanggal</label>
@@ -36,7 +36,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold m-0 text-dark">Ringkasan Rentang Waktu Ini</h4>
             @if($sessions->count() > 0)
-            <a href="{{ route('admin.report.print_exam_schedule', ['start_date' => $startDate, 'end_date' => $endDate]) }}" target="_blank" class="btn btn-outline-success">
+            <a href="{{ route($baseRoute . '.print_exam_schedule', ['start_date' => $startDate, 'end_date' => $endDate]) }}" target="_blank" class="btn btn-outline-success">
                 <i class="fas fa-print mr-2"></i> Cetak Jadwal
             </a>
             @endif

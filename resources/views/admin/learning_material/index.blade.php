@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.learning_material.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route($baseRoute . '.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
                         <label>Mata Pelajaran</label>
@@ -63,7 +63,7 @@
             <div class="card-header">
                 <h3 class="card-title">Daftar Materi Tersedia</h3>
                 <div class="card-tools">
-                    <form action="{{ route('admin.learning_material.index') }}" method="GET" class="input-group input-group-sm" style="width: 200px;">
+                    <form action="{{ route($baseRoute . '.index') }}" method="GET" class="input-group input-group-sm" style="width: 200px;">
                         <select name="subject_id" class="form-control float-right" onchange="this.form.submit()">
                             <option value="">Semua Mapel</option>
                             @foreach($subjects as $subject)
@@ -106,7 +106,7 @@
                                     <a href="{{ asset('storage/' . $material->file_path) }}" target="_blank" class="btn btn-xs btn-info" title="Download/Lihat">
                                         <i class="fas fa-download"></i>
                                     </a>
-                                    <form action="{{ route('admin.learning_material.destroy', $material->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus materi ini?')">
+                                    <form action="{{ route($baseRoute . '.destroy', $material->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus materi ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-danger btn-xs"><i class="fas fa-trash"></i></button>

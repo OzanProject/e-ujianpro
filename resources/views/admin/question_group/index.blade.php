@@ -6,7 +6,7 @@
             <div class="card-header">
                 <h3 class="card-title">Daftar Grup Soal</h3>
                 <div class="card-tools">
-                    <a href="{{ route('admin.question_group.create') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Grup
                     </a>
                 </div>
@@ -33,10 +33,10 @@
                                 <td>{{ $group->name }}</td>
                                 <td>{{ $group->questions_count }}</td>
                                 <td>
-                                    <form action="{{ route('admin.question_group.destroy', $group->id) }}" method="POST" onsubmit="return confirm('Hapus grup ini?');">
+                                    <form action="{{ route($baseRoute . '.destroy', $group->id) }}" method="POST" onsubmit="return confirm('Hapus grup ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <a href="{{ route('admin.question_group.edit', $group->id) }}" class="btn btn-warning btn-xs"><i class="fas fa-edit"></i> Edit</a>
+                                        <a href="{{ route($baseRoute . '.edit', $group->id) }}" class="btn btn-warning btn-xs"><i class="fas fa-edit"></i> Edit</a>
                                         <button type="submit" class="btn btn-danger btn-xs"><i class="fas fa-trash"></i> Hapus</button>
                                     </form>
                                 </td>

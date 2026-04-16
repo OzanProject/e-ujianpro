@@ -18,9 +18,8 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        // Scope to created_by (Institution)
-        $query = Student::where('created_by', auth()->user()->id)
-                        ->with(['group', 'examRoom'])
+        // Global Scope via Multitenantable automatically filters by created_by
+        $query = Student::with(['group', 'examRoom'])
                         ->latest();
 
         // Filtering
@@ -49,9 +48,9 @@ class StudentController extends Controller
         }
 
         $students = $query->paginate(10);
-        $groups = StudentGroup::where('created_by', auth()->id())->get(); // Scope Groups
+        $groups = StudentGroup::all(); // Automatically scoped via Multitenantable
         $groups = StudentGroup::sortCollection($groups);
-        $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
+        $rooms = \App\Models\ExamRoom::all(); // Automatically scoped
         
         return view('admin.student.index', compact('students', 'groups', 'rooms'));
     }
@@ -61,8 +60,8 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $groups = StudentGroup::where('created_by', auth()->id())->get();
-        $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
+        $groups = StudentGroup::all();
+        $rooms = \App\Models\ExamRoom::all();
         return view('admin.student.create', compact('groups', 'rooms'));
     }
 
@@ -118,7 +117,7 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        $student = Student::where('created_by', auth()->id())->with('examRoom')->findOrFail($id);
+        $student = Student::with('examRoom')->findOrFail($id);
         return view('admin.student.show', compact('student'));
     }
 
@@ -127,9 +126,9 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        $student = Student::where('created_by', auth()->id())->findOrFail($id);
-        $groups = StudentGroup::where('created_by', auth()->id())->get();
-        $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
+        $student = Student::findOrFail($id);
+        $groups = StudentGroup::all();
+        $rooms = \App\Models\ExamRoom::all();
         return view('admin.student.edit', compact('student', 'groups', 'rooms'));
     }
 
@@ -138,7 +137,7 @@ class StudentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $student = Student::where('created_by', auth()->id())->findOrFail($id);
+        $student = Student::findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -189,9 +188,10 @@ class StudentController extends Controller
      */
     public function destroy(string $id)
     {
+        // findOrFail is safe because of Multitenantable Global Scope
         $student = Student::findOrFail($id);
         
-        // Delete associated User account to free up username/email and prevent zombies
+        // Delete associated User account
         if ($student->user) {
             $student->user->delete();
         }
@@ -203,16 +203,19 @@ class StudentController extends Controller
 
     public function deleteAll()
     {
-        // Get all student user IDs
-        $userIds = Student::pluck('user_id');
+        // Get all student IDs for this institution only (Multitenantable Scope is active)
+        $students = Student::all();
+        $userIds = $students->pluck('user_id')->filter();
         
-        // Delete Students
+        // Delete Students (Scoped)
         Student::query()->delete();
         
-        // Delete Users
-        \App\Models\User::whereIn('id', $userIds)->delete();
+        // Delete Users (Scoped by IDs found)
+        if ($userIds->isNotEmpty()) {
+            \App\Models\User::whereIn('id', $userIds)->delete();
+        }
         
-        return redirect()->route('admin.student.index')->with('success', 'Semua data peserta berhasil dihapus.');
+        return redirect()->route('admin.student.index')->with('success', 'Semua data peserta di lembaga Anda berhasil dihapus.');
     }
 
     public function export()
@@ -223,7 +226,7 @@ class StudentController extends Controller
     public function printCards()
     {
         $students = Student::with(['group', 'examRoom'])->get(); 
-        $institution = \App\Models\Institution::first();
+        $institution = \App\Models\Institution::where('user_id', (auth()->user()->role == 'admin_lembaga' ? auth()->id() : auth()->user()->created_by))->first();
         return view('admin.student.cards', compact('students', 'institution'));
     }
 

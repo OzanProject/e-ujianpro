@@ -10,7 +10,7 @@
             <div class="card-header">
                 <h3 class="card-title">Daftar Paket Soal</h3>
                 <div class="card-tools">
-                    <a href="{{ route('admin.exam_package.create') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Buat Paket Baru
                     </a>
                 </div>
@@ -40,16 +40,16 @@
                                 <td>{{ $package->subject->name }}</td>
                                 <td>{{ $package->questions->count() }} Soal</td>
                                 <td>
-                                    <form action="{{ route('admin.exam_package.destroy', $package->id) }}" method="POST" onsubmit="return confirm('Hapus paket ini?');">
+                                    <form action="{{ route($baseRoute . '.destroy', $package->id) }}" method="POST" onsubmit="return confirm('Hapus paket ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <a href="{{ route('admin.exam_package.preview', $package->id) }}" class="btn btn-default btn-xs" title="Preview Soal">
+                                        <a href="{{ route($baseRoute . '.preview', $package->id) }}" class="btn btn-default btn-xs" title="Preview Soal">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.exam_package.show', $package->id) }}" class="btn btn-info btn-xs" title="Kelola Soal">
+                                        <a href="{{ route($baseRoute . '.show', $package->id) }}" class="btn btn-info btn-xs" title="Kelola Soal">
                                             <i class="fas fa-list"></i> Kelola
                                         </a>
-                                        <a href="{{ route('admin.exam_package.edit', $package->id) }}" class="btn btn-warning btn-xs" title="Edit Info">
+                                        <a href="{{ route($baseRoute . '.edit', $package->id) }}" class="btn btn-warning btn-xs" title="Edit Info">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <button type="submit" class="btn btn-danger btn-xs" title="Hapus">

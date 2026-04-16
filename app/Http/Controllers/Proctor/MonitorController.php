@@ -53,9 +53,10 @@ class MonitorController extends Controller
                 'student_number' => $attempt->student->nisn ?? '-', // Assuming NISN or similar
                 'start_time' => $attempt->start_time ? $attempt->start_time->format('H:i:s') : '-',
                 'status' => $attempt->status,
-                'score' => $attempt->score ?? '-',
+                'score' => is_numeric($attempt->score) ? number_format($attempt->score, 2) : ($attempt->score ?? '-'),
                 'last_activity' => $attempt->updated_at->diffForHumans(),
                 'is_online' => $attempt->updated_at->diffInMinutes(now()) < 5, // Simple online check
+                'cheat_count' => $attempt->cheat_count,
             ];
         });
 
@@ -68,6 +69,7 @@ class MonitorController extends Controller
         // Reset status to in_progress if needed
         $attempt->status = 'in_progress';
         $attempt->end_time = null; // Clear end time if set
+        $attempt->cheat_count = 0; // Reset cheating violations
         $attempt->save();
 
         return response()->json(['success' => true, 'message' => 'Login siswa berhasil di-reset.']);
