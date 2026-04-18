@@ -29,7 +29,7 @@ class ASATSeeder extends Seeder
      *
      * Akun yang dibuat:
      *   Admin : asat.admin@sekolah.com  | pass: asat1234
-     *   Siswa : NIS 1001 s/d 1015       | pass: siswa1234
+     *   Siswa : NIS 1001 s/d 1002       | pass: siswa1234
      *
      * Ujian : ASAT Bahasa Indonesia Kelas X
      *         25 Soal PG   (kunci: opsi A selang-seling dengan B/C)
@@ -118,7 +118,7 @@ class ASATSeeder extends Seeder
         );
 
         // ─────────────────────────────────────────────
-        // 4. SISWA (15 Siswa)
+        // 4. SISWA (2 Siswa)
         // ─────────────────────────────────────────────
         $this->command->info('▶ [4/7] Membuat 2 Data Siswa (Uji Coba)...');
 
@@ -521,7 +521,7 @@ class ASATSeeder extends Seeder
         $this->command->info('═══════════════════════════════════════════════════════');
         $this->command->info('');
         $this->command->info('  Jalankan ujian di: http://127.0.0.1:8000/siswa/login ');
-        $this->command->info('  Panel admin di   : http://127.0.0.1:8000/admin/login ');
+        $this->command->info('  Panel admin di   : http://127.0.0.1:8000/login       ');
         $this->command->info('═══════════════════════════════════════════════════════');
     }
 }
