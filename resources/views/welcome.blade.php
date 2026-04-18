@@ -37,7 +37,7 @@
                     <a href="#features" class="text-gray-600 hover:text-blue-600 font-medium transition">Keunggulan</a>
                     <a href="#how-it-works" class="text-gray-600 hover:text-blue-600 font-medium transition">Cara Kerja</a>
                     <a href="{{ route('student.login') }}" class="text-gray-600 hover:text-blue-600 font-medium transition">Masuk Siswa</a>
-                    <a href="{{ route('portal') }}" class="bg-blue-600 text-white px-5 py-2.5 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5">
+                    <a href="{{ route('register.sekolah') }}" class="bg-blue-600 text-white px-5 py-2.5 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5">
                         Daftar Sekarang
                     </a>
                 </div>
@@ -54,7 +54,7 @@
             <a href="#features" class="block text-gray-600 hover:text-blue-600 font-medium">Keunggulan</a>
             <a href="#how-it-works" class="block text-gray-600 hover:text-blue-600 font-medium">Cara Kerja</a>
             <a href="{{ route('student.login') }}" class="block text-gray-600 hover:text-blue-600 font-medium">Masuk Siswa</a>
-            <a href="{{ route('portal') }}" class="block text-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">Daftar Sekarang</a>
+            <a href="{{ route('register.sekolah') }}" class="block text-center bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">Daftar Sekarang</a>
         </div>
     </nav>
 
@@ -75,7 +75,7 @@
                     Solusi CBT (Computer Based Test) lengkap untuk sekolah modern. Kelola bank soal, laksanakan ujian, dan analisis nilai siswa dalam satu platform terintegrasi.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('portal') }}" class="inline-flex justify-center items-center px-8 py-4 text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition shadow-xl hover:shadow-blue-600/30 transform hover:-translate-y-1">
+                    <a href="{{ route('register.sekolah') }}" class="inline-flex justify-center items-center px-8 py-4 text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 transition shadow-xl hover:shadow-blue-600/30 transform hover:-translate-y-1">
                         Coba Gratis Sekarang
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                     </a>
@@ -220,7 +220,7 @@
                 <div>
                     <h4 class="text-white font-bold mb-4 uppercase text-sm tracking-wider">Akses Cepat</h4>
                     <ul class="space-y-2">
-                        <li><a href="{{ route('portal') }}" class="hover:text-white transition">Portal Pendaftaran</a></li>
+                        <li><a href="{{ route('register.sekolah') }}" class="hover:text-white transition">Portal Pendaftaran</a></li>
                         <li><a href="{{ route('login') }}" class="hover:text-white transition">Login Admin</a></li>
                         <li><a href="{{ route('student.login') }}" class="hover:text-white transition">Login Siswa</a></li>
                     </ul>
