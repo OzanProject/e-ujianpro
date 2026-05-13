@@ -20,7 +20,7 @@ class ExamController extends Controller
     public function confirmation($p1, $p2 = null)
     {
         $id = $p2 ?? $p1;
-        $session = ExamSession::with(['subject', 'examPackage'])->findOrFail($id);
+        $session = $this->getValidSession($id, ['subject', 'examPackage']);
 
         if (!$session->is_active) {
             return redirect($this->dashboardRoute())
@@ -62,7 +62,7 @@ class ExamController extends Controller
     public function start(Request $request, $p1, $p2 = null)
     {
         $id = $p2 ?? $p1;
-        $session = ExamSession::findOrFail($id);
+        $session = $this->getValidSession($id);
         $studentId = Auth::guard('student')->id();
 
         $existingAttempt = ExamAttempt::where('exam_session_id', $id)
@@ -121,7 +121,7 @@ class ExamController extends Controller
     public function show($p1, $p2 = null)
     {
         $id = $p2 ?? $p1;
-        $session = ExamSession::with(['subject', 'examPackage'])->findOrFail($id);
+        $session = $this->getValidSession($id, ['subject', 'examPackage']);
         $studentId = Auth::guard('student')->id();
 
         $attempt = ExamAttempt::where('exam_session_id', $id)
@@ -269,7 +269,7 @@ class ExamController extends Controller
     public function finish(Request $request, $p1, $p2 = null)
     {
         $id = $p2 ?? $p1;
-        $session = ExamSession::findOrFail($id);
+        $session = $this->getValidSession($id);
         $studentId = Auth::guard('student')->id();
 
         $attempt = ExamAttempt::where('exam_session_id', $id)
@@ -360,5 +360,33 @@ class ExamController extends Controller
                 'id' => $sessionId,
             ])
             : route('student.exam.confirmation', $sessionId);
+    }
+
+    /**
+     * Get a valid Exam Session strictly scoped to the student's institution.
+     * Prevents data leakage between different schools.
+     */
+    private function getValidSession($id, array $withRelations = [])
+    {
+        $student = Auth::guard('student')->user();
+        $adminId = $student->created_by ?? ($student->user ? $student->user->created_by : null);
+
+        if (!$adminId) {
+            $validCreatorIds = [];
+        } else {
+            $validCreatorIds = \App\Models\User::where('id', $adminId)
+                                    ->orWhere('created_by', $adminId)
+                                    ->pluck('id');
+        }
+
+        $query = ExamSession::whereHas('subject', function ($query) use ($validCreatorIds) {
+            $query->whereIn('created_by', $validCreatorIds);
+        });
+
+        if (!empty($withRelations)) {
+            $query->with($withRelations);
+        }
+
+        return $query->findOrFail($id);
     }
 }

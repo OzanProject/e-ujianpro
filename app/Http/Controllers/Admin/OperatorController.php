@@ -15,8 +15,10 @@ class OperatorController extends Controller
      */
     public function index()
     {
-        // Ambil user dengan role 'operator'
-        $operators = User::where('role', 'operator')->latest()->get();
+        $operators = User::where('role', 'operator')
+            ->where('created_by', auth()->id())
+            ->latest()
+            ->get();
         return view('admin.operator.index', compact('operators'));
     }
 
@@ -44,6 +46,7 @@ class OperatorController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'operator', // Set role otomatis
+            'created_by' => auth()->id(), // Set creator
         ]);
 
         return redirect()->route('admin.operator.index')->with('success', 'Operator berhasil ditambahkan.');
@@ -62,7 +65,7 @@ class OperatorController extends Controller
      */
     public function edit(string $id)
     {
-        $operator = User::findOrFail($id);
+        $operator = User::where('role', 'operator')->where('created_by', auth()->id())->findOrFail($id);
         
         // Pastikan yang diedit adalah operator
         if ($operator->role !== 'operator') {
@@ -77,7 +80,7 @@ class OperatorController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $operator = User::findOrFail($id);
+        $operator = User::where('role', 'operator')->where('created_by', auth()->id())->findOrFail($id);
 
         if ($operator->role !== 'operator') {
             abort(403);
@@ -108,7 +111,7 @@ class OperatorController extends Controller
      */
     public function destroy(string $id)
     {
-        $operator = User::findOrFail($id);
+        $operator = User::where('role', 'operator')->where('created_by', auth()->id())->findOrFail($id);
         
         if ($operator->role !== 'operator') {
             abort(403);

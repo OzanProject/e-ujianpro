@@ -16,6 +16,7 @@ class ProctorController extends Controller
     public function index()
     {
         $proctors = User::where('role', 'proctor')
+            ->where('created_by', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -69,7 +70,7 @@ class ProctorController extends Controller
      */
     public function edit(string $id)
     {
-        $proctor = User::findOrFail($id);
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
         $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
         return view('admin.proctor.edit', compact('proctor', 'rooms'));
     }
@@ -79,7 +80,7 @@ class ProctorController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $proctor = User::findOrFail($id);
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -109,7 +110,7 @@ class ProctorController extends Controller
      */
     public function destroy(string $id)
     {
-        $proctor = User::findOrFail($id);
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
         
         // Prevent deleting self (not applicable here) or protected users
         if ($proctor->id == auth()->id()) {

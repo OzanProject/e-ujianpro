@@ -28,10 +28,86 @@
         .btn-primary:hover { background-color: #2563eb; border-color: #2563eb; }
         .nav-pills .nav-link.active, .nav-pills .show>.nav-link { background-color: #3b82f6; border-radius: 10px; }
         .main-footer { background: transparent; border: none; color: #64748b; font-size: 0.875rem; }
+
+        /* Mobile App-like styling */
+        @media (max-width: 767.98px) {
+            body { padding-bottom: 70px; background-color: #f8f9fa; }
+            .content-wrapper { padding-top: 15px; margin-bottom: 0; }
+            .main-header { display: none !important; } /* Hide top navbar */
+            .main-footer { display: none !important; } /* Hide footer */
+            
+            /* Bottom Navigation */
+            .bottom-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: #ffffff;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+                z-index: 1030;
+                height: 65px;
+                justify-content: space-around;
+                align-items: center;
+                padding-bottom: env(safe-area-inset-bottom);
+                border-top: 1px solid rgba(0,0,0,0.03);
+            }
+            .bottom-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #94a3b8;
+                text-decoration: none !important;
+                flex: 1;
+                height: 100%;
+                transition: all 0.2s;
+            }
+            .bottom-nav-item i { font-size: 1.3rem; margin-bottom: 4px; transition: transform 0.2s; }
+            .bottom-nav-item span { font-size: 0.65rem; font-weight: 600; }
+            .bottom-nav-item.active { color: #3b82f6; }
+            .bottom-nav-item.active i { transform: translateY(-2px); }
+            
+            /* Container padding adjustments */
+            .content .container { padding-left: 15px; padding-right: 15px; }
+            .card { border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 15px; border: none; }
+            
+            /* Simple Top Bar for Mobile */
+            .mobile-top-bar {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                position: sticky;
+                top: 0;
+                z-index: 1020;
+                border-bottom: 1px solid rgba(0,0,0,0.03);
+            }
+            .mobile-top-bar .brand { font-weight: 700; color: #1e293b; font-size: 1.1rem; }
+            .mobile-top-bar .profile-pic { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; }
+        }
+        
+        .bottom-nav, .mobile-top-bar { display: none; }
     </style>
 </head>
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
+
+  <!-- Mobile Top Bar -->
+  <div class="mobile-top-bar">
+      <div class="brand d-flex align-items-center">
+          <img src="{{ $globalInstitution && $globalInstitution->logo ? asset('storage/' . $globalInstitution->logo) : asset('img/logo-placeholder.png') }}" alt="Logo" style="height: 28px; margin-right: 10px; border-radius: 4px;">
+          {{ $globalInstitution->name ?? 'E-Ujian' }}
+      </div>
+      <div>
+          <img src="{{ Auth::guard('student')->user()->photo ? asset('storage/' . Auth::guard('student')->user()->photo) : 'https://ui-avatars.com/api/?name='.urlencode(Auth::guard('student')->user()->name).'&background=random&size=128' }}" class="profile-pic" onclick="if(confirm('Keluar dari aplikasi?')) document.getElementById('mobile-logout').submit();">
+          <form id="mobile-logout" action="{{ request()->route('subdomain') ? route('institution.student.logout', request()->route('subdomain')) : route('student.logout') }}" method="POST" class="d-none">
+              @csrf
+          </form>
+      </div>
+  </div>
 
   <!-- Navbar -->
   <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
@@ -110,6 +186,22 @@
   </footer>
 </div>
 <!-- ./wrapper -->
+
+<!-- Bottom Navigation (Mobile only) -->
+<div class="bottom-nav">
+    <a href="{{ request()->route('subdomain') ? route('institution.student.dashboard', request()->route('subdomain')) : route('student.dashboard') }}" class="bottom-nav-item {{ Route::is('student.dashboard') || Route::is('institution.student.dashboard') ? 'active' : '' }}">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </a>
+    <a href="{{ request()->route('subdomain') ? route('institution.student.history.index', request()->route('subdomain')) : route('student.history.index') }}" class="bottom-nav-item {{ Route::is('student.history.*') || Route::is('institution.student.history.*') ? 'active' : '' }}">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Riwayat</span>
+    </a>
+    <a href="#" class="bottom-nav-item text-danger" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin keluar?')) document.getElementById('mobile-logout').submit();">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Keluar</span>
+    </a>
+</div>
 
 <!-- jQuery -->
 <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
