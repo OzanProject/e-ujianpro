@@ -47,7 +47,8 @@ class StudentController extends Controller
             $query->where('kelas', $request->kelas);
         }
 
-        $students = $query->paginate(10);
+        $perPage = $request->input('per_page', 10);
+        $students = $query->paginate($perPage)->appends(request()->query());
         $groups = StudentGroup::all(); // Automatically scoped via Multitenantable
         $groups = StudentGroup::sortCollection($groups);
         $rooms = \App\Models\ExamRoom::all(); // Automatically scoped

@@ -189,8 +189,24 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="pull-right">
-                        {{ $students->appends(request()->input())->links() }}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center">
+                            <label for="per_page" class="mb-0 mr-2 text-muted">Tampilkan:</label>
+                            <select id="per_page" class="form-control form-control-sm" style="width: auto;" onchange="window.location.href=this.value;">
+                                @php
+                                    $currentPerPage = request('per_page', 10);
+                                    $options = [10, 20, 30, 50, 100];
+                                @endphp
+                                @foreach($options as $option)
+                                    <option value="{{ request()->fullUrlWithQuery(['per_page' => $option]) }}" {{ $currentPerPage == $option ? 'selected' : '' }}>
+                                        {{ $option }} Baris
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            {{ $students->appends(request()->input())->links() }}
+                        </div>
                     </div>
                 </div>
              </div>
