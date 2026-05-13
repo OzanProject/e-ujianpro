@@ -50,9 +50,6 @@ class WordQuestionImporter
         $phpWord = IOFactory::load($filePath);
         $rawLines = [];
 
-        /**
-         * STEP 1: Ekstrak isi Word sesuai urutan dokumen.
-         */
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
                 if ($element instanceof \PhpOffice\PhpWord\Element\Table) {
@@ -77,9 +74,6 @@ class WordQuestionImporter
             }
         }
 
-        /**
-         * STEP 2: Parsing berbasis urutan, tanpa mengacak nomor.
-         */
         $questions = [];
         $currentQuestion = null;
         $pendingReading = '';
@@ -98,14 +92,10 @@ class WordQuestionImporter
                 continue;
             }
 
-            // Hentikan parsing soal jika sudah masuk area kunci jawaban.
             if (preg_match('/^KUNCI\s+JAWABAN/iu', $cleanLine)) {
                 break;
             }
 
-            /**
-             * Deteksi nomor soal: 1. Pertanyaan...
-             */
             if (!$hasImage && preg_match('/^(\d+)\.\s+(.*)/u', $cleanLine, $questionMatches)) {
                 if ($currentQuestion) {
                     $questions[] = $currentQuestion;
@@ -131,12 +121,6 @@ class WordQuestionImporter
                 continue;
             }
 
-            /**
-             * Deteksi opsi:
-             * A. teks
-             * A) teks
-             * [ ] A. teks
-             */
             if ($currentQuestion && !$hasImage && preg_match('/^(?:\[\s*\]\s*)?([A-Ea-e])[\.)]\s*(.*)/iu', $cleanLine, $optionMatches)) {
                 $letter = strtoupper($optionMatches[1]);
                 $optionIndex = $this->letterToIndex($letter);
@@ -149,9 +133,6 @@ class WordQuestionImporter
                 continue;
             }
 
-            /**
-             * Kunci manual opsional.
-             */
             if ($currentQuestion && !$hasImage && preg_match('/^(?:Kunci|Jawaban):\s*(.*)/iu', $cleanLine, $answerMatches)) {
                 $answer = $this->normalizeAnswer($answerMatches[1]);
                 $currentQuestion['answer'] = $answer;
@@ -159,29 +140,17 @@ class WordQuestionImporter
                 continue;
             }
 
-            /**
-             * Level manual opsional.
-             */
             if ($currentQuestion && !$hasImage && preg_match('/^(?:Tingkat|Kesulitan|Level):\s*(.*)/iu', $cleanLine, $difficultyMatches)) {
                 $currentQuestion['difficulty'] = $this->normalizeDifficulty($difficultyMatches[1]);
                 continue;
             }
 
-            /**
-             * Baris biasa atau gambar.
-             */
             if (!$currentQuestion) {
-                // Belum menemukan nomor soal, berarti ini stimulus untuk soal berikutnya.
                 $pendingReading = $this->appendHtml($pendingReading, $line);
                 continue;
             }
 
             if (empty($currentQuestion['options'])) {
-                /**
-                 * Sudah ada nomor soal tetapi belum ada opsi.
-                 * Teks lanjutan biasanya masih stem.
-                 * Gambar pada area ini lebih aman dimasukkan ke reading supaya tampil sebagai stimulus/gambar soal.
-                 */
                 if ($hasImage) {
                     $currentQuestion['reading'] = $this->appendHtml($currentQuestion['reading'], $line);
                 } else {
@@ -190,10 +159,6 @@ class WordQuestionImporter
                 continue;
             }
 
-            /**
-             * Kalau soal sudah punya opsi, lalu muncul teks/gambar lagi,
-             * itu hampir selalu stimulus soal berikutnya.
-             */
             if ($this->isStartOfNextStimulus($line, $cleanLine, $hasImage, $nextCleanLine)) {
                 $questions[] = $currentQuestion;
                 $currentQuestion = null;
@@ -201,9 +166,6 @@ class WordQuestionImporter
                 continue;
             }
 
-            /**
-             * Fallback sangat jarang: baris lanjutan opsi terakhir.
-             */
             $lastOptionKey = array_key_last($currentQuestion['options']);
             if ($lastOptionKey !== null) {
                 $currentQuestion['options'][$lastOptionKey]['content'] = $this->appendHtml(
@@ -217,15 +179,6 @@ class WordQuestionImporter
             $questions[] = $currentQuestion;
         }
 
-        /**
-         * Jangan usort di sini.
-         * Urutan disimpan sesuai urutan baca dokumen.
-         * usort bisa membuat tampilan terasa ngacak saat ada nomor/tabel/gambar aneh.
-         */
-
-        /**
-         * STEP 3: Lengkapi kunci dari tabel akhir dan simpan.
-         */
         $importedCount = 0;
 
         foreach ($questions as $index => $questionData) {
@@ -260,6 +213,7 @@ class WordQuestionImporter
     private function pushHtmlAsLines(string $html, array &$rawLines): void
     {
         $html = trim($html);
+
         if ($html === '') {
             return;
         }
@@ -268,6 +222,7 @@ class WordQuestionImporter
 
         foreach ($parts as $part) {
             $part = trim($part);
+
             if ($part !== '' || $this->containsImage($part)) {
                 $rawLines[] = $part;
             }
@@ -317,12 +272,14 @@ class WordQuestionImporter
         }
 
         $words = preg_split('/\s+/u', trim($cleanLine));
+
         return count(array_filter($words)) >= 5;
     }
 
     private function normalizeQuestionToFormFormat(array $data): array
     {
         ksort($data['options']);
+
         $answerIndexes = $this->answerToIndexes($data['answer'] ?? '');
 
         if ($data['type'] === 'multiple_choice') {
@@ -340,7 +297,9 @@ class WordQuestionImporter
             $gridCorrect = [];
 
             foreach ($data['options'] as $index => $option) {
-                $gridCorrect[$index] = $booleanValues[$index] ?? 1;
+                $gridCorrect[$index] = array_key_exists($index, $booleanValues)
+                    ? $booleanValues[$index]
+                    : null;
             }
 
             $data['grid_correct'] = $gridCorrect;
@@ -381,6 +340,7 @@ class WordQuestionImporter
 
                 foreach (($data['options_single'] ?? []) as $index => $option) {
                     $content = $option['content'] ?? '';
+
                     if (trim(strip_tags($content)) === '' && !$this->containsImage($content)) {
                         continue;
                     }
@@ -400,6 +360,7 @@ class WordQuestionImporter
 
                 foreach (($data['options_complex'] ?? []) as $index => $option) {
                     $content = $option['content'] ?? '';
+
                     if (trim(strip_tags($content)) === '' && !$this->containsImage($content)) {
                         continue;
                     }
@@ -417,14 +378,19 @@ class WordQuestionImporter
             if ($data['type'] === 'boolean_grid') {
                 foreach (($data['options_grid'] ?? []) as $index => $option) {
                     $content = $option['content'] ?? '';
+
                     if (trim(strip_tags($content)) === '' && !$this->containsImage($content)) {
                         continue;
+                    }
+
+                    if (!array_key_exists($index, $data['grid_correct']) || $data['grid_correct'][$index] === null) {
+                        throw new \RuntimeException('Kunci Benar/Salah tidak lengkap pada baris ' . ((int) $index + 1));
                     }
 
                     QuestionOption::create([
                         'question_id' => $question->id,
                         'content' => $content,
-                        'is_correct' => (int) ($data['grid_correct'][$index] ?? 1) === 1,
+                        'is_correct' => (int) $data['grid_correct'][$index] === 1,
                     ]);
                 }
             }
@@ -458,6 +424,22 @@ class WordQuestionImporter
         if ($data['type'] === 'multiple_choice_complex' && empty($data['correct_options_complex'])) {
             $this->errors[] = "Soal Ke-$number: Pilihan ganda kompleks belum memiliki jawaban benar.";
             return false;
+        }
+
+        if (($data['type'] ?? '') === 'boolean_grid') {
+            $booleanValues = $this->answerToBooleanValues($data['answer'] ?? '');
+
+            if (count($booleanValues) < count($data['options'])) {
+                $this->errors[] = "Soal Ke-$number: Jumlah kunci Benar/Salah tidak sesuai jumlah pernyataan. Kunci terbaca: " . ($data['answer'] ?? '-');
+                return false;
+            }
+
+            foreach ($data['options'] as $optionIndex => $option) {
+                if (!array_key_exists($optionIndex, $booleanValues)) {
+                    $this->errors[] = "Soal Ke-$number: Kunci Benar/Salah baris ke-" . ((int) $optionIndex + 1) . " tidak ditemukan.";
+                    return false;
+                }
+            }
         }
 
         return true;
@@ -511,25 +493,38 @@ class WordQuestionImporter
         $text = html_entity_decode(strip_tags((string) $html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = str_replace(["\xc2\xa0", '&nbsp;'], ' ', $text);
         $text = preg_replace('/\s+/u', ' ', $text);
+
         return trim($text);
     }
 
     private function normalizeAnswer(?string $answer): string
     {
         $answer = strtoupper(trim((string) $answer));
-        $answer = str_replace(['/', ';', '|'], ',', $answer);
-        $answer = preg_replace('/\s+/u', '', $answer);
 
-        if (preg_match('/\d+\.[BS]/iu', $answer)) {
-            preg_match_all('/(?:\d+\.)?([BS])/iu', $answer, $matches);
-            return implode(',', array_map('strtoupper', $matches[1] ?? []));
+        $answer = str_replace(
+            ["\xc2\xa0", '&nbsp;', '；', ';', '/', '|', '，'],
+            [' ', ' ', ',', ',', ',', ',', ','],
+            $answer
+        );
+
+        $answer = preg_replace('/\s+/u', ' ', $answer);
+        $answer = trim($answer);
+
+        if (preg_match_all('/\d+\s*[\.]\s*([BS])/iu', $answer, $matches) || preg_match_all('/\d+\s*[\)]\s*([BS])/iu', $answer, $matches)) {
+            return implode(',', array_map('strtoupper', $matches[1]));
         }
 
-        if (preg_match_all('/[A-E]/iu', $answer, $matches)) {
+        $compact = preg_replace('/\s+/u', '', $answer);
+
+        if (preg_match('/^[BS](,[BS])+$/iu', $compact)) {
+            return strtoupper($compact);
+        }
+
+        if (preg_match_all('/[A-E]/iu', $compact, $matches)) {
             return implode(',', array_map('strtoupper', $matches[0]));
         }
 
-        return $answer;
+        return strtoupper($compact);
     }
 
     private function detectQuestionType(?string $answer): string
@@ -540,7 +535,7 @@ class WordQuestionImporter
             return 'multiple_choice';
         }
 
-        $parts = array_values(array_filter(array_map('trim', explode(',', $answer))));
+        $parts = array_values(array_filter(array_map('trim', explode(',', strtoupper($answer)))));
 
         if (count($parts) > 1) {
             $onlyBoolean = true;
@@ -581,7 +576,7 @@ class WordQuestionImporter
     private function answerToIndexes(?string $answer): array
     {
         $answer = $this->normalizeAnswer($answer);
-        $parts = array_values(array_filter(array_map('trim', explode(',', $answer))));
+        $parts = array_values(array_filter(array_map('trim', explode(',', strtoupper($answer)))));
         $indexes = [];
 
         foreach ($parts as $part) {
@@ -596,11 +591,15 @@ class WordQuestionImporter
     private function answerToBooleanValues(?string $answer): array
     {
         $answer = $this->normalizeAnswer($answer);
-        $parts = array_values(array_filter(array_map('trim', explode(',', $answer))));
+        $parts = array_values(array_filter(array_map('trim', explode(',', strtoupper($answer)))));
         $values = [];
 
         foreach ($parts as $index => $part) {
-            $values[$index] = $part === 'S' ? 0 : 1;
+            if ($part === 'B') {
+                $values[$index] = 1;
+            } elseif ($part === 'S') {
+                $values[$index] = 0;
+            }
         }
 
         return $values;
@@ -609,16 +608,19 @@ class WordQuestionImporter
     private function isAnswerKeyTable($table): bool
     {
         $rows = $table->getRows();
+
         if (count($rows) < 2) {
             return false;
         }
 
         $firstRowCells = $rows[0]->getCells();
+
         if (count($firstRowCells) < 2) {
             return false;
         }
 
         $headers = [];
+
         foreach ($firstRowCells as $cell) {
             $headers[] = strtolower($this->cleanText($this->extractHtmlFromElement($cell)));
         }
@@ -638,6 +640,7 @@ class WordQuestionImporter
             }
 
             $cells = $row->getCells();
+
             if (count($cells) < 2) {
                 continue;
             }
@@ -651,6 +654,7 @@ class WordQuestionImporter
             }
 
             $number = (int) $numberMatches[0];
+
             if ($number <= 0 || $answerText === '') {
                 continue;
             }
@@ -665,14 +669,17 @@ class WordQuestionImporter
     private function isEnterpriseTable($table): bool
     {
         $rows = $table->getRows();
+
         if (count($rows) < 2) {
             return false;
         }
 
         $firstRowCells = $rows[0]->getCells();
+
         if (count($firstRowCells) >= 5) {
             $h1 = strtolower($this->cleanText($this->extractHtmlFromElement($firstRowCells[0] ?? null)));
             $h2 = strtolower($this->cleanText($this->extractHtmlFromElement($firstRowCells[1] ?? null)));
+
             return str_contains($h1, 'petunjuk') || str_contains($h2, 'soal');
         }
 
@@ -687,11 +694,13 @@ class WordQuestionImporter
             }
 
             $cells = $row->getCells();
+
             if (count($cells) < 9) {
                 continue;
             }
 
             $reading = trim($this->extractHtmlFromElement($cells[0]));
+
             if (!empty(strip_tags($reading)) || $this->containsImage($reading)) {
                 $rawLines[] = $reading;
             }
@@ -701,6 +710,7 @@ class WordQuestionImporter
 
             for ($i = 0; $i < 5; $i++) {
                 $option = trim($this->extractHtmlFromElement($cells[3 + $i]));
+
                 if (!empty(strip_tags($option)) || $this->containsImage($option)) {
                     $letter = chr(65 + $i);
                     $rawLines[] = $letter . '. ' . $option;
@@ -708,6 +718,7 @@ class WordQuestionImporter
             }
 
             $answer = $this->cleanText($this->extractHtmlFromElement($cells[8]));
+
             if ($answer !== '') {
                 $rawLines[] = 'Kunci: ' . $answer;
             }
@@ -717,11 +728,13 @@ class WordQuestionImporter
     private function isBooleanGridTable($table): bool
     {
         $rows = $table->getRows();
+
         if (count($rows) < 2) {
             return false;
         }
 
         $firstRowCells = $rows[0]->getCells();
+
         if (count($firstRowCells) < 3) {
             return false;
         }
@@ -747,11 +760,13 @@ class WordQuestionImporter
             }
 
             $cells = $row->getCells();
+
             if (count($cells) < 3) {
                 continue;
             }
 
             $statement = trim($this->extractHtmlFromElement($cells[0]));
+
             if ($this->cleanText($statement) === '' && !$this->containsImage($statement)) {
                 continue;
             }
@@ -779,6 +794,7 @@ class WordQuestionImporter
     private function hasBooleanMark(?string $value): bool
     {
         $value = trim((string) $value);
+
         if ($value === '') {
             return false;
         }
@@ -806,14 +822,17 @@ class WordQuestionImporter
             $html .= $this->processImage($element);
         } elseif ($element instanceof \PhpOffice\PhpWord\Element\ListItem) {
             $html .= '[LIST_ITEM_MARKER] ';
+
             $textObject = $element->getTextObject();
             $html .= $textObject ? $this->extractHtmlFromElement($textObject) : $element->getText();
+
             $html .= '<br>';
         } elseif ($element instanceof \PhpOffice\PhpWord\Element\Table) {
             foreach ($element->getRows() as $row) {
                 foreach ($row->getCells() as $cell) {
                     $html .= $this->extractHtmlFromElement($cell) . ' ';
                 }
+
                 $html .= '<br>';
             }
         }
@@ -837,6 +856,7 @@ class WordQuestionImporter
                 $imageData = file_get_contents($source);
             } else {
                 $base64Image = $imageElement->getImageStringData(true);
+
                 if (!empty($base64Image)) {
                     $imageData = base64_decode($base64Image);
                 }
@@ -851,6 +871,7 @@ class WordQuestionImporter
             $path = 'uploads/questions/' . $filename;
 
             Storage::disk('public')->put($path, $imageData);
+
             $url = asset('storage/' . $path);
 
             return '<br><img src="' . $url . '" style="max-width: 100%; height: auto;" class="my-2"/><br>';
