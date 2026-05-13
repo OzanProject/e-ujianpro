@@ -21,6 +21,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
         Route::get('fix_data', [\App\Http\Controllers\Admin\ExamRoomController::class, 'fixData'])->name('fix_data');
         Route::get('{id}/assignments', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignments'])->name('assignments');
         Route::post('{id}/assign_random', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignRandom'])->name('assign_random');
+        Route::post('{id}/assign-balanced-gender', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignBalancedGender'])->name('assign_balanced_gender');
         Route::delete('{id}/bulk_remove', [\App\Http\Controllers\Admin\ExamRoomController::class, 'bulkRemove'])->name('bulk_remove');
         Route::delete('{id}/student/{student_id}', [\App\Http\Controllers\Admin\ExamRoomController::class, 'removeStudent'])->name('remove_student');
     });

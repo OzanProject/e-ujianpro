@@ -34,6 +34,50 @@
                 </form>
             </div>
         </div>
+        <div class="card shadow-sm border-0 rounded-lg mt-3">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0 font-weight-bold"><i class="fas fa-users-cog mr-2"></i> Isi Seimbang (Gender)</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-sm text-gray-600 mb-3">
+                    Ambil siswa secara seimbang antara laki-laki dan perempuan yang <strong>belum memiliki ruangan</strong>.
+                </p>
+
+                <div class="row no-gutters mb-3">
+                    <div class="col-6 pr-1">
+                        <div class="p-2 border rounded text-center bg-light shadow-sm">
+                            <small class="text-muted d-block font-weight-bold">Laki-laki</small>
+                            <strong class="text-primary h5 mb-0">{{ $availableMaleCount }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 pl-1">
+                        <div class="p-2 border rounded text-center bg-light shadow-sm">
+                            <small class="text-muted d-block font-weight-bold">Perempuan</small>
+                            <strong class="text-danger h5 mb-0">{{ $availableFemaleCount }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                @if($unidentifiedGenderCount > 0)
+                    <div class="alert alert-warning py-2 px-3 rounded-lg text-xs mb-3 border-0">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Terdapat <strong>{{ $unidentifiedGenderCount }}</strong> siswa dengan gender tidak teridentifikasi.
+                    </div>
+                @endif
+
+                <form action="{{ route('admin.exam_room.assign_balanced_gender', $room->id) }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        <label class="font-weight-bold">Total Target Siswa</label>
+                        <input type="number" name="count" class="form-control rounded-lg" min="2" max="{{ $availableCount }}" value="20" required {{ $availableCount < 2 ? 'disabled' : '' }}>
+                        <small class="text-muted text-xs">Sistem akan mengambil 50% L dan 50% P.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block rounded-pill font-weight-bold shadow-sm" {{ $availableCount < 2 ? 'disabled' : '' }}>
+                        <i class="fas fa-balance-scale mr-1"></i> Ambil Seimbang
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <div class="card shadow-sm border-0 rounded-lg mt-3">
              <div class="card-header bg-white">
@@ -94,6 +138,7 @@
                                     </th>
                                     <th class="px-4 py-3 border-0">No</th>
                                     <th class="px-4 py-3 border-0">Nama Siswa</th>
+                                    <th class="px-4 py-3 border-0 text-center">JK</th>
                                     <th class="px-4 py-3 border-0">NIS / Username</th>
                                     <th class="px-4 py-3 border-0">Kelompok</th>
                                     <th class="px-4 py-3 border-0 text-center">Aksi</th>
@@ -110,6 +155,7 @@
                                         </td>
                                         <td class="px-4 py-3 align-middle text-gray-500">{{ $loop->iteration + ($students->currentPage() - 1) * $students->perPage() }}</td>
                                         <td class="px-4 py-3 align-middle font-weight-bold text-dark">{{ $student->name }}</td>
+                                        <td class="px-4 py-3 align-middle text-center">{{ $student->gender ?? '-' }}</td>
                                         <td class="px-4 py-3 align-middle">{{ $student->nis }}</td>
                                         <td class="px-4 py-3 align-middle">
                                             @if($student->group)
