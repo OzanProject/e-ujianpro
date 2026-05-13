@@ -5,10 +5,10 @@
         $baseRoute = $user->role === 'pengajar' ? 'pengajar' : 'admin';
         $baseRoutePrefix = $user->role === 'pengajar' ? 'pengajar' : 'admin';
     @endphp
-    <a href="{{ route('dashboard') }}" class="brand-link">
+    <a href="{{ route('dashboard') }}" class="brand-link d-flex align-items-center" style="overflow: hidden; white-space: nowrap;">
         <img src="{{ $globalInstitution && $globalInstitution->logo ? asset('storage/' . $globalInstitution->logo) : asset('dist/img/AdminLTELogo.png') }}"
-            alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-        <span class="brand-text font-weight-light">{{ $globalInstitution->name ?? 'E-Ujian PRO' }}</span>
+            alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8; flex-shrink: 0;">
+        <span class="brand-text font-weight-light text-truncate" style="max-width: 100%; display: inline-block;" title="{{ $globalInstitution->name ?? 'E-Ujian PRO' }}">{{ $globalInstitution->name ?? 'E-Ujian PRO' }}</span>
     </a>
 
     <div class="sidebar">
