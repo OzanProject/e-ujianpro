@@ -157,9 +157,9 @@
             
             @if($errors->any() && !View::hasSection('inline_errors'))
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Input Tidak Valid',
-                    html: '<ul class="text-left text-sm space-y-1">@foreach($errors->all() as $error)<li>• {{ $error }}</li>@endforeach</ul>',
+                    icon: 'error',
+                    title: "{{ Route::is('login') || Route::is('student.login') ? 'Login Gagal' : 'Periksa Kembali' }}",
+                    html: '<div class="text-center text-sm">@foreach($errors->all() as $error){{ $error }}<br>@endforeach</div>',
                     confirmButtonColor: '#003778',
                     customClass: { popup: 'rounded-2xl shadow-xl' }
                 });

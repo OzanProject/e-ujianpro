@@ -38,6 +38,10 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                         $inputType = strtolower(trim($row['jenis']));
                         if (in_array($inputType, ['essay', 'uraian'])) {
                             $type = 'essay';
+                        } elseif (in_array($inputType, ['multiple_choice_complex'])) {
+                            $type = 'multiple_choice_complex';
+                        } elseif (in_array($inputType, ['boolean_grid'])) {
+                            $type = 'boolean_grid';
                         }
                     }
 
@@ -87,8 +91,8 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                         $question->tags()->sync($tagIds);
                     }
 
-                    // Create Options if Multiple Choice
-                    if ($type === 'multiple_choice') {
+                    // Create Options
+                    if (in_array($type, ['multiple_choice', 'multiple_choice_complex', 'boolean_grid'])) {
                         $optionsData = [
                             'A' => $row['opsi_a'] ?? null,
                             'B' => $row['opsi_b'] ?? null,
@@ -97,15 +101,44 @@ class QuestionsImport implements ToCollection, WithHeadingRow
                             'E' => $row['opsi_e'] ?? null,
                         ];
 
-                        $correctAnswer = isset($row['jawaban']) ? strtoupper(trim($row['jawaban'])) : '';
+                        $jawabanRaw = isset($row['jawaban']) ? strtoupper(trim($row['jawaban'])) : '';
 
-                        foreach ($optionsData as $key => $content) {
-                            if (!empty($content)) {
-                                QuestionOption::create([
-                                    'question_id' => $question->id,
-                                    'content' => $content,
-                                    'is_correct' => ($key === $correctAnswer),
-                                ]);
+                        if ($type === 'multiple_choice') {
+                            foreach ($optionsData as $key => $content) {
+                                if (!empty($content)) {
+                                    QuestionOption::create([
+                                        'question_id' => $question->id,
+                                        'content' => $content,
+                                        'is_correct' => ($key === $jawabanRaw),
+                                    ]);
+                                }
+                            }
+                        } elseif ($type === 'multiple_choice_complex') {
+                            $jawabanRaw = str_replace('/', ',', $jawabanRaw);
+                            $correctKeys = array_map('trim', explode(',', $jawabanRaw));
+                            foreach ($optionsData as $key => $content) {
+                                if (!empty($content)) {
+                                    QuestionOption::create([
+                                        'question_id' => $question->id,
+                                        'content' => $content,
+                                        'is_correct' => in_array($key, $correctKeys),
+                                    ]);
+                                }
+                            }
+                        } elseif ($type === 'boolean_grid') {
+                            $jawabanRaw = str_replace('/', ',', $jawabanRaw);
+                            $jawabanArray = array_map('trim', explode(',', $jawabanRaw));
+                            $i = 0;
+                            foreach ($optionsData as $key => $content) {
+                                if (!empty($content)) {
+                                    $isBenar = isset($jawabanArray[$i]) && $jawabanArray[$i] == 'B';
+                                    QuestionOption::create([
+                                        'question_id' => $question->id,
+                                        'content' => $content,
+                                        'is_correct' => $isBenar,
+                                    ]);
+                                    $i++;
+                                }
                             }
                         }
                     }

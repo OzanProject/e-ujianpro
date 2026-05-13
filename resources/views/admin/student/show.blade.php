@@ -90,7 +90,7 @@
                      <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Bergabung Sejak</label>
                         <div class="col-sm-9">
-                            <p class="form-control-static">{{ $student->created_at->format('d F Y H:i') }}</p>
+                            <p class="form-control-static">@tgl_jam($student->created_at)</p>
                         </div>
                     </div>
                 </form>

@@ -1,6 +1,5 @@
 @extends('layouts.guest')
 @section('title', 'Login Admin | ' . ($globalInstitution->name ?? \App\Models\Setting::getValue('app_name', 'E-Ujian PRO')))
-@section('inline_errors', true)
 
 @section('main_content')
 <div class="w-full max-w-md">
@@ -29,12 +28,6 @@
                            class="input-edu" 
                            placeholder="admin@example.com" autofocus>
                 </div>
-                @error('email')
-                    <p class="error-text">
-                        <span class="material-symbols-outlined text-[14px]">error</span>
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <!-- Password Field -->
@@ -54,12 +47,6 @@
                         <span id="eye-icon" class="material-symbols-outlined text-[20px]">visibility</span>
                     </button>
                 </div>
-                @error('password')
-                    <p class="error-text">
-                        <span class="material-symbols-outlined text-[14px]">error</span>
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <!-- Remember Me -->

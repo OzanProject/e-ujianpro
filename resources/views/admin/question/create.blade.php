@@ -59,7 +59,9 @@
                                 <div class="form-group mb-4">
                                     <label class="text-xs font-weight-bold text-uppercase text-muted">Tipe Soal <span class="text-danger">*</span></label>
                                     <select name="type" id="type-select" class="form-control form-control-lg border-0 bg-light-gray shadow-sm" style="border-radius: 10px;">
-                                        <option value="multiple_choice" {{ old('type') == 'multiple_choice' ? 'selected' : '' }}>Pilihan Ganda</option>
+                                        <option value="multiple_choice" {{ old('type') == 'multiple_choice' ? 'selected' : '' }}>Pilihan Ganda Tunggal</option>
+                                        <option value="multiple_choice_complex" {{ old('type') == 'multiple_choice_complex' ? 'selected' : '' }}>Pilihan Ganda Kompleks (Banyak Jawaban Benar)</option>
+                                        <option value="boolean_grid" {{ old('type') == 'boolean_grid' ? 'selected' : '' }}>Soal Kategori (Benar/Salah)</option>
                                         <option value="essay" {{ old('type') == 'essay' ? 'selected' : '' }}>Essay / Uraian</option>
                                     </select>
                                 </div>
@@ -105,17 +107,56 @@
                                     <textarea name="content" class="form-control tinymce-editor" rows="10">{{ old('content') }}</textarea>
                                 </div>
                                 
-                                <div id="options-container">
-                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Jawaban</h6>
+                                <div id="options-single" class="options-group">
+                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Ganda Tunggal</h6>
                                     @foreach(['A', 'B', 'C', 'D', 'E'] as $key => $label)
-                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-{{ $key }}">
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-single-{{ $key }}">
                                             <div class="d-flex align-items-center mb-2">
                                                 <div class="custom-control custom-radio mr-3">
-                                                    <input type="radio" name="correct_option" id="opt-{{ $key }}" value="{{ $key }}" class="custom-control-input radio-correct" {{ $key == 0 ? 'checked' : '' }}>
-                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-{{ $key }}">JADIKAN KUNCI JAWABAN {{ $label }}</label>
+                                                    <input type="radio" name="correct_option" id="opt-single-{{ $key }}" value="{{ $key }}" class="custom-control-input radio-correct-single" {{ $key == 0 ? 'checked' : '' }}>
+                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-single-{{ $key }}">JADIKAN KUNCI JAWABAN {{ $label }}</label>
                                                 </div>
                                             </div>
-                                            <textarea name="options[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ old("options.$key.content") }}</textarea>
+                                            <textarea name="options_single[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ old("options_single.$key.content") }}</textarea>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div id="options-complex" class="options-group" style="display: none;">
+                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Ganda Kompleks (Banyak Jawaban Benar)</h6>
+                                    <div class="alert alert-info border-0 text-sm mb-3">Centang lebih dari satu jawaban yang benar.</div>
+                                    @foreach(['A', 'B', 'C', 'D', 'E'] as $key => $label)
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-complex-{{ $key }}">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="custom-control custom-checkbox mr-3">
+                                                    <input type="checkbox" name="correct_options_complex[]" id="opt-complex-{{ $key }}" value="{{ $key }}" class="custom-control-input checkbox-correct-complex">
+                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-complex-{{ $key }}">JADIKAN KUNCI JAWABAN BENAR {{ $label }}</label>
+                                                </div>
+                                            </div>
+                                            <textarea name="options_complex[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ old("options_complex.$key.content") }}</textarea>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div id="options-grid" class="options-group" style="display: none;">
+                                    <h6 class="font-weight-bold text-dark mb-3">Soal Kategori (Benar/Salah)</h6>
+                                    <div class="alert alert-info border-0 text-sm mb-3">Tuliskan pernyataan pada masing-masing baris, lalu tentukan Kunci Jawabannya apakah Benar atau Salah. Kosongkan baris jika tidak ingin digunakan.</div>
+                                    @foreach(range(0, 4) as $key)
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-grid-{{ $key }}">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="font-weight-bold text-dark">Baris {{ $key + 1 }}</div>
+                                                <div class="d-flex">
+                                                    <div class="custom-control custom-radio mr-4">
+                                                        <input type="radio" name="grid_correct[{{ $key }}]" id="grid-benar-{{ $key }}" value="1" class="custom-control-input" checked>
+                                                        <label class="custom-control-label font-weight-bold text-success" for="grid-benar-{{ $key }}">BENAR</label>
+                                                    </div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" name="grid_correct[{{ $key }}]" id="grid-salah-{{ $key }}" value="0" class="custom-control-input">
+                                                        <label class="custom-control-label font-weight-bold text-danger" for="grid-salah-{{ $key }}">SALAH</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <textarea name="options_grid[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ old("options_grid.$key.content") }}</textarea>
                                         </div>
                                     @endforeach
                                 </div>
@@ -192,25 +233,34 @@
         initTinyMCE('.tinymce-editor-small', 180);
 
         $('#type-select').change(function() {
-            if($(this).val() == 'essay') {
-                $('#options-container').slideUp();
-            } else {
-                $('#options-container').slideDown();
+            $('.options-group').hide();
+            if($(this).val() == 'multiple_choice') {
+                $('#options-single').fadeIn();
+            } else if($(this).val() == 'multiple_choice_complex') {
+                $('#options-complex').fadeIn();
+            } else if($(this).val() == 'boolean_grid') {
+                $('#options-grid').fadeIn();
             }
         });
 
-        if($('#type-select').val() == 'essay') {
-            $('#options-container').hide();
-        }
+        // Initialize display
+        $('#type-select').trigger('change');
 
-        // Correct Option Highlight Logic
-        function updateCorrectOptionHighlight() {
-            $('.option-row').removeClass('is-correct');
-            $('.radio-correct:checked').closest('.option-row').addClass('is-correct');
+        // Correct Option Highlight Logic for Single
+        function updateCorrectOptionHighlightSingle() {
+            $('#options-single .option-row').removeClass('is-correct');
+            $('.radio-correct-single:checked').closest('.option-row').addClass('is-correct');
         }
-        
-        $('.radio-correct').on('change', updateCorrectOptionHighlight);
-        updateCorrectOptionHighlight(); // Initialize setup
+        $('.radio-correct-single').on('change', updateCorrectOptionHighlightSingle);
+        updateCorrectOptionHighlightSingle();
+
+        // Correct Option Highlight Logic for Complex
+        function updateCorrectOptionHighlightComplex() {
+            $('#options-complex .option-row').removeClass('is-correct');
+            $('.checkbox-correct-complex:checked').closest('.option-row').addClass('is-correct');
+        }
+        $('.checkbox-correct-complex').on('change', updateCorrectOptionHighlightComplex);
+        updateCorrectOptionHighlightComplex();
     });
 
     function submitForm(type) {

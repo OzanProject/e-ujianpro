@@ -4,35 +4,36 @@
     <title>Kartu Peserta Ujian</title>
     <style>
         @page {
-            size: A4 portrait; /* Change to Portrait for 8-up */
+            size: 215mm 330mm; /* F4 / Folio portrait */
             margin: 10mm;
         }
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #f2f2f2; /* Grey bg for screen preview */
+            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+            background-color: #e9ecef; /* Preview bg */
             margin: 0;
             padding: 0;
             -webkit-print-color-adjust: exact;
         }
         .no-print {
-            padding: 10px;
+            padding: 15px;
             text-align: center;
-            background: #333;
+            background: #343a40;
             color: #fff;
             margin-bottom: 20px;
+            font-size: 14px;
         }
         .container {
             width: 100%;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 10px; /* Gap between cards */
+            gap: 15px;
         }
         .card {
             width: 48%; /* 2 cols */
-            height: 67mm; /* Fit 4 rows on A4 Portrait (297mm - margin) / 4 ~ 68mm */
-            border: 1px solid #000;
-            border-radius: 6px;
+            height: 92mm; /* Fit 3 rows on F4 Portrait (330mm - 20mm margins) / 3 = ~103mm, we use 92mm safely */
+            border: 2px solid #2c3e50;
+            border-radius: 8px;
             background-color: #fff;
             box-sizing: border-box;
             page-break-inside: avoid;
@@ -40,19 +41,19 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 2px; /* Slight bottom adjustment */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            margin-bottom: 5px;
         }
         
-        /* Premium Header Compact */
+        /* Premium Header */
         .header {
-            background: linear-gradient(to right, #004d40, #00796b); 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
             color: #fff; 
-            padding: 5px; 
-            border-bottom: 2px solid #ffd700;
+            padding: 8px 10px; 
+            border-bottom: 4px solid #f1c40f;
             display: flex;
             align-items: center;
-            height: 35px; /* Fixed small header */
+            height: 55px;
             flex-shrink: 0;
         }
         
@@ -60,34 +61,37 @@
             flex: 1;
             text-align: center;
             text-transform: uppercase;
-            line-height: 1;
+            line-height: 1.2;
         }
 
         .content {
             display: flex;
             flex-grow: 1;
-            padding: 5px;
-            font-size: 10px; /* Base font size small */
+            padding: 10px 15px;
+            font-size: 11px;
         }
         
         .photo-area {
-            width: 50px; /* Smaller photo area */
-            margin-right: 8px;
+            width: 75px;
+            margin-right: 15px;
             text-align: center;
             flex-shrink: 0;
         }
         
         .photo-box {
-            width: 50px;
-            height: 65px; /* 3x4 ratio approx */
-            border: 1px solid #999;
+            width: 75px;
+            height: 100px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #eee;
-            color: #777;
-            font-size: 8px;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            background: #ecf0f1;
+            color: #7f8c8d;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
         .data-area {
@@ -100,46 +104,52 @@
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
-            margin-bottom: 2px;
+            font-size: 11px;
+            margin-bottom: 5px;
         }
         
         .data-table td {
-            padding: 1px 0;
-            white-space: nowrap; /* Prevent wrap */
+            padding: 2px 0;
+            vertical-align: top;
+            line-height: 1.2;
         }
         
         .label {
-            width: 55px;
-            font-weight: bold;
-            color: #444;
+            width: 85px;
+            font-weight: 600;
+            color: #34495e;
         }
         
         .separator {
-            width: 5px;
+            width: 10px;
             text-align: center;
+            color: #7f8c8d;
         }
 
         .footer {
-            margin-top: auto; /* Push to bottom */
+            margin-top: auto;
             text-align: right;
-            font-size: 8px;
+            font-size: 10px;
             position: relative;
-            padding: 2px 5px;
-            height: 45px; /* Fixed height for signature area */
+            padding-right: 5px;
+            padding-bottom: 5px;
         }
 
         @media print {
             .no-print { display: none; }
             body { background-color: #fff; }
-            .container { display: flex; flex-wrap: wrap; gap: 0; justify-content: space-between; }
+            .container { justify-content: space-between; gap: 0; }
             .card {
-                width: 49%; /* 2 cols tightly */
-                height: 68mm; /* Maximized height */
-                margin-bottom: 1mm; /* Tiny margin */
+                width: 49%;
+                height: 92mm;
+                margin-bottom: 2mm;
                 box-shadow: none;
-                border: 1px solid #000;
-                page-break-inside: avoid;
+                border: 2px solid #000;
+                border-radius: 5px;
+            }
+            .header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
@@ -147,8 +157,8 @@
 <body onload="window.print()">
 
 <div class="no-print">
-    <strong>Mode Cetak (Portrait 8 Buah/Lembar)</strong> - Hemat Kertas! Pastikan Printer set ke <strong>Portrait</strong>.
-    <a href="{{ route('admin.student.index') }}" style="color: #fff; margin-left: 20px;">[Kembali]</a>
+    <strong>Mode Cetak (Kertas F4/Folio - 6 Buah/Lembar)</strong> - Pastikan Printer set ke <strong>Portrait</strong> dan ukuran kertas <strong>F4 / Folio (215x330mm)</strong>.
+    <a href="{{ route('admin.student.index') }}" style="color: #f1c40f; margin-left: 20px; font-weight: bold; text-decoration: none;">[Kembali ke Data Peserta]</a>
 </div>
 
 <div class="container">
@@ -156,7 +166,7 @@
     <div class="card">
         <!-- Watermark -->
         @if(isset($institution) && ($institution->logo_kiri || $institution->logo))
-            <div style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; z-index: 0; width: 50%; pointer-events: none;">
+            <div style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); opacity: 0.06; z-index: 0; width: 50%; pointer-events: none;">
                   <img src="{{ asset('storage/' . ($institution->logo ?? $institution->logo_kiri)) }}" style="width: 100%;">
             </div>
         @endif
@@ -164,24 +174,24 @@
         <!-- Header -->
         <div class="header">
              {{-- Logo Kiri --}}
-            <div style="width: 30px; text-align: center;">
+            <div style="width: 50px; text-align: center;">
                  @if(isset($institution) && ($institution->logo_kiri || $institution->logo))
-                    <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" style="max-height: 30px; max-width: 30px; border-radius: 50%; background: #fff; padding: 1px;">
+                    <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" style="max-height: 45px; max-width: 45px; border-radius: 50%; background: #fff; padding: 2px;">
                 @endif
             </div>
 
             <div class="header-text">
-                <div style="font-size: 7px; font-weight: bold; letter-spacing: 0.5px; opacity: 0.9;">{{ $institution->dinas_name ?? 'DINAS PENDIDIKAN' }}</div>
-                <div style="font-size: 10px; font-weight: 800; margin: 1px 0;">{{ substr($institution->name ?? 'SEKOLAH', 0, 30) }}</div>
-                <div style="font-size: 8px; background: rgba(0,0,0,0.2); display: inline-block; padding: 0 5px; border-radius: 3px;">KARTU PESERTA</div>
+                <div style="font-size: 9px; font-weight: bold; letter-spacing: 1px; opacity: 0.9;">{{ $institution->dinas_name ?? 'DINAS PENDIDIKAN' }}</div>
+                <div style="font-size: 13px; font-weight: 800; margin: 2px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">{{ strtoupper(substr($institution->name ?? 'NAMA SEKOLAH', 0, 35)) }}</div>
+                <div style="font-size: 9px; background: rgba(0,0,0,0.3); display: inline-block; padding: 2px 8px; border-radius: 8px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);">KARTU PESERTA UJIAN</div>
             </div>
 
              {{-- Logo Kanan --}}
-             <div style="width: 30px; text-align: center;">
+             <div style="width: 50px; text-align: center;">
                  @if(isset($institution) && $institution->logo_kanan)
-                    <img src="{{ asset('storage/' . $institution->logo_kanan) }}" style="max-height: 30px; max-width: 30px; border-radius: 50%; background: #fff; padding: 1px;">
+                    <img src="{{ asset('storage/' . $institution->logo_kanan) }}" style="max-height: 45px; max-width: 45px; border-radius: 50%; background: #fff; padding: 2px;">
                 @else
-                    <div style="width: 30px;"></div>
+                    <div style="width: 50px;"></div>
                 @endif
             </div>
         </div>
@@ -193,64 +203,67 @@
                     @if($student->photo && file_exists(public_path('storage/' . $student->photo)))
                         <img src="{{ asset('storage/' . $student->photo) }}" style="width: 100%; height: 100%; object-fit: cover;">
                     @else
-                        FOTO
+                        PAS FOTO
+                        <br>3x4
                     @endif
                 </div>
-                <div style="font-size: 8px; margin-top: 2px; font-weight: bold; background: #ddd; border-radius: 3px;">{{ $student->nis }}</div>
             </div>
             
             <div class="data-area">
                 <table class="data-table">
                     <tr>
-                        <td class="label">Nama</td>
+                        <td class="label">Nama Lengkap</td>
                         <td class="separator">:</td>
-                        <td style="font-weight: bold; font-size: 9px; color: #000; white-space: normal;">{{ strtoupper($student->name) }}</td>
+                        <td style="font-weight: 800; font-size: 12px; color: #000;">{{ strtoupper($student->name) }}</td>
                     </tr>
                     <tr>
-                        <td class="label">Kelas</td>
+                        <td class="label">NIS / NISN</td>
                         <td class="separator">:</td>
-                        <td>{{ $student->kelas ?? '-' }} / {{ $student->jurusan ?? '-' }}</td>
+                        <td style="font-weight: 600;">{{ $student->nis ?? '-' }} @if($student->nisn) / {{ $student->nisn }} @endif</td>
                     </tr>
                     <tr>
-                        <td class="label">Ruang</td>
+                        <td class="label">L/P</td>
                         <td class="separator">:</td>
-                        <td>{{ $student->examRoom->name ?? '-' }}</td>
+                        <td>{{ $student->gender == 'L' ? 'Laki-laki' : ($student->gender == 'P' ? 'Perempuan' : '-') }}</td>
                     </tr>
                     <tr>
-                        <td class="label">User/Pass</td>
+                        <td class="label">Kelas/Jurusan</td>
                         <td class="separator">:</td>
-                        <td style="font-family: monospace;">{{ $student->nis }} / ******</td>
+                        <td>{{ $student->kelas ?? '-' }} {{ $student->jurusan ? ' - '.$student->jurusan : '' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Ruang Ujian</td>
+                        <td class="separator">:</td>
+                        <td><span style="background: #ecf0f1; padding: 1px 6px; border-radius: 3px; border: 1px solid #bdc3c7; font-weight: 600;">{{ $student->examRoom->name ?? 'Belum Ditentukan' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="label">Password</td>
+                        <td class="separator">:</td>
+                        <td style="font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 13px; letter-spacing: 1px;">{{ $student->password_text ?? $student->nis }}</td>
                     </tr>
                 </table>
                 
-                {{-- Footer nested inside content/data-area or separate?
-                     Let's put footer below. Space is tight.
-                --}}
-                 <div style="margin-top: auto; text-align: right; position: relative;">
-                    <div style="font-size: 7px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ date('d-m-Y') }}</div>
+                 <div class="footer">
+                    <div style="font-size: 9px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ date('d F Y') }}</div>
                     
-                    <div style="position: relative; height: 35px; width: 90px; margin-left: auto;">
+                    <div style="position: relative; height: 40px; width: 120px; margin-left: auto;">
                         @if($institution->signature)
-                            <img src="{{ asset('storage/' . $institution->signature) }}" style="height: 35px; position: absolute; bottom: 0; right: 10px; z-index: 1;">
+                            <img src="{{ asset('storage/' . $institution->signature) }}" style="height: 40px; position: absolute; bottom: 0; right: 10px; z-index: 1;">
                         @endif
                          @if($institution->stamp)
-                            <img src="{{ asset('storage/' . $institution->stamp) }}" style="height: 35px; position: absolute; bottom: 0; right: 30px; z-index: 2; opacity: 0.8;">
+                            <img src="{{ asset('storage/' . $institution->stamp) }}" style="height: 40px; position: absolute; bottom: 0; right: 40px; z-index: 2; opacity: 0.85;">
                         @endif
                     </div>
                     
-                    <div style="font-size: 8px; font-weight: bold; text-decoration: underline; margin-top: -5px; position: relative; z-index: 3;">{{ $institution->name_head_master ?? ($institution->head_master ?? 'Kepala Sekolah') }}</div>
-                    <div style="font-size: 8px;">NIP. {{ $institution->nip_head_master ?? '-' }}</div>
+                    <div style="font-size: 10px; font-weight: bold; text-decoration: underline; margin-top: -2px; position: relative; z-index: 3;">{{ $institution->name_head_master ?? ($institution->head_master ?? 'Kepala Sekolah') }}</div>
+                    <div style="font-size: 9px;">NIP. {{ $institution->nip_head_master ?? '-' }}</div>
                  </div>
             </div>
         </div>
     </div>
     
-    {{-- Page break every 8 cards --}}
-    @if(($index + 1) % 8 == 0)
-        <div style="flex-basis: 100%; height: 0; page-break-after: always; visibility: hidden;"></div>
-    @endif
     @endforeach
-</div> <!-- End Container -->
+</div>
 
 </body>
 </html>

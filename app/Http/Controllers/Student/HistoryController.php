@@ -35,7 +35,7 @@ class HistoryController extends Controller
                     ->firstOrFail();
 
         // 2. Fetch all answers for statistics (before pagination)
-        $allAnswers = $attempt->answers()->with('option')->get();
+        $allAnswers = $attempt->answers()->with(['question', 'option'])->get();
         
         $stats = [
             'total' => $allAnswers->count(),
@@ -46,18 +46,25 @@ class HistoryController extends Controller
         ];
 
         foreach ($allAnswers as $ans) {
-            if ($ans->question_option_id) {
-                // Check if correct (from flag or option)
-                $isCorrect = $ans->is_correct || ($ans->option && $ans->option->is_correct);
-                if ($isCorrect) {
-                    $stats['correct']++;
+            $questionType = $ans->question->type ?? 'multiple_choice';
+
+            if ($questionType === 'essay') {
+                if ($ans->answer_text) {
+                    $stats['essay']++;
                 } else {
-                    $stats['wrong']++;
+                    $stats['empty']++;
                 }
-            } elseif ($ans->answer_text) {
-                $stats['essay']++;
             } else {
-                $stats['empty']++;
+                // Objective types (PG Tunggal, PG Kompleks, Benar/Salah)
+                if ($ans->question_option_id || $ans->answer_text) {
+                    if ($ans->is_correct) {
+                        $stats['correct']++;
+                    } else {
+                        $stats['wrong']++;
+                    }
+                } else {
+                    $stats['empty']++;
+                }
             }
         }
 

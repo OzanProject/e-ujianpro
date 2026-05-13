@@ -56,7 +56,8 @@
                     title: 'Berhasil!',
                     text: "{{ session('success') }}",
                     showConfirmButton: false,
-                    timer: 3000
+                    timer: 3000,
+                    customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
 
@@ -65,6 +66,8 @@
                     icon: 'error',
                     title: 'Gagal!',
                     text: "{{ session('error') }}",
+                    confirmButtonColor: '#003778',
+                    customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
 
@@ -73,35 +76,38 @@
                     icon: 'info',
                     title: 'Info',
                     text: "{{ session('info') }}",
+                    confirmButtonColor: '#003778',
+                    customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
             
             @if(session('status'))
-                let title = 'Info';
-                let text = "{{ session('status') }}";
-                let icon = 'info';
-
-                // Customize for specific Breeze status keys
-                if (text === 'profile-updated') {
-                    title = 'Berhasil!';
-                    text = 'Profil akun berhasil diperbarui.';
-                    icon = 'success';
-                } else if (text === 'password-updated') {
-                    title = 'Berhasil!';
-                    text = 'Password berhasil diubah.';
-                    icon = 'success';
-                } else if (text === 'verification-link-sent') {
-                     title = ' Terkirim!';
-                    text = 'Link verifikasi email baru telah dikirim.';
-                    icon = 'success';
-                }
-
+                @php
+                    $statusText = session('status');
+                    $title = 'Info';
+                    $icon = 'info';
+                    
+                    if ($statusText === 'profile-updated') {
+                        $title = 'Berhasil!';
+                        $statusText = 'Profil akun berhasil diperbarui.';
+                        $icon = 'success';
+                    } elseif ($statusText === 'password-updated') {
+                        $title = 'Berhasil!';
+                        $statusText = 'Password berhasil diubah.';
+                        $icon = 'success';
+                    } elseif ($statusText === 'verification-link-sent') {
+                        $title = 'Terkirim!';
+                        $statusText = 'Link verifikasi email baru telah dikirim.';
+                        $icon = 'success';
+                    }
+                @endphp
                 Swal.fire({
-                    icon: icon,
-                    title: title,
-                    text: text,
+                    icon: '{{ $icon }}',
+                    title: '{{ $title }}',
+                    text: '{{ $statusText }}',
                     showConfirmButton: false,
-                    timer: 3000
+                    timer: 3000,
+                    customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
             
@@ -110,6 +116,8 @@
                     icon: 'warning',
                     title: 'Peringatan',
                     text: "{{ session('warning') }}",
+                    confirmButtonColor: '#003778',
+                    customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
         });

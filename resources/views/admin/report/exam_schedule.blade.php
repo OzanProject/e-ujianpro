@@ -139,8 +139,8 @@
                                     </td>
                                     <td class="px-4 py-3 align-middle">
                                         <div class="d-flex flex-column">
-                                            <span class="text-success font-weight-bold"><i class="fas fa-play mr-1"></i> {{ \Carbon\Carbon::parse($session->start_time)->format('d M Y H:i') }}</span>
-                                            <span class="text-danger small mt-1"><i class="fas fa-stop mr-1"></i> {{ \Carbon\Carbon::parse($session->end_time)->format('d M Y H:i') }}</span>
+                                            <span class="text-success font-weight-bold"><i class="fas fa-play mr-1"></i> @tgl_jam(\Carbon\Carbon::parse($session->start_time))</span>
+                                            <span class="text-danger small mt-1"><i class="fas fa-stop mr-1"></i> @tgl_jam(\Carbon\Carbon::parse($session->end_time))</span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 align-middle text-center">

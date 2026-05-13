@@ -13,7 +13,7 @@ return [
   |
   */
 
-  'failed' => 'Kombinasi informasi login (Email/NIS) dan password yang Anda masukkan tidak sesuai dengan data kami.',
+  'failed' => 'Email/NIS atau password salah.',
   'password' => 'Password yang Anda masukkan tidak sesuai.',
   'throttle' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam :seconds detik.',
 

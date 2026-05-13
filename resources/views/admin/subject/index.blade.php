@@ -41,7 +41,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td><span class="badge bg-info">{{ $subject->code }}</span></td>
                                 <td>{{ $subject->name }}</td>
-                                <td>{{ $subject->created_at->format('d M Y') }}</td>
+                                <td>@tgl($subject->created_at)</td>
                                 <td>
                                     <a href="{{ route('admin.subject.edit', $subject->id) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i>

@@ -183,7 +183,7 @@
                                 <div class="small text-muted">{{ $institution->user->email ?? '-' }}</div>
                             </td>
                             <td>{{ $institution->city ?? '-' }}</td>
-                            <td>{{ $institution->created_at->format('d/m/Y') }}</td>
+                            <td>@tgl($institution->created_at)</td>
                         </tr>
                         @empty
                         <tr>

@@ -9,23 +9,62 @@
 @section('content')
 {{-- Stats Overview --}}
 <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
-            <div class="card-body p-4 d-flex align-items-center bg-gradient-to-r from-blue-600 to-indigo-700 text-white" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
-                <div class="bg-white-20 rounded-circle p-3 mr-3" style="background: rgba(255,255,255,0.2);">
+            <div class="card-body p-3 d-flex align-items-center" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(255,255,255,0.2);">
                     <i class="fas fa-database fa-lg text-white"></i>
                 </div>
                 <div>
                     <h5 class="font-weight-bold mb-0 text-white">{{ number_format($stats['total']) }}</h5>
-                    <p class="text-uppercase text-xs mb-0 opacity-75">Total Soal</p>
+                    <p class="text-uppercase text-xs mb-0" style="color:rgba(255,255,255,0.8)">Total</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100 border-bottom-success">
-            <div class="card-body p-4 d-flex align-items-center">
-                <div class="bg-success-light rounded-circle p-3 mr-3" style="background: rgba(40,167,69,0.1);">
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(78,115,223,0.1);">
+                    <i class="fas fa-list-ol fa-lg text-primary"></i>
+                </div>
+                <div>
+                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['mc']) }}</h5>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">PG Tunggal</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(54,185,204,0.1);">
+                    <i class="fas fa-check-double fa-lg text-info"></i>
+                </div>
+                <div>
+                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['mc_complex']) }}</h5>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">PG Kompleks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(246,194,62,0.15);">
+                    <i class="fas fa-th fa-lg text-warning"></i>
+                </div>
+                <div>
+                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['boolean']) }}</h5>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Benar/Salah</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(40,167,69,0.1);">
                     <i class="fas fa-smile fa-lg text-success"></i>
                 </div>
                 <div>
@@ -35,23 +74,10 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100 border-bottom-warning">
-            <div class="card-body p-4 d-flex align-items-center">
-                <div class="bg-warning-light rounded-circle p-3 mr-3" style="background: rgba(255,193,7,0.1);">
-                    <i class="fas fa-meh fa-lg text-warning"></i>
-                </div>
-                <div>
-                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['medium']) }}</h5>
-                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Sedang</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100 border-bottom-danger">
-            <div class="card-body p-4 d-flex align-items-center">
-                <div class="bg-danger-light rounded-circle p-3 mr-3" style="background: rgba(220,53,69,0.1);">
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(220,53,69,0.1);">
                     <i class="fas fa-frown fa-lg text-danger"></i>
                 </div>
                 <div>
@@ -75,6 +101,9 @@
                 </div>
                 
                 <div class="card-tools d-flex align-items-center">
+                    <a href="{{ route($baseRoute . '.export.word', request()->all()) }}" class="btn btn-dark btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2">
+                        <i class="fas fa-file-word mr-1"></i> Export Word
+                    </a>
                     <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2" data-toggle="modal" data-target="#importModal">
                         <i class="fas fa-file-import mr-1"></i> Import Word/Excel
                     </button>
@@ -108,9 +137,11 @@
                         </div>
                         <div class="col-md-2 mb-3 mb-md-0">
                             <select name="type" class="form-control border-0 shadow-sm rounded-lg font-weight-bold text-dark" onchange="this.form.submit()">
-                                <option value="">-- Tipe --</option>
-                                <option value="multiple_choice" {{ request('type') == 'multiple_choice' ? 'selected' : '' }}>PILGAN</option>
-                                <option value="essay" {{ request('type') == 'essay' ? 'selected' : '' }}>ESAI</option>
+                                <option value="">-- Tipe Soal --</option>
+                                <option value="multiple_choice" {{ request('type') == 'multiple_choice' ? 'selected' : '' }}>PG Tunggal</option>
+                                <option value="multiple_choice_complex" {{ request('type') == 'multiple_choice_complex' ? 'selected' : '' }}>PG Kompleks</option>
+                                <option value="boolean_grid" {{ request('type') == 'boolean_grid' ? 'selected' : '' }}>Benar / Salah</option>
+                                <option value="essay" {{ request('type') == 'essay' ? 'selected' : '' }}>Esai / Uraian</option>
                             </select>
                         </div>
                          <div class="col-md-2 mb-3 mb-md-0">
@@ -203,23 +234,42 @@
                                             {!! Str::limit(strip_tags($question->content, '<img><br><p><b><i><strong>'), 150) !!}
                                         </div>
                                         <div class="d-flex flex-wrap align-items-center">
-                                            @if($question->type == 'multiple_choice')
-                                                <span class="badge bg-light text-indigo px-2 py-1 rounded text-xs mr-2">
-                                                    <i class="fas fa-list-ol mr-1"></i> PILGAN ({{ $question->options->count() }} Opsi)
-                                                </span>
-                                            @else
-                                                <span class="badge bg-light text-orange px-2 py-1 rounded text-xs mr-2">
-                                                    <i class="fas fa-pen-nib mr-1"></i> ESAI
-                                                </span>
-                                            @endif
-                                            
-                                            @if($question->type == 'multiple_choice')
+                                            @php
+                                                $typeConfig = match($question->type) {
+                                                    'multiple_choice'         => ['icon'=>'fa-list-ol',     'color'=>'text-primary',  'label'=>'PG Tunggal'],
+                                                    'multiple_choice_complex' => ['icon'=>'fa-check-double','color'=>'text-info',     'label'=>'PG Kompleks'],
+                                                    'boolean_grid'            => ['icon'=>'fa-th',          'color'=>'text-warning',  'label'=>'Benar/Salah'],
+                                                    'essay'                   => ['icon'=>'fa-pen-nib',     'color'=>'text-secondary','label'=>'Esai'],
+                                                    default                   => ['icon'=>'fa-question',    'color'=>'text-muted',    'label'=>$question->type],
+                                                };
+                                            @endphp
+                                            <span class="badge bg-light {{ $typeConfig['color'] }} px-2 py-1 rounded text-xs mr-2">
+                                                <i class="fas {{ $typeConfig['icon'] }} mr-1"></i> {{ $typeConfig['label'] }}
+                                                @if($question->type !== 'essay') ({{ $question->options->count() }} Opsi) @endif
+                                            </span>
+
+                                            @if($question->type === 'multiple_choice')
                                                 @php $correct = $question->options->where('is_correct', true)->first(); @endphp
                                                 @if($correct)
                                                     <small class="text-success font-weight-bold text-xs">
                                                         <i class="fas fa-check-circle mr-1"></i> Kunci: {{ Str::limit(strip_tags($correct->content), 30) }}
                                                     </small>
                                                 @endif
+                                            @elseif($question->type === 'multiple_choice_complex')
+                                                @php $corrects = $question->options->where('is_correct', true)->pluck('content'); @endphp
+                                                @if($corrects->isNotEmpty())
+                                                    <small class="text-info font-weight-bold text-xs">
+                                                        <i class="fas fa-check-double mr-1"></i>
+                                                        Kunci: {{ $corrects->map(fn($c) => Str::limit(strip_tags($c), 15))->implode(', ') }}
+                                                    </small>
+                                                @endif
+                                            @elseif($question->type === 'boolean_grid')
+                                                @php
+                                                    $boolKeys = $question->options->map(fn($o) => $o->is_correct ? 'B' : 'S')->implode(', ');
+                                                @endphp
+                                                <small class="text-warning font-weight-bold text-xs">
+                                                    <i class="fas fa-th mr-1"></i> Kunci: {{ $boolKeys }}
+                                                </small>
                                             @endif
                                         </div>
                                     </td>
@@ -268,11 +318,27 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <p class="text-xs text-muted font-weight-bold mb-0">
-                        Menampilkan <span class="text-dark">{{ $questions->count() }}</span> dari <span class="text-dark">{{ $questions->total() }}</span> total soal
-                    </p>
-                    {{ $questions->withQueryString()->links() }}
+                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                    <div class="d-flex align-items-center">
+                        <p class="text-xs text-muted font-weight-bold mb-0 mr-3">
+                            Menampilkan <span class="text-dark">{{ $questions->count() }}</span> dari <span class="text-dark">{{ $questions->total() }}</span> total soal
+                        </p>
+                        <form method="GET" action="" class="d-flex align-items-center mb-0" id="perPageForm">
+                            @foreach(request()->except('per_page', 'page') as $key => $val)
+                                <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+                            @endforeach
+                            <label class="text-xs text-muted mb-0 mr-1">Tampilkan:</label>
+                            <select name="per_page" class="form-control form-control-sm" style="width:75px;"
+                                onchange="document.getElementById('perPageForm').submit()">
+                                @foreach([10, 20, 50, 100] as $opt)
+                                    <option value="{{ $opt }}" {{ request('per_page', 10) == $opt ? 'selected' : '' }}>
+                                        {{ $opt }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
+                    {{ $questions->links() }}
                 </div>
             </div>
         </div>
@@ -354,7 +420,7 @@
                         method: "POST",
                         data: {
                             _token: "{{ csrf_token() }}",
-                            question_ids: selectedIds
+                            ids: selectedIds
                         },
                         success: function(response) {
                             Swal.fire('Berhasil!', response.message, 'success').then(() => {

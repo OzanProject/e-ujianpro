@@ -43,15 +43,7 @@
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importExcelModal"><i class="fas fa-file-excel"></i> Import Excel</button>
 
                 <a href="{{ route('admin.student.export') }}" class="btn btn-default btn-outline-secondary">Export Data</a> 
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Broadcast <span class="caret"></span>
-                    </button>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#broadcastEmailModal">Email</a>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#broadcastWhatsappModal">Whatsapp</a>
-                    </div>
-                </div> 
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#broadcastWhatsappModal"><i class="fab fa-whatsapp"></i> Broadcast WA</button> 
                 
                 <a href="#" onclick="if(confirm('Apakah Anda yakin akan menghapus SEMUA data peserta? Peringatan: Data yang dihapus tidak dapat dikembalikan!')) { document.getElementById('delete-all-form').submit(); }" class="btn btn-danger">Hapus Semua Peserta</a> 
                 <form id="delete-all-form" action="{{ route('admin.student.delete_all') }}" method="POST" style="display: none;">
@@ -126,7 +118,8 @@
                                     <th style="width: 10px">#</th>
                                     <th style="width: 60px">Foto</th>
                                     <th>Nama Lengkap</th>
-                                    <th>NIS</th>
+                                    <th style="width: 50px" class="text-center">JK</th>
+                                    <th>NIS / NISN</th>
                                     <th>Ruangan</th>
                                     <th>Kelompok</th>
                                     <th>Kelas</th>
@@ -147,10 +140,17 @@
                                         <td>
                                             <div class="d-flex flex-column">
                                                 <span class="font-weight-bold">{{ $student->name }}</span>
-                                                <small class="text-muted">{{ $student->email }}</small>
                                             </div>
                                         </td>
-                                        <td><span class="badge badge-light border">{{ $student->nis ?? '-' }}</span></td>
+                                        <td class="text-center">{{ $student->gender ?? '-' }}</td>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <span class="badge badge-light border mb-1">{{ $student->nis ?? '-' }}</span>
+                                                @if($student->nisn)
+                                                    <small class="text-muted"><i class="fas fa-id-card mr-1"></i> {{ $student->nisn }}</small>
+                                                @endif
+                                            </div>
+                                        </td>
                                         <td>
                                             @if($student->examRoom)
                                                 <span class="badge badge-primary px-2 py-1"><i class="fas fa-door-open mr-1"></i> {{ $student->examRoom->name }}</span>
@@ -246,39 +246,7 @@
         </div>
       </div>
 
-    <!-- Broadcast Email Modal -->
-    <div class="modal fade" id="broadcastEmailModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Broadcast Email</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form action="{{ route('admin.student.broadcast.email') }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>Subjek Email</label>
-                            <input type="text" name="subject" class="form-control" placeholder="Contoh: Informasi Ujian" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Pesan</label>
-                            <textarea name="message" class="form-control" rows="5" placeholder="Tulis pesan Anda disini..." required></textarea>
-                        </div>
-                        <div class="alert alert-info">
-                            <small>Sistem akan mengirim email ke semua peserta yang memiliki alamat email.</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Kirim Email</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Broadcast Whatsapp Modal -->
     <div class="modal fade" id="broadcastWhatsappModal" tabindex="-1" role="dialog" aria-hidden="true">

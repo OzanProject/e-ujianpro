@@ -53,7 +53,9 @@
                                 <div class="form-group mb-4">
                                     <label class="text-xs font-weight-bold text-uppercase text-muted">Tipe Soal <span class="text-danger">*</span></label>
                                     <select name="type" id="type-select" class="form-control form-control-lg border-0 bg-light-gray shadow-sm" style="border-radius: 10px;">
-                                        <option value="multiple_choice" {{ $question->type == 'multiple_choice' ? 'selected' : '' }}>Pilihan Ganda</option>
+                                        <option value="multiple_choice" {{ $question->type == 'multiple_choice' ? 'selected' : '' }}>Pilihan Ganda Tunggal</option>
+                                        <option value="multiple_choice_complex" {{ $question->type == 'multiple_choice_complex' ? 'selected' : '' }}>Pilihan Ganda Kompleks (Banyak Jawaban Benar)</option>
+                                        <option value="boolean_grid" {{ $question->type == 'boolean_grid' ? 'selected' : '' }}>Soal Kategori (Benar/Salah)</option>
                                         <option value="essay" {{ $question->type == 'essay' ? 'selected' : '' }}>Essay / Uraian</option>
                                     </select>
                                 </div>
@@ -99,35 +101,62 @@
                                     <textarea name="content" class="form-control tinymce-editor" rows="10">{{ old('content', $question->content) }}</textarea>
                                 </div>
                                 
-                                <div id="options-container">
-                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Jawaban</h6>
+                                <div id="options-single" class="options-group" style="{{ $question->type != 'multiple_choice' ? 'display:none;' : '' }}">
+                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Ganda Tunggal</h6>
                                     @php $alphabet = ['A', 'B', 'C', 'D', 'E']; @endphp
-                                    @foreach($question->options as $index => $option)
-                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-{{ $index }}">
+                                    @foreach(range(0, 4) as $key)
+                                        @php $opt = $question->type == 'multiple_choice' && isset($question->options[$key]) ? $question->options[$key] : null; @endphp
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-single-{{ $key }}">
                                             <div class="d-flex align-items-center mb-2">
                                                 <div class="custom-control custom-radio mr-3">
-                                                    <input type="radio" name="correct_option" id="opt-{{ $index }}" value="{{ $index }}" class="custom-control-input radio-correct" {{ $option->is_correct ? 'checked' : '' }}>
-                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-{{ $index }}">JADIKAN KUNCI JAWABAN {{ $alphabet[$index] }}</label>
+                                                    <input type="radio" name="correct_option" id="opt-single-{{ $key }}" value="{{ $key }}" class="custom-control-input radio-correct-single" {{ ($opt && $opt->is_correct) || (!$opt && $key == 0) ? 'checked' : '' }}>
+                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-single-{{ $key }}">JADIKAN KUNCI JAWABAN {{ $alphabet[$key] }}</label>
                                                 </div>
                                             </div>
-                                            <textarea name="options[{{ $index }}][content]" class="form-control tinymce-editor-small" rows="2">{{ $option->content }}</textarea>
+                                            <textarea name="options_single[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ $opt->content ?? '' }}</textarea>
                                         </div>
                                     @endforeach
-                                    
-                                    {{-- Handle Case if Switching from Essay (Show empty fields) --}}
-                                    @if($question->options->isEmpty())
-                                        @foreach($alphabet as $key => $label)
-                                            <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray shadow-xs transition-all" id="row-opt-new-{{ $key }}">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <div class="custom-control custom-radio mr-3">
-                                                        <input type="radio" name="correct_option" id="opt-new-{{ $key }}" value="{{ $key }}" class="custom-control-input radio-correct" {{ $key == 0 ? 'checked' : '' }}>
-                                                        <label class="custom-control-label font-weight-bold text-primary" for="opt-new-{{ $key }}">JADIKAN KUNCI JAWABAN {{ $label }}</label>
+                                </div>
+
+                                <div id="options-complex" class="options-group" style="{{ $question->type != 'multiple_choice_complex' ? 'display:none;' : '' }}">
+                                    <h6 class="font-weight-bold text-dark mb-3">Pilihan Ganda Kompleks (Banyak Jawaban Benar)</h6>
+                                    <div class="alert alert-info border-0 text-sm mb-3">Centang lebih dari satu jawaban yang benar.</div>
+                                    @foreach(range(0, 4) as $key)
+                                        @php $opt = $question->type == 'multiple_choice_complex' && isset($question->options[$key]) ? $question->options[$key] : null; @endphp
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-complex-{{ $key }}">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="custom-control custom-checkbox mr-3">
+                                                    <input type="checkbox" name="correct_options_complex[]" id="opt-complex-{{ $key }}" value="{{ $key }}" class="custom-control-input checkbox-correct-complex" {{ $opt && $opt->is_correct ? 'checked' : '' }}>
+                                                    <label class="custom-control-label font-weight-bold text-primary" for="opt-complex-{{ $key }}">JADIKAN KUNCI JAWABAN BENAR {{ $alphabet[$key] }}</label>
+                                                </div>
+                                            </div>
+                                            <textarea name="options_complex[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ $opt->content ?? '' }}</textarea>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div id="options-grid" class="options-group" style="{{ $question->type != 'boolean_grid' ? 'display:none;' : '' }}">
+                                    <h6 class="font-weight-bold text-dark mb-3">Soal Kategori (Benar/Salah)</h6>
+                                    <div class="alert alert-info border-0 text-sm mb-3">Tuliskan pernyataan pada masing-masing baris, lalu tentukan Kunci Jawabannya apakah Benar atau Salah. Kosongkan baris jika tidak ingin digunakan.</div>
+                                    @foreach(range(0, 4) as $key)
+                                        @php $opt = $question->type == 'boolean_grid' && isset($question->options[$key]) ? $question->options[$key] : null; @endphp
+                                        <div class="option-row mb-3 p-3 rounded-lg border bg-light-gray position-relative shadow-xs transition-all" id="row-opt-grid-{{ $key }}">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="font-weight-bold text-dark">Baris {{ $key + 1 }}</div>
+                                                <div class="d-flex">
+                                                    <div class="custom-control custom-radio mr-4">
+                                                        <input type="radio" name="grid_correct[{{ $key }}]" id="grid-benar-{{ $key }}" value="1" class="custom-control-input" {{ ($opt && $opt->is_correct) || !$opt ? 'checked' : '' }}>
+                                                        <label class="custom-control-label font-weight-bold text-success" for="grid-benar-{{ $key }}">BENAR</label>
+                                                    </div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" name="grid_correct[{{ $key }}]" id="grid-salah-{{ $key }}" value="0" class="custom-control-input" {{ $opt && !$opt->is_correct ? 'checked' : '' }}>
+                                                        <label class="custom-control-label font-weight-bold text-danger" for="grid-salah-{{ $key }}">SALAH</label>
                                                     </div>
                                                 </div>
-                                                <textarea name="options[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2"></textarea>
                                             </div>
-                                        @endforeach
-                                    @endif
+                                            <textarea name="options_grid[{{ $key }}][content]" class="form-control tinymce-editor-small" rows="2">{{ $opt->content ?? '' }}</textarea>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -194,25 +223,34 @@
         initTinyMCE('.tinymce-editor-small', 180);
 
         $('#type-select').change(function() {
-            if($(this).val() == 'essay') {
-                $('#options-container').slideUp();
-            } else {
-                $('#options-container').slideDown();
+            $('.options-group').hide();
+            if($(this).val() == 'multiple_choice') {
+                $('#options-single').fadeIn();
+            } else if($(this).val() == 'multiple_choice_complex') {
+                $('#options-complex').fadeIn();
+            } else if($(this).val() == 'boolean_grid') {
+                $('#options-grid').fadeIn();
             }
         });
 
-        if($('#type-select').val() == 'essay') {
-            $('#options-container').hide();
-        }
+        // Initialize display
+        $('#type-select').trigger('change');
 
-        // Correct Option Highlight Logic
-        function updateCorrectOptionHighlight() {
-            $('.option-row').removeClass('is-correct');
-            $('.radio-correct:checked').closest('.option-row').addClass('is-correct');
+        // Correct Option Highlight Logic for Single
+        function updateCorrectOptionHighlightSingle() {
+            $('#options-single .option-row').removeClass('is-correct');
+            $('.radio-correct-single:checked').closest('.option-row').addClass('is-correct');
         }
-        
-        $('.radio-correct').on('change', updateCorrectOptionHighlight);
-        updateCorrectOptionHighlight(); // Initialize setup
+        $('.radio-correct-single').on('change', updateCorrectOptionHighlightSingle);
+        updateCorrectOptionHighlightSingle();
+
+        // Correct Option Highlight Logic for Complex
+        function updateCorrectOptionHighlightComplex() {
+            $('#options-complex .option-row').removeClass('is-correct');
+            $('.checkbox-correct-complex:checked').closest('.option-row').addClass('is-correct');
+        }
+        $('.checkbox-correct-complex').on('change', updateCorrectOptionHighlightComplex);
+        updateCorrectOptionHighlightComplex();
     });
 
     function submitForm() {

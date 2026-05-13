@@ -73,7 +73,7 @@
                                 @endif
                             </td>
                             <td class="align-middle text-center small">
-                                {{ $inst->created_at->format('d M Y') }}<br>
+                                @tgl($inst->created_at)<br>
                                 <span class="text-muted">{{ $inst->created_at->format('H:i') }}</span>
                             </td>
                             <td class="align-middle text-center">

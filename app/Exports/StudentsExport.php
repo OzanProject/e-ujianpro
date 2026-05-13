@@ -21,7 +21,9 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             'Nama Lengkap',
+            'Jenis Kelamin',
             'NIS',
+            'NISN',
             'Password',
             'Kelas',
             'Jurusan',
@@ -33,7 +35,9 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             $student->name,
+            $student->gender,
             $student->nis,
+            $student->nisn,
             '', // Password masked
             $student->kelas,
             $student->jurusan,

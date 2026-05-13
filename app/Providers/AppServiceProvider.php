@@ -19,6 +19,29 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Set locale for Carbon and PHP
+        \Carbon\Carbon::setLocale('id');
+        setlocale(LC_TIME, 'id_ID', 'id_ID.utf8', 'id', 'indonesia');
+        
+        // Add Macro for easy Indonesian date format: 13 Mei 2026
+        \Carbon\Carbon::macro('toIndonesianDate', function () {
+            return $this->translatedFormat('d F Y');
+        });
+
+        \Carbon\Carbon::macro('toIndonesianDateTime', function () {
+            return $this->translatedFormat('d F Y, H:i');
+        });
+
+        // Blade Directive: @tgl($date)
+        \Illuminate\Support\Facades\Blade::directive('tgl', function ($expression) {
+            return "<?php echo ($expression) ? ($expression)->toIndonesianDate() : '-'; ?>";
+        });
+
+        // Blade Directive: @tgl_jam($date)
+        \Illuminate\Support\Facades\Blade::directive('tgl_jam', function ($expression) {
+            return "<?php echo ($expression) ? ($expression)->toIndonesianDateTime() : '-'; ?>";
+        });
+
         \Illuminate\Pagination\Paginator::useBootstrapFour();
 
         // Share Institution Data to all views

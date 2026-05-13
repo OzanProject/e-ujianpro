@@ -18,7 +18,7 @@
                                 @foreach($examSessions as $session)
                                     <option value="{{ $session->id }}" {{ request('exam_session_id') == $session->id ? 'selected' : '' }}>
                                         {{ $session->subject->name ?? 'Unknown Subject' }} - {{ $session->title }} 
-                                        ({{ \Carbon\Carbon::parse($session->start_time)->format('d M Y H:i') }})
+                                        (@tgl_jam(\Carbon\Carbon::parse($session->start_time)))
                                     </option>
                                 @endforeach
                             </select>

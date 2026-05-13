@@ -72,6 +72,7 @@ class StudentController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'gender' => 'nullable|in:L,P',
             'nis' => [
                 'required', 
                 'string', 
@@ -79,6 +80,7 @@ class StudentController extends Controller
                     return $query->where('created_by', auth()->id());
                 })
             ], // Scoped Unique
+            'nisn' => 'nullable|string',
             'password' => 'required|string|min:6',
             'kelas' => 'nullable|string',
             'jurusan' => 'nullable|string',
@@ -93,8 +95,11 @@ class StudentController extends Controller
 
         $data = [
             'name' => $request->name,
+            'gender' => $request->gender,
             'nis' => $request->nis,
+            'nisn' => $request->nisn,
             'password' => Hash::make($request->password),
+            'password_text' => $request->password,
             'kelas' => $request->kelas,
             'jurusan' => $request->jurusan,
             'student_group_id' => $request->student_group_id,
@@ -141,6 +146,7 @@ class StudentController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'gender' => 'nullable|in:L,P',
             'nis' => [
                 'required', 
                 'string', 
@@ -148,6 +154,7 @@ class StudentController extends Controller
                     return $query->where('created_by', auth()->id());
                 })->ignore($student->id)
             ],
+            'nisn' => 'nullable|string',
             'password' => 'nullable|string|min:6',
             'kelas' => 'nullable|string',
             'jurusan' => 'nullable|string',
@@ -157,7 +164,9 @@ class StudentController extends Controller
 
         $data = [
             'name' => $request->name,
+            'gender' => $request->gender,
             'nis' => $request->nis,
+            'nisn' => $request->nisn,
             'kelas' => $request->kelas,
             'jurusan' => $request->jurusan,
             'student_group_id' => $request->student_group_id,
@@ -166,6 +175,7 @@ class StudentController extends Controller
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+            $data['password_text'] = $request->password;
         }
 
         if ($request->hasFile('photo')) {

@@ -63,7 +63,7 @@
                                     <td class="px-4 py-3">
                                         <div class="d-flex flex-column text-sm">
                                             <span class="text-dark font-weight-bold mb-1">
-                                                {{ $session->start_time->format('d M Y') }}
+                                                @tgl($session->start_time)
                                             </span>
                                             <span class="text-muted text-xs">
                                                 {{ $session->start_time->format('H:i') }} - {{ $session->end_time->format('H:i') }}

@@ -13,8 +13,8 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
-    'student_login_hint' => 'Make sure you are logging into the correct school portal.',
+    'failed' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+    'password' => 'Password yang Anda berikan salah.',
+    'throttle' => 'Terlalu banyak percobaan login. Silakan coba lagi dalam :seconds detik.',
+    'student_login_hint' => 'Pastikan Anda login ke portal sekolah yang benar.',
 ];

@@ -35,7 +35,8 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('question/{question}/preview', [\App\Http\Controllers\Admin\QuestionController::class, 'preview'])->name('admin.question.preview');
     Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('admin.question.import');
     Route::get('question/template', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('admin.question.template');
-    Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('admin.question.template.word'); // New Route
+    Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('admin.question.template.word');
+    Route::get('question/export-word', [\App\Http\Controllers\Admin\QuestionController::class, 'exportWord'])->name('admin.question.export.word');
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class)->names('admin.question');
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class)->names('admin.reading_text');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class)->names('admin.question_group');

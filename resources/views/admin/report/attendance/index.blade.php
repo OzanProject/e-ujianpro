@@ -46,7 +46,7 @@
                                     <option value="">-- Kosongkan (Isi Manual Nanti) --</option>
                                     @foreach($sessions as $session)
                                         <option value="{{ $session->id }}">
-                                            {{ $session->subject->name }} - {{ $session->start_time->format('d M Y H:i') }}
+                                            {{ $session->subject->name }} - @tgl_jam($session->start_time)
                                         </option>
                                     @endforeach
                                 </select>

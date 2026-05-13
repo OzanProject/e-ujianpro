@@ -66,7 +66,7 @@
                                                 <span class="badge badge-danger badge-pill">{{ ucfirst($teacher->status) }}</span>
                                             @endif
                                         </td>
-                                        <td>{{ $teacher->created_at->format('d M Y') }}</td>
+                                        <td>@tgl($teacher->created_at)</td>
                                         <td>
                                             <div class="btn-group">
                                                 @if($teacher->status == 'pending')

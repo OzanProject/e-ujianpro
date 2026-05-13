@@ -36,9 +36,23 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Jenis Kelamin</label>
+                        <select name="gender" class="form-control">
+                            <option value="">-- Pilih Jenis Kelamin --</option>
+                            <option value="L" {{ old('gender', $student->gender) == 'L' ? 'selected' : '' }}>Laki-laki (L)</option>
+                            <option value="P" {{ old('gender', $student->gender) == 'P' ? 'selected' : '' }}>Perempuan (P)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label>NIS (Nomor Induk Siswa)</label>
                         <input type="text" name="nis" class="form-control" value="{{ old('nis', $student->nis) }}" required>
                         <small class="text-muted">Username login.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>NISN (Nomor Induk Siswa Nasional)</label>
+                        <input type="text" name="nisn" class="form-control" value="{{ old('nisn', $student->nisn) }}">
                     </div>
 
                     <div class="form-group">

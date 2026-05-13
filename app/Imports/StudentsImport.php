@@ -38,16 +38,16 @@ class StudentsImport implements ToModel, WithHeadingRow
         }
 
         $nis = trim($row['nis']);
+        $password_text = !empty($row['password_opsional']) ? $row['password_opsional'] : $nis;
         
         // 1. Find or Create User
         $user = User::where('email', $nis)->first();
         
         if (!$user) {
-            $password = !empty($row['password_opsional']) ? $row['password_opsional'] : $nis;
             $user = User::create([
                 'name' => $row['nama_lengkap'],
                 'email' => $nis, // Username = NIS
-                'password' => Hash::make($password),
+                'password' => Hash::make($password_text),
                 'role' => 'peserta_ujian',
                 'created_by' => auth()->id(),
             ]);
@@ -79,8 +79,11 @@ class StudentsImport implements ToModel, WithHeadingRow
 
         // 3. Update Attributes (Always update for both New and Existing)
         $student->name = $row['nama_lengkap'];
+        $student->gender = isset($row['jenis_kelamin_lp']) ? strtoupper(trim($row['jenis_kelamin_lp'])) : $student->gender;
+        $student->nisn = isset($row['nisn_opsional']) ? trim($row['nisn_opsional']) : $student->nisn;
         $student->email = $user->email;
         $student->password = $user->password; // Keep synced
+        $student->password_text = $student->password_text ?: $password_text; // Keep cleartext for cards
         $student->kelas = $row['kelas'] ?? $student->kelas;
         $student->jurusan = $row['jurusan'] ?? $student->jurusan;
         

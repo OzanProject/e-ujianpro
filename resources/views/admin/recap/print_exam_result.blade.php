@@ -35,7 +35,7 @@
         <h3 style="margin-top: 15px;">DAFTAR NILAI UJIAN</h3>
         <p>Mata Pelajaran: <strong>{{ $selectedSession->subject->name ?? '-' }}</strong></p>
         <p>Paket/Sesi: {{ $selectedSession->title }}</p>
-        <p>Tanggal: {{ \Carbon\Carbon::parse($selectedSession->start_time)->translatedFormat('d F Y') }}</p>
+        <p>Tanggal: @tgl($selectedSession->start_time)</p>
     </div>
 
     <table>
@@ -71,14 +71,14 @@
                     @endphp
                     <td class="text-center text-success">{{ $correctCount }}</td>
                     <td class="text-center text-danger">{{ $incorrectCount }}</td>
-                    <td class="text-center"><strong>{{ $attempt->score }}</strong></td>
+                    <td class="text-center"><strong>{{ number_format($attempt->score, 2) }}</strong></td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
     <div style="margin-top: 50px; float: right; width: 220px; text-align: center; position: relative;">
-        <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+        <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, @tgl(now())</p>
         <p style="margin-bottom: 40px;">Kepala Sekolah,</p>
         
         <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px;">
