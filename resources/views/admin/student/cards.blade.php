@@ -244,7 +244,7 @@
                 </table>
                 
                  <div class="footer">
-                    <div style="font-size: 9px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ date('d F Y') }}</div>
+                    <div style="font-size: 9px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                     
                     <div style="position: relative; height: 40px; width: 120px; margin-left: auto;">
                         @if($institution->signature)
