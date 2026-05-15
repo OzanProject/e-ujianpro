@@ -38,9 +38,21 @@
                                 <td>{{ $package->name }}</td>
                                 <td>{{ $package->code ?? '-' }}</td>
                                 <td>{{ $package->subject->name }}</td>
-                                <td>{{ $package->questions->count() }} Soal</td>
                                 <td>
-                                    <form action="{{ route($baseRoute . '.destroy', $package->id) }}" method="POST" onsubmit="return confirm('Hapus paket ini?');">
+                                    <strong>{{ $package->questions_count }}</strong> / {{ $package->available_questions_count }} Soal
+                                    @if($package->questions_count < $package->available_questions_count)
+                                        <div class="mt-1">
+                                            <form action="{{ route('admin.exam_package.sync_all', $package->id) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-xs btn-outline-success" title="Sinkronkan semua soal dari Bank Soal">
+                                                    <i class="fas fa-sync-alt"></i> Sync All
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    <form action="{{ route($baseRoute . '.destroy', $package->id) }}" method="POST" onsubmit="return confirm('Hapus paket ini?');" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <a href="{{ route($baseRoute . '.preview', $package->id) }}" class="btn btn-default btn-xs" title="Preview Soal">

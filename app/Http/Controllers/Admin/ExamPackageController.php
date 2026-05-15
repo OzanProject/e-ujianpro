@@ -15,24 +15,7 @@ class ExamPackageController extends Controller
         return auth()->user()->role === 'pengajar' ? 'pengajar.exam_package' : 'admin.exam_package';
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $user = auth()->user();
-        if ($user->role === 'pengajar') {
-            $subjects = $user->subjects->pluck('id');
-            $packages = ExamPackage::whereIn('subject_id', $subjects)->with(['subject', 'questions'])->latest()->paginate(10);
-        } else {
-            // Admin Lembaga: Only packages for their subjects
-            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
-            $subjects = Subject::where('created_by', $creatorId)->pluck('id');
-            $packages = ExamPackage::whereIn('subject_id', $subjects)->with(['subject', 'questions'])->latest()->paginate(10);
-        }
-        $baseRoute = $this->getBaseRoute();
-        return view('admin.exam_package.index', compact('packages', 'baseRoute'));
-    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -194,6 +177,53 @@ class ExamPackageController extends Controller
         $examPackage->questions()->sync($randomQuestions);
 
         return redirect()->back()->with('success', "Berhasil menambahkan $limit soal acak ke paket.");
+    }
+
+    public function index()
+    {
+        $user = auth()->user();
+        $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+
+        if ($user->role === 'pengajar') {
+            $subjects = $user->subjects->pluck('id');
+        } else {
+            $subjects = Subject::where('created_by', $creatorId)->pluck('id');
+        }
+
+        $packages = ExamPackage::whereIn('subject_id', $subjects)
+            ->with(['subject', 'questions'])
+            ->withCount('questions')
+            ->latest()
+            ->paginate(10);
+
+        // Add available count for each package's subject
+        foreach ($packages as $package) {
+            $package->available_questions_count = Question::where('subject_id', $package->subject_id)->count();
+        }
+
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.exam_package.index', compact('packages', 'baseRoute'));
+    }
+
+    /**
+     * Sync all questions from the Bank Soal (subject) to this package.
+     */
+    public function syncAll(ExamPackage $examPackage)
+    {
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($examPackage->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
+
+        $allQuestions = Question::where('subject_id', $examPackage->subject_id)->pluck('id');
+        
+        if ($allQuestions->isEmpty()) {
+            return back()->with('error', 'Bank Soal untuk mata pelajaran ini masih kosong.');
+        }
+
+        $examPackage->questions()->sync($allQuestions);
+
+        return back()->with('success', 'Berhasil mensinkronkan semua soal dari Bank Soal ke paket ini.');
     }
 
     public function preview($id)

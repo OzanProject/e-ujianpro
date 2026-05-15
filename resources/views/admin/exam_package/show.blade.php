@@ -41,8 +41,10 @@
                                         <label>Tipe Soal</label>
                                         <select name="type" class="form-control">
                                             <option value="all">Semua Tipe (Campur)</option>
-                                            <option value="multiple_choice">Hanya Pilihan Ganda</option>
-                                            <option value="essay">Hanya Essay</option>
+                                            <option value="multiple_choice">PG Tunggal</option>
+                                            <option value="multiple_choice_complex">PG Kompleks</option>
+                                            <option value="boolean_grid">Benar / Salah</option>
+                                            <option value="essay">Esai / Uraian</option>
                                         </select>
                                     </div>
                                     <button type="submit" class="btn btn-info btn-block" onclick="return confirm('Peringatan: Ini akan menimpa/mengganti semua soal yang sudah ada di paket ini. Lanjutkan?')">
@@ -98,15 +100,28 @@
                                         </td>
                                         <td>{!! Str::limit(strip_tags($question->content), 150) !!}</td>
                                         <td>
-                                            <span class="badge {{ $question->type == 'multiple_choice' ? 'badge-info' : 'badge-warning' }}">
-                                                {{ $question->type == 'multiple_choice' ? 'Pilgan' : 'Essay' }}
+                                            @php
+                                                $typeLabels = [
+                                                    'multiple_choice' => ['label' => 'PG Tunggal', 'class' => 'badge-info'],
+                                                    'multiple_choice_complex' => ['label' => 'PG Kompleks', 'class' => 'badge-primary'],
+                                                    'boolean_grid' => ['label' => 'Benar/Salah', 'class' => 'badge-success'],
+                                                    'essay' => ['label' => 'Esai', 'class' => 'badge-warning'],
+                                                ];
+                                                $typeInfo = $typeLabels[$question->type] ?? ['label' => $question->type, 'class' => 'badge-secondary'];
+                                            @endphp
+                                            <span class="badge {{ $typeInfo['class'] }}">
+                                                {{ $typeInfo['label'] }}
                                             </span>
                                         </td>
                                         <td>
                                             @if($question->type == 'multiple_choice')
-                                            <small class="text-success">Kunci: {!! strip_tags($question->options->where('is_correct', true)->first()->content ?? '-') !!}</small>
+                                                <small class="text-success">Kunci: {!! strip_tags($question->options->where('is_correct', true)->first()->content ?? '-') !!}</small>
+                                            @elseif($question->type == 'multiple_choice_complex')
+                                                <small class="text-primary">{{ $question->options->where('is_correct', true)->count() }} Jawaban Benar</small>
+                                            @elseif($question->type == 'boolean_grid')
+                                                <small class="text-success">{{ $question->options->count() }} Pernyataan</small>
                                             @else
-                                                -
+                                                <small class="text-muted">No Options</small>
                                             @endif
                                         </td>
                                     </tr>

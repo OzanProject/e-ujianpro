@@ -78,6 +78,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::resource('exam_package', \App\Http\Controllers\Admin\ExamPackageController::class)->names('admin.exam_package');
     Route::post('exam_package/{exam_package}/assign', [\App\Http\Controllers\Admin\ExamPackageController::class, 'assignQuestions'])->name('admin.exam_package.assign');
     Route::post('exam_package/{exam_package}/random', [\App\Http\Controllers\Admin\ExamPackageController::class, 'generateRandomQuestions'])->name('admin.exam_package.random');
+    Route::post('exam_package/{exam_package}/sync-all', [\App\Http\Controllers\Admin\ExamPackageController::class, 'syncAll'])->name('admin.exam_package.sync_all');
     Route::get('exam_package/{exam_package}/preview', [\App\Http\Controllers\Admin\ExamPackageController::class, 'preview'])->name('admin.exam_package.preview');
 
 
