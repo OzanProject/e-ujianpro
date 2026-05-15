@@ -43,6 +43,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::post('reading_text/delete-all', [\App\Http\Controllers\Admin\ReadingTextController::class, 'deleteAll'])->name('admin.reading_text.delete_all');
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class)->names('admin.reading_text');
     Route::post('question_group/generate', [\App\Http\Controllers\Admin\QuestionGroupController::class, 'generate'])->name('admin.question_group.generate');
+    Route::post('question_group/bulk-destroy', [\App\Http\Controllers\Admin\QuestionGroupController::class, 'bulkDestroy'])->name('admin.question_group.bulk_destroy');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class)->names('admin.question_group');
 
     // Route Poin / Dompet

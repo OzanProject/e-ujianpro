@@ -30,64 +30,104 @@
                     </div>
                 @endif
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Mata Pelajaran</th>
-                                <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Nama Grup</th>
-                                <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Jumlah Soal</th>
-                                <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($questionGroups as $group)
-                                <tr class="border-bottom">
-                                    <td class="px-4 py-3">
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary-light rounded p-2 mr-3 text-primary" style="background-color: #ebf5ff;">
-                                                <i class="fas fa-book"></i>
-                                            </div>
-                                            <span class="font-weight-bold text-dark">{{ $group->subject->name }}</span>
+                {{-- Filter & Per Page --}}
+                <div class="px-4 py-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <form action="{{ route($baseRoute . '.index') }}" method="GET" class="form-inline">
+                        <div class="form-group mr-3">
+                            <label class="text-xs font-weight-bold text-muted mr-2">FILTER MAPEL:</label>
+                            <select name="subject_id" class="form-control form-control-sm rounded-pill border-gray-300" onchange="this.form.submit()">
+                                <option value="">Semua Mapel</option>
+                                @foreach($subjects as $subject)
+                                    <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="text-xs font-weight-bold text-muted mr-2">TAMPILKAN:</label>
+                            <select name="per_page" class="form-control form-control-sm rounded-pill border-gray-300" onchange="this.form.submit()">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 data</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 data</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 data</option>
+                                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 data</option>
+                            </select>
+                        </div>
+                    </form>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 font-weight-bold shadow-sm" id="btn-bulk-delete" disabled onclick="confirmBulkDelete()">
+                            <i class="fas fa-trash-alt mr-1"></i> Hapus Terpilih
+                        </button>
+                    </div>
+                </div>
+
+                <form id="bulkDeleteForm" action="{{ route($baseRoute . '.bulk_destroy') }}" method="POST">
+                    @csrf
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="px-4 py-3" style="width: 40px;">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="check-all">
+                                            <label class="custom-control-label" for="check-all"></label>
                                         </div>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-sm text-dark font-weight-600">{{ $group->name }}</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class="badge badge-pill badge-light border px-3">{{ $group->questions_count }} Soal</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <div class="d-flex justify-content-center">
-                                            <a href="{{ route($baseRoute . '.edit', $group->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-                                                <i class="fas fa-pencil-alt text-xs"></i>
-                                            </a>
-                                            <form action="{{ route($baseRoute . '.destroy', $group->id) }}" method="POST" onsubmit="return confirm('Hapus grup ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Mata Pelajaran</th>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Nama Grup</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Jumlah Soal</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder opacity-7 px-4 py-3">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($questionGroups as $group)
+                                    <tr class="border-bottom">
+                                        <td class="px-4 py-3">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="ids[]" value="{{ $group->id }}" class="custom-control-input item-check" id="check-{{ $group->id }}">
+                                                <label class="custom-control-label" for="check-{{ $group->id }}"></label>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary-light rounded p-2 mr-3 text-primary" style="background-color: #ebf5ff;">
+                                                    <i class="fas fa-book"></i>
+                                                </div>
+                                                <span class="font-weight-bold text-dark">{{ $group->subject->name }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="text-sm text-dark font-weight-600">{{ $group->name }}</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <span class="badge badge-pill badge-light border px-3">{{ $group->questions_count }} Soal</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            <div class="d-flex justify-content-center">
+                                                <a href="{{ route($baseRoute . '.edit', $group->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-pencil-alt text-xs"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" onclick="deleteSingle({{ $group->id }})">
                                                     <i class="fas fa-trash text-xs"></i>
                                                 </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-5">
-                                        <div class="d-flex flex-column align-items-center justify-content-center">
-                                            <div class="bg-gray-100 rounded-circle p-4 mb-3">
-                                                <i class="fas fa-layer-group text-gray-400 fa-3x"></i>
                                             </div>
-                                            <h6 class="text-muted font-weight-bold">Belum ada Grup Soal</h6>
-                                            <p class="text-sm text-gray-500">Gunakan Generate Cerdas untuk membuat grup otomatis.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                                <div class="bg-gray-100 rounded-circle p-4 mb-3">
+                                                    <i class="fas fa-layer-group text-gray-400 fa-3x"></i>
+                                                </div>
+                                                <h6 class="text-muted font-weight-bold">Belum ada Grup Soal</h6>
+                                                <p class="text-sm text-gray-500">Gunakan Generate Cerdas untuk membuat grup otomatis.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
             </div>
             
             <div class="card-footer bg-white py-3 border-top-0 d-flex justify-content-end">
@@ -96,6 +136,50 @@
         </div>
     </div>
 </div>
+
+{{-- Hidden forms for single actions --}}
+<form id="singleDeleteForm" method="POST" style="display:none;">@csrf @method('DELETE')</form>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        const $checkAll = $('#check-all');
+        const $itemChecks = $('.item-check');
+        const $btnBulkDelete = $('#btn-bulk-delete');
+
+        $checkAll.on('change', function() {
+            $itemChecks.prop('checked', this.checked);
+            toggleBulkButton();
+        });
+
+        $itemChecks.on('change', function() {
+            $checkAll.prop('checked', $itemChecks.length === $('.item-check:checked').length);
+            toggleBulkButton();
+        });
+
+        function toggleBulkButton() {
+            $btnBulkDelete.prop('disabled', $('.item-check:checked').length === 0);
+        }
+    });
+
+    function confirmBulkDelete() {
+        if (confirm('Apakah Anda yakin ingin menghapus grup soal yang dipilih?')) {
+            document.getElementById('bulkDeleteForm').submit();
+        }
+    }
+
+    function deleteSingle(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus grup soal ini?')) {
+            const form = document.getElementById('singleDeleteForm');
+            form.action = "{{ url('admin/question_group') }}/" + id;
+            @if($baseRoute === 'pengajar')
+                form.action = "{{ url('admin/pengajar/question_group') }}/" + id;
+            @endif
+            form.submit();
+        }
+    }
+</script>
+@endpush
 
 <!-- Modal Generate Cerdas -->
 <div class="modal fade" id="modalGenerate" tabindex="-1" role="dialog" aria-labelledby="modalGenerateLabel" aria-hidden="true">
@@ -116,15 +200,6 @@
                         <label class="text-xs font-weight-bold text-uppercase text-muted mb-2">Pilih Mata Pelajaran</label>
                         <select name="subject_id" class="form-control rounded-pill border-gray-300" required>
                             <option value="">-- Pilih Mapel --</option>
-                            @php
-                                $user = auth()->user();
-                                if ($user->role === 'pengajar') {
-                                    $subjects = $user->subjects;
-                                } else {
-                                    $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
-                                    $subjects = \App\Models\Subject::where('created_by', $creatorId)->get();
-                                }
-                            @endphp
                             @foreach($subjects as $subject)
                                 <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                             @endforeach

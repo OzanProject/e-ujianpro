@@ -22,7 +22,14 @@ class ScoreScaleController extends Controller
             $subjects = Subject::where('created_by', $creatorId)->get();
         }
         
+        $subjectIds = $subjects->pluck('id')->toArray();
         $selectedSubjectId = $request->get('subject_id');
+        
+        // Security check: subject must be in user's subjects
+        if ($selectedSubjectId && !in_array($selectedSubjectId, $subjectIds)) {
+            $selectedSubjectId = null;
+        }
+
         $selectedGroupId = $request->get('question_group_id');
         
         $questionGroups = [];
@@ -34,7 +41,11 @@ class ScoreScaleController extends Controller
         $maxQuestions = 0;
 
         if ($selectedGroupId) {
-            $group = QuestionGroup::withCount('questions')->find($selectedGroupId);
+            // Security check: group must belong to one of the user's subjects
+            $group = QuestionGroup::whereIn('subject_id', $subjectIds)
+                        ->withCount('questions')
+                        ->find($selectedGroupId);
+            
             if ($group) {
                 $maxQuestions = $group->questions_count;
                 
@@ -46,6 +57,8 @@ class ScoreScaleController extends Controller
                             ->where('question_group_id', $selectedGroupId)
                             ->pluck('scaled_score', 'correct_count')
                             ->toArray();
+            } else {
+                $selectedGroupId = null; // Unauthorized or not found
             }
         }
 
@@ -66,6 +79,18 @@ class ScoreScaleController extends Controller
 
         if (!$institutionId) {
             return back()->with('error', 'Data lembaga tidak ditemukan.');
+        }
+
+        // Security check: question group must belong to this user/institution
+        if ($user->role === 'pengajar') {
+            $subjectIds = $user->subjects->pluck('id');
+        } else {
+            $subjectIds = Subject::where('created_by', $creatorId)->pluck('id');
+        }
+
+        $group = QuestionGroup::whereIn('subject_id', $subjectIds)->find($request->question_group_id);
+        if (!$group) {
+            abort(403, 'Akses Ditolak.');
         }
 
         // Use transaction for bulk update

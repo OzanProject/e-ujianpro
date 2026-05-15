@@ -188,6 +188,7 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
 
     // Additional Teaching Resources
     Route::post('question_group/generate', [\App\Http\Controllers\Admin\QuestionGroupController::class, 'generate'])->name('question_group.generate');
+    Route::post('question_group/bulk-destroy', [\App\Http\Controllers\Admin\QuestionGroupController::class, 'bulkDestroy'])->name('question_group.bulk_destroy');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class);
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class);
     Route::resource('learning_material', \App\Http\Controllers\Admin\LearningMaterialController::class);
