@@ -22,6 +22,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
         Route::get('{id}/assignments', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignments'])->name('assignments');
         Route::post('{id}/assign_random', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignRandom'])->name('assign_random');
         Route::post('{id}/assign-balanced-gender', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignBalancedGender'])->name('assign_balanced_gender');
+        Route::post('{id}/assign-balanced', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignBalancedGender'])->name('assign.balanced'); // Alias for compatibility
         Route::delete('{id}/bulk_remove', [\App\Http\Controllers\Admin\ExamRoomController::class, 'bulkRemove'])->name('bulk_remove');
         Route::delete('{id}/student/{student_id}', [\App\Http\Controllers\Admin\ExamRoomController::class, 'removeStudent'])->name('remove_student');
     });
@@ -135,6 +136,8 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     // Route Recap (Data Results)
     Route::get('recap/exam-result', [\App\Http\Controllers\Admin\RecapController::class, 'examResult'])->name('admin.recap.exam_result');
     Route::get('recap/exam-result/print', [\App\Http\Controllers\Admin\RecapController::class, 'printExamResult'])->name('admin.recap.print_exam_result');
+    Route::delete('recap/exam-result/reset/{exam_session_id}', [\App\Http\Controllers\Admin\RecapController::class, 'resetExamResult'])->name('admin.recap.reset_exam_result');
+    Route::delete('recap/exam-result/delete-attempt/{id}', [\App\Http\Controllers\Admin\RecapController::class, 'deleteExamAttempt'])->name('admin.recap.delete_exam_attempt');
 
 
 

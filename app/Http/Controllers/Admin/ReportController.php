@@ -91,7 +91,9 @@ class ReportController extends Controller
     {
         $user = Auth::user();
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
-        $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+        
+        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
+        $rooms = \App\Models\ExamRoom::whereIn('created_by', $allIds)->get();
         
         $baseRoute = $this->getBaseRoute();
         return view('admin.report.desk_card.index', compact('rooms', 'baseRoute'));
@@ -102,8 +104,12 @@ class ReportController extends Controller
         $user = Auth::user();
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
+        $ownerIds = [$creatorId];
+        $subUserIds = \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray();
+        $allIds = array_merge($ownerIds, $subUserIds);
+
         $query = \App\Models\Student::with('examRoom', 'group')
-                    ->where('created_by', $creatorId);
+                    ->whereIn('created_by', $allIds);
         
         if ($request->has('exam_room_id') && $request->exam_room_id != 'all') {
             if ($request->exam_room_id == 'null') {
@@ -130,11 +136,14 @@ class ReportController extends Controller
     {
         $user = Auth::user();
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
-        $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+        
+        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
+        
+        $rooms = \App\Models\ExamRoom::whereIn('created_by', $allIds)->get();
 
         $subjectIds = $user->role === 'pengajar' 
                         ? $user->subjects->pluck('id')
-                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+                        : \App\Models\Subject::whereIn('created_by', $allIds)->pluck('id');
 
         $sessions = ExamSession::with('subject')
             ->whereIn('subject_id', $subjectIds)
@@ -169,8 +178,12 @@ class ReportController extends Controller
              $session = ExamSession::with('subject')->find($request->exam_session_id);
         }
 
+        $ownerIds = [$creatorId];
+        $subUserIds = \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray();
+        $allIds = array_merge($ownerIds, $subUserIds);
+
         $query = \App\Models\Student::with('examRoom', 'group')
-                    ->where('created_by', $creatorId);
+                    ->whereIn('created_by', $allIds);
         
         if ($request->exam_room_id != 'all') {
             if ($request->exam_room_id == 'null') {

@@ -3,10 +3,10 @@
 <head>
     <title>Denah Ruang Ujian - {{ $room->name }}</title>
     <style>
-        @page { size: A4 portrait; margin: 15mm; }
-        body { font-family: 'Arial', sans-serif; font-size: 11pt; color: #000; margin: 0; }
+        @page { size: A4 portrait; margin: 0; }
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: #000; margin: 0; padding: 15mm; }
         table { width: 100%; border-collapse: collapse; }
-        .header-table { border-bottom: 3px solid #000; margin-bottom: 15px; }
+        .header-table { border-bottom: 4px double #000; margin-bottom: 15px; }
         .header-table td { padding: 5px; vertical-align: middle; }
         .logo { max-width: 70px; max-height: 70px; }
         .text-center { text-align: center; }
@@ -97,25 +97,7 @@
         <button onclick="window.print()" style="padding: 8px 15px; background: #007bff; color: #fff; border: none; cursor: pointer; border-radius: 4px;">Cetak Dokumen</button>
     </div>
 
-    <table class="header-table">
-        <tr>
-            <td width="15%" class="text-center">
-                @if($institution && ($institution->logo_kiri || $institution->logo))
-                    <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" class="logo">
-                @endif
-            </td>
-            <td width="70%" class="text-center">
-                <div style="font-size: 11pt;">{{ $institution->dinas_name ?? 'DINAS PENDIDIKAN' }}</div>
-                <div class="school-name">{{ $institution->name ?? 'NAMA SEKOLAH' }}</div>
-                <div style="font-size: 9pt;">{{ $institution->address ?? 'Alamat Sekolah' }}</div>
-            </td>
-            <td width="15%" class="text-center">
-                @if($institution && $institution->logo_kanan)
-                    <img src="{{ asset('storage/' . $institution->logo_kanan) }}" class="logo">
-                @endif
-            </td>
-        </tr>
-    </table>
+    @include('layouts.print_header', ['institution' => $institution])
 
     <div class="doc-title">DENAH TEMPAT DUDUK PESERTA UJIAN</div>
     <div class="sub-title">RUANG: {{ strtoupper($room->name) }}</div>

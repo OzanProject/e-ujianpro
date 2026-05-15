@@ -40,9 +40,18 @@
     <div class="col-12 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold m-0 text-dark">Ringkasan Hasil</h4>
-            <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
-                <i class="fas fa-print mr-2"></i> Cetak Laporan
-            </a>
+            <div>
+                <form action="{{ route($baseRoute . '.reset_exam_result', $selectedSession->id) }}" method="POST" class="d-inline" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA HASIL ujian pada sesi ini? Data yang dihapus tidak dapat dikembalikan!');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger mr-2">
+                        <i class="fas fa-trash-alt mr-2"></i> Reset Sesi
+                    </button>
+                </form>
+                <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
+                    <i class="fas fa-print mr-2"></i> Cetak Laporan
+                </a>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-3 col-sm-6 mb-3">
@@ -107,6 +116,7 @@
                                 <th class="px-4 py-3 border-0 text-center">Jawaban Salah</th>
                                 <th class="px-4 py-3 border-0 text-center">Nilai Akhir</th>
                                 <th class="px-4 py-3 border-0 text-center">Status</th>
+                                <th class="px-4 py-3 border-0 text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,6 +168,15 @@
                                         @else
                                             <span class="badge badge-soft-danger text-danger px-3 py-2 rounded-pill" style="background: #fef2f2; min-width: 80px;">Remedial</span>
                                         @endif
+                                    </td>
+                                    <td class="px-4 py-3 align-middle text-center">
+                                        <form action="{{ route($baseRoute . '.delete_exam_attempt', $attempt->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus hasil ujian siswa ini? Siswa akan bisa mengikuti ujian ini lagi jika waktu masih tersedia.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus Hasil Ujian">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty

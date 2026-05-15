@@ -15,7 +15,12 @@ class ExamRoomController extends Controller
      */
     public function index()
     {
-        $rooms = ExamRoom::orderBy('name')
+        $user = auth()->user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
+
+        $rooms = ExamRoom::whereIn('created_by', $allIds)
+            ->orderBy('name')
             ->paginate(10);
 
         return view('admin.exam_room.index', compact('rooms'));
@@ -177,65 +182,71 @@ class ExamRoomController extends Controller
         ]);
 
         $requestedTotal = (int) $request->count;
-
-        /*
-         * Supaya benar-benar seimbang, total harus genap.
-         * Jika admin memasukkan angka ganjil, sistem tidak dibuat error:
-         * 11 otomatis menjadi target 10.
-         */
-        $targetTotal = $requestedTotal % 2 === 0
-            ? $requestedTotal
-            : $requestedTotal - 1;
-
-        if ($targetTotal < 2) {
-            return redirect()
-                ->back()
-                ->with('error', 'Minimal jumlah siswa seimbang adalah 2 siswa: 1 laki-laki dan 1 perempuan.');
-        }
-
-        $targetPerGender = (int) floor($targetTotal / 2);
+        $targetPerGender = (int) ceil($requestedTotal / 2);
 
         $maleQuery = $this->availableStudentsQuery()
             ->whereIn('gender', $this->maleGenderValues());
-
         $femaleQuery = $this->availableStudentsQuery()
             ->whereIn('gender', $this->femaleGenderValues());
+        $unidentifiedQuery = $this->availableStudentsQuery()
+            ->whereNotIn('gender', array_merge($this->maleGenderValues(), $this->femaleGenderValues()));
 
         $availableMale = (clone $maleQuery)->count();
         $availableFemale = (clone $femaleQuery)->count();
 
-        /*
-         * Ini inti agar tidak error ketika jumlah laki-laki/perempuan tidak seimbang.
-         * Sistem mengambil pasangan sebanyak yang tersedia dari gender paling sedikit.
-         */
-        $actualPerGender = min($targetPerGender, $availableMale, $availableFemale);
-        $actualTotal = $actualPerGender * 2;
+        $takeMale = min($targetPerGender, $availableMale);
+        $takeFemale = min($targetPerGender, $availableFemale);
 
-        if ($actualPerGender <= 0) {
+        // Jika ada kekurangan untuk mencapai target requestedTotal, ambil dari stok yang sisa
+        $shortage = $requestedTotal - ($takeMale + $takeFemale);
+        
+        if ($shortage > 0) {
+            $remainingMale = $availableMale - $takeMale;
+            if ($remainingMale > 0) {
+                $extraMale = min($shortage, $remainingMale);
+                $takeMale += $extraMale;
+                $shortage -= $extraMale;
+            }
+            
+            // Coba ambil sisa dari Perempuan
+            $remainingFemale = $availableFemale - $takeFemale;
+            if ($shortage > 0 && $remainingFemale > 0) {
+                $extraFemale = min($shortage, $remainingFemale);
+                $takeFemale += $extraFemale;
+                $shortage -= $extraFemale;
+            }
+        }
+
+        // Jika MASIH ada kekurangan (misal ada siswa yang gendernya tidak teridentifikasi)
+        $takeUnidentified = 0;
+        if ($shortage > 0) {
+            $availableUnidentified = (clone $unidentifiedQuery)->count();
+            $takeUnidentified = min($shortage, $availableUnidentified);
+            $shortage -= $takeUnidentified;
+        }
+
+        $actualTotal = $takeMale + $takeFemale + $takeUnidentified;
+
+        if ($actualTotal <= 0) {
             return redirect()
                 ->back()
-                ->with(
-                    'error',
-                    "Tidak bisa membagi seimbang. Tersedia laki-laki: {$availableMale}, perempuan: {$availableFemale}."
-                );
+                ->with('error', "Tidak ada siswa yang tersedia untuk dimasukkan ke ruangan.");
         }
 
         try {
             DB::beginTransaction();
 
-            $maleStudentIds = (clone $maleQuery)
-                ->inRandomOrder()
-                ->limit($actualPerGender)
-                ->pluck('id');
+            $studentIds = collect();
 
-            $femaleStudentIds = (clone $femaleQuery)
-                ->inRandomOrder()
-                ->limit($actualPerGender)
-                ->pluck('id');
-
-            $studentIds = $maleStudentIds
-                ->merge($femaleStudentIds)
-                ->values();
+            if ($takeMale > 0) {
+                $studentIds = $studentIds->merge((clone $maleQuery)->inRandomOrder()->limit($takeMale)->pluck('id'));
+            }
+            if ($takeFemale > 0) {
+                $studentIds = $studentIds->merge((clone $femaleQuery)->inRandomOrder()->limit($takeFemale)->pluck('id'));
+            }
+            if ($takeUnidentified > 0) {
+                $studentIds = $studentIds->merge((clone $unidentifiedQuery)->inRandomOrder()->limit($takeUnidentified)->pluck('id'));
+            }
 
             Student::whereIn('id', $studentIds)
                 ->whereNull('exam_room_id')
@@ -243,14 +254,16 @@ class ExamRoomController extends Controller
 
             DB::commit();
 
-            $message = "Berhasil menambahkan {$actualTotal} siswa secara seimbang: {$actualPerGender} laki-laki dan {$actualPerGender} perempuan.";
-
-            if ($requestedTotal !== $targetTotal) {
-                $message .= " Catatan: permintaan {$requestedTotal} siswa dibulatkan menjadi {$targetTotal} agar seimbang.";
+            $message = "Berhasil menambahkan {$actualTotal} siswa ke ruangan. Detail: {$takeMale} Laki-laki, {$takeFemale} Perempuan";
+            if ($takeUnidentified > 0) {
+                $message .= ", {$takeUnidentified} Tanpa Keterangan Gender";
             }
+            $message .= ".";
 
-            if ($actualTotal < $targetTotal) {
-                $message .= " Catatan: target {$targetTotal} tidak terpenuhi karena stok gender tidak seimbang. Tersedia laki-laki {$availableMale}, perempuan {$availableFemale}.";
+            if ($actualTotal < $requestedTotal) {
+                $message .= " Catatan: Kuota {$requestedTotal} tidak penuh karena hanya tersisa {$actualTotal} siswa yang belum mendapat ruangan.";
+            } else if ($takeMale !== $takeFemale) {
+                $message .= " Catatan: Rasio L/P tidak seimbang sempurna karena ketersediaan stok siswa L/P yang belum kebagian tidak mencukupi.";
             }
 
             return redirect()
@@ -329,7 +342,15 @@ class ExamRoomController extends Controller
      */
     private function availableStudentsQuery()
     {
+        $user = auth()->user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $ownerIds = [$creatorId];
+        $subUserIds = \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray();
+        $allIds = array_merge($ownerIds, $subUserIds);
+
         return Student::query()
+            ->whereIn('created_by', $allIds)
             ->whereNull('exam_room_id');
     }
 

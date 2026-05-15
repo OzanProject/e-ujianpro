@@ -1,32 +1,41 @@
-<table class="header-table" style="width: 100%; border-bottom: 3px double #000; margin-bottom: 20px;">
+<table class="header-table" style="width: 100%; border-bottom: 3px double #000; margin-bottom: 20px; font-family: Arial, Helvetica, sans-serif;">
     <tr>
         {{-- Logo Kiri --}}
-        <td style="width: 15%; vertical-align: middle; text-align: center;">
+        <td style="width: 15%; vertical-align: middle; text-align: left;">
             @if(isset($institution) && ($institution->logo_kiri || $institution->logo))
-                <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" style="height: 100px; max-width: 100px; object-fit: contain;">
+                <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" style="height: 90px; max-width: 90px; object-fit: contain;">
             @endif
         </td>
         
         {{-- Teks Tengah --}}
         <td style="width: 70%; vertical-align: middle; text-align: center;">
-            <div style="font-family: Arial, sans-serif;">
-                <div style="font-size: 18px; font-weight: bold; text-transform: uppercase;">
+            <div style="font-family: Arial, Helvetica, sans-serif;">
+                <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase;">
                     {{ ($institution->dinas_name ?? null) ?: 'PEMERINTAH KABUPATEN ' . strtoupper($institution->city ?? 'KOTA') }}
                 </div>
-                <div style="font-size: 24px; font-weight: bold; margin: 5px 0;">{{ $institution->name ?? 'E-UJIAN PRO' }}</div>
-                <div style="font-size: 12px; font-style: italic;">{{ $institution->address ?? 'Alamat Sekolah / Lembaga' }}</div>
-                <div style="font-size: 12px;">
-                    @if(isset($institution->email) && $institution->email) Email: {{ $institution->email }} @endif
-                    @if(isset($institution->phone) && $institution->phone) | Telp: {{ $institution->phone }} @endif
-                    @if(isset($institution->npsn) && $institution->npsn) | NPSN: {{ $institution->npsn }} @endif
+                <div style="font-size: 18pt; font-weight: bold; text-transform: uppercase; margin: 2px 0;">
+                    {{ $institution->name ?? 'NAMA SEKOLAH' }}
+                </div>
+                <div style="font-size: 8pt; margin-top: 5px;">
+                    Alamat : {{ $institution->address ?? 'Alamat Sekolah / Lembaga' }} 
+                    <br>
+                    @if(isset($institution->email) && $institution->email) 
+                        E-mail : <span style="color: blue; text-decoration: underline;">{{ $institution->email }}</span> 
+                    @endif
+                    @if(isset($institution->phone) && $institution->phone) 
+                        &nbsp;&nbsp;Telp : {{ $institution->phone }} 
+                    @endif
+                    @if(isset($institution->npsn) && $institution->npsn) 
+                        &nbsp;&nbsp;NPSN : {{ $institution->npsn }} 
+                    @endif
                 </div>
             </div>
         </td>
         
         {{-- Logo Kanan --}}
-        <td style="width: 15%; vertical-align: middle; text-align: center;">
+        <td style="width: 15%; vertical-align: middle; text-align: right;">
              @if(isset($institution) && $institution->logo_kanan)
-                <img src="{{ asset('storage/' . $institution->logo_kanan) }}" style="height: 100px; max-width: 100px; object-fit: contain;">
+                <img src="{{ asset('storage/' . $institution->logo_kanan) }}" style="height: 90px; max-width: 90px; object-fit: contain;">
             @endif
         </td>
     </tr>

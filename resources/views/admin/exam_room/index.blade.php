@@ -28,9 +28,12 @@
                                     <td class="px-4 py-3 align-middle font-weight-bold">{{ $room->name }}</td>
                                     <td class="px-4 py-3 align-middle text-center">
                                         <div class="btn-group shadow-sm rounded-lg" role="group">
-                                            <a href="{{ route('admin.exam_room.assignments', $room->id) }}" class="btn btn-default btn-sm border-gray-200 hover:bg-blue-50 hover:text-blue-600 transition" title="Atur Peserta">
+                                            <a href="{{ route('admin.exam_room.assignments', $room->id) }}" class="btn btn-default btn-sm border-gray-200 hover:bg-blue-50 hover:text-blue-600 transition" title="Atur Peserta (Detail)">
                                                 <i class="fas fa-users"></i>
                                             </a>
+                                            <button type="button" class="btn btn-default btn-sm border-gray-200 hover:bg-green-50 hover:text-green-600 transition" data-toggle="modal" data-target="#generateModal{{ $room->id }}" title="Generate Peserta Otomatis (Seimbang L/P)">
+                                                <i class="fas fa-magic"></i>
+                                            </button>
                                             <a href="{{ route('admin.exam_room.edit', $room->id) }}" class="btn btn-default btn-sm border-gray-200 hover:bg-yellow-50 hover:text-yellow-600 transition" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -41,6 +44,37 @@
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
+                                        </div>
+
+                                        <!-- Modal Generate Seimbang -->
+                                        <div class="modal fade" id="generateModal{{ $room->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title font-weight-bold">Generate Peserta - {{ $room->name }}</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <form action="{{ route('admin.exam_room.assign_balanced_gender', $room->id) }}" method="POST">
+                                                        @csrf
+                                                        <div class="modal-body text-left">
+                                                            <div class="form-group">
+                                                                <label>Target Kapasitas Ruangan <span class="text-danger">*</span></label>
+                                                                <input type="number" name="count" class="form-control" placeholder="Contoh: 20" required min="1">
+                                                                <small class="form-text text-muted mt-2">
+                                                                    Sistem akan memasukkan siswa secara acak namun tetap memprioritaskan <strong>pembagian rata antara Laki-laki dan Perempuan (50/50)</strong>.<br>
+                                                                    Jika gender tidak seimbang (misal stok P habis), sisa kuota akan otomatis diisi oleh L agar target ruangan tetap terpenuhi.
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                                                            <button type="submit" class="btn btn-success"><i class="fas fa-magic mr-1"></i> Generate Sekarang</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>

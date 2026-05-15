@@ -5,11 +5,12 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 15mm;
+            margin: 0;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
+            padding: 15mm;
         }
         .header-table {
             width: 100%;

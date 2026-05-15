@@ -246,13 +246,8 @@
                  <div class="footer">
                     <div style="font-size: 9px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                     
-                    <div style="position: relative; height: 40px; width: 120px; margin-left: auto;">
-                        @if($institution->signature)
-                            <img src="{{ asset('storage/' . $institution->signature) }}" style="height: 40px; position: absolute; bottom: 0; right: 10px; z-index: 1;">
-                        @endif
-                         @if($institution->stamp)
-                            <img src="{{ asset('storage/' . $institution->stamp) }}" style="height: 40px; position: absolute; bottom: 0; right: 40px; z-index: 2; opacity: 0.85;">
-                        @endif
+                    <div style="position: relative; height: 45px; width: 100%; margin: 5px 0; display: flex; justify-content: flex-end; padding-right: 15px;">
+                        {!! QrCode::size(45)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
                     </div>
                     
                     <div style="font-size: 10px; font-weight: bold; text-decoration: underline; margin-top: -2px; position: relative; z-index: 3;">{{ $institution->name_head_master ?? ($institution->head_master ?? 'Kepala Sekolah') }}</div>

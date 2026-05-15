@@ -129,16 +129,8 @@
         <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
         <p style="margin-bottom: 40px;">Mengetahui,<br>Kepala Sekolah</p>
         
-        <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px;">
-            {{-- Signature --}}
-            @if($institution->signature)
-                <img src="{{ asset('storage/' . $institution->signature) }}" style="height: 80px; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 1;">
-            @endif
-            
-            {{-- Stamp (Overlapping left side of signature) --}}
-            @if($institution->stamp)
-                <img src="{{ asset('storage/' . $institution->stamp) }}" style="height: 80px; position: absolute; bottom: 0; left: 20px; z-index: 2; opacity: 0.8;">
-            @endif
+        <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center;">
+            {!! QrCode::size(70)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
         </div>
 
         <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '.........................') }}</p>

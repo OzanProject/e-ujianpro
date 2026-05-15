@@ -112,4 +112,54 @@ class RecapController extends Controller
 
         return view('admin.recap.print_exam_result', compact('selectedSession', 'attempts', 'institution'));
     }
+
+    public function resetExamResult(Request $request, $exam_session_id)
+    {
+        $user = Auth::user();
+        $session = ExamSession::with('subject')->findOrFail($exam_session_id);
+
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+            $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+            $hasAccess = in_array($session->subject_id, $allowedSubjectIds);
+        } else {
+            $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+            $hasAccess = ($session->subject->created_by == $creatorId);
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $attemptIds = $session->attempts()->pluck('id');
+        \App\Models\ExamAnswer::whereIn('exam_attempt_id', $attemptIds)->delete();
+        $session->attempts()->delete();
+
+        return redirect()->back()->with('success', 'Semua hasil ujian pada sesi ini telah di-reset (Dihapus permanen).');
+    }
+
+    public function deleteExamAttempt(Request $request, $id)
+    {
+        $attempt = \App\Models\ExamAttempt::with('examSession.subject')->findOrFail($id);
+        $session = $attempt->examSession;
+        $user = Auth::user();
+
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+            $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+            $hasAccess = in_array($session->subject_id, $allowedSubjectIds);
+        } else {
+            $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+            $hasAccess = ($session->subject->created_by == $creatorId);
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $attempt->answers()->delete();
+        $attempt->delete();
+
+        return redirect()->back()->with('success', 'Hasil ujian siswa berhasil dihapus. Siswa tersebut sekarang dapat mengerjakan ulang jika waktu masih tersedia.');
+    }
 }
