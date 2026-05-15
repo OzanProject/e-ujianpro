@@ -14,9 +14,13 @@ class ScoreScaleController extends Controller
 {
     public function index(Request $request)
     {
-        $subjects = Subject::all(); // Or filter by institution if subjects are scoped
-        // For now get all subjects as admin_lembaga usually sees all mapel?
-        // Actually, verify scope. Assuming general access for now or scope later.
+        $user = auth()->user();
+        if ($user->role === 'pengajar') {
+            $subjects = $user->subjects;
+        } else {
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjects = Subject::where('created_by', $creatorId)->get();
+        }
         
         $selectedSubjectId = $request->get('subject_id');
         $selectedGroupId = $request->get('question_group_id');
@@ -33,8 +37,10 @@ class ScoreScaleController extends Controller
             $group = QuestionGroup::withCount('questions')->find($selectedGroupId);
             if ($group) {
                 $maxQuestions = $group->questions_count;
+                
                 // Get existing scales
-                $institutionId = Institution::where('user_id', auth()->id())->value('id');
+                $creatorId = $user->role === 'pengajar' ? $user->created_by : ($user->role === 'operator' ? $user->created_by : $user->id);
+                $institutionId = Institution::where('user_id', $creatorId)->value('id');
                 
                 $scales = ScoreScale::where('institution_id', $institutionId)
                             ->where('question_group_id', $selectedGroupId)
@@ -54,7 +60,10 @@ class ScoreScaleController extends Controller
             'scales.*' => 'nullable|numeric|min:0',
         ]);
 
-        $institutionId = Institution::where('user_id', auth()->id())->value('id');
+        $user = auth()->user();
+        $creatorId = $user->role === 'pengajar' ? $user->created_by : ($user->role === 'operator' ? $user->created_by : $user->id);
+        $institutionId = Institution::where('user_id', $creatorId)->value('id');
+
         if (!$institutionId) {
             return back()->with('error', 'Data lembaga tidak ditemukan.');
         }
