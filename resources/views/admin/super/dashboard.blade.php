@@ -93,6 +93,48 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    {{-- Registration Chart --}}
+    <div class="col-xl-8 col-lg-7">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem;">
+            <div class="card-header bg-white py-3 border-bottom-0 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-dark">Grafik Registrasi Sekolah (6 Bulan Terakhir)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 300px;">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Active Exams --}}
+    <div class="col-xl-4 col-lg-5">
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem;">
+            <div class="card-header bg-white py-3 border-bottom-0">
+                <h6 class="m-0 font-weight-bold text-dark">Ujian Sedang Berlangsung <span class="badge badge-success badge-pill">{{ $activeExamsCount }}</span></h6>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    @forelse($activeExamSessions as $exam)
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-4 py-3">
+                            <div>
+                                <h6 class="mb-0 font-weight-bold">{{ $exam->title ?? 'Sesi Ujian' }}</h6>
+                                <small class="text-muted">{{ $exam->subject->name ?? '-' }} ({{ $exam->examType->name ?? 'Ujian' }})</small>
+                            </div>
+                            <span class="badge badge-success badge-pill"><i class="fas fa-circle text-xs fa-fade"></i> Aktif</span>
+                        </li>
+                    @empty
+                        <li class="list-group-item text-center text-muted py-4 border-0">
+                            Tidak ada ujian yang sedang berlangsung saat ini.
+                        </li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     {{-- Recent Institutions Table (Preserved but styled simpler) --}}
     <div class="col-12">
@@ -122,7 +164,7 @@
                             <td>{{ $institution->user->email ?? '-' }}</td>
                             <td>{{ $institution->created_at->format('d M Y') }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-primary">Detail</a>
+                                <span class="badge badge-success badge-pill">Aktif</span>
                             </td>
                         </tr>
                         @empty
@@ -136,4 +178,67 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var ctx = document.getElementById("registrationChart");
+        if (ctx) {
+            var myLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode($chartLabels) !!},
+                    datasets: [{
+                        label: "Pendaftaran Baru",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(32, 201, 151, 0.05)",
+                        borderColor: "rgba(32, 201, 151, 1)",
+                        pointRadius: 4,
+                        pointBackgroundColor: "rgba(32, 201, 151, 1)",
+                        pointBorderColor: "rgba(255,255,255,1)",
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: "rgba(32, 201, 151, 1)",
+                        pointHoverBorderColor: "rgba(255,255,255,1)",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: {!! json_encode($chartData) !!},
+                        fill: true,
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                        },
+                        y: {
+                            ticks: {
+                                precision: 0,
+                                beginAtZero: true
+                            },
+                            grid: {
+                                color: "rgb(234, 236, 244)",
+                                zeroLineColor: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                                zeroLineBorderDash: [2]
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

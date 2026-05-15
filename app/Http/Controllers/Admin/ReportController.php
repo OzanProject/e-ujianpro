@@ -227,4 +227,112 @@ class ReportController extends Controller
 
         return view('admin.report.attendance.print_proctor', compact('proctors', 'institution', 'session'));
     }
+    // --- BERITA ACARA PELAKSANAAN ---
+    public function beritaAcaraIndex()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+
+        $sessions = ExamSession::with('subject')
+            ->whereIn('subject_id', $subjectIds)
+            ->where('start_time', '>=', now()->subDays(7)) 
+            ->orderBy('start_time', 'asc')
+            ->get();
+            
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.berita_acara.index', compact('rooms', 'sessions', 'baseRoute'));
+    }
+
+    public function printBeritaAcara(Request $request)
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $request->validate([
+             'exam_session_id' => 'required',
+             'exam_room_id' => 'required',
+        ]);
+
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+
+        $session = ExamSession::with('subject')
+            ->whereIn('subject_id', $subjectIds)
+            ->findOrFail($request->exam_session_id);
+        
+        $roomName = 'Semua Ruangan';
+        $students = collect();
+        
+        $query = \App\Models\Student::where('created_by', $creatorId);
+        if ($request->exam_room_id != 'all') {
+             $room = \App\Models\ExamRoom::where('created_by', $creatorId)->findOrFail($request->exam_room_id);
+             $roomName = $room->name;
+             $query->where('exam_room_id', $room->id);
+        }
+        $students = $query->get();
+        
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+
+        return view('admin.report.berita_acara.print', compact('session', 'roomName', 'students', 'institution'));
+    }
+
+    // --- TATA TERTIB ---
+    public function tataTertibPeserta()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+        
+        return view('admin.report.tata_tertib.peserta', compact('institution'));
+    }
+
+    public function tataTertibPengawas()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+        
+        return view('admin.report.tata_tertib.pengawas', compact('institution'));
+    }
+
+    // --- DENAH RUANG / PENEMPATAN PESERTA ---
+    public function denahRuangIndex()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+        
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.denah_ruang.index', compact('rooms', 'baseRoute'));
+    }
+
+    public function printDenahRuang(Request $request)
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $request->validate([
+             'exam_room_id' => 'required',
+        ]);
+
+        $room = \App\Models\ExamRoom::where('created_by', $creatorId)->findOrFail($request->exam_room_id);
+        
+        $students = \App\Models\Student::with('group')
+                    ->where('created_by', $creatorId)
+                    ->where('exam_room_id', $room->id)
+                    ->get()
+                    ->sortBy(function($student) {
+                         return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
+                    })->values();
+
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+
+        return view('admin.report.denah_ruang.print', compact('room', 'students', 'institution'));
+    }
 }

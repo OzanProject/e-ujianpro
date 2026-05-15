@@ -278,6 +278,43 @@ class StudentController extends Controller
         return redirect()->back()->with('error', 'Tidak ada file yang dipilih.');
     }
 
+    public function storePhotoAjax(Request $request)
+    {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            $filename = $photo->getClientOriginalName();
+            $nis = pathinfo($filename, PATHINFO_FILENAME);
+
+            // Fetch student - Note: The Multitenantable trait automatically scopes this to the current institution
+            $student = Student::where('nis', $nis)->first();
+
+            if ($student) {
+                // Resize image to max 500px width/height before saving if Intervention Image is available, 
+                // but since we don't know, we just store it directly. One-by-one AJAX is already fast enough.
+                $path = $photo->storeAs('student_photos', $student->id . '_' . time() . '.' . $photo->getClientOriginalExtension(), 'public');
+                $student->update(['photo' => $path]);
+                
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Foto $filename berhasil diupload.",
+                    'nis' => $nis
+                ]);
+            }
+
+            return response()->json([
+                'success' => false, 
+                'message' => "NIS $nis tidak ditemukan di data peserta.",
+                'nis' => $nis
+            ], 404);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Tidak ada file yang diupload.'], 400);
+    }
+
     public function broadcastEmail(Request $request)
     {
         $request->validate([

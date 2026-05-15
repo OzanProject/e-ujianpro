@@ -212,6 +212,16 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('report/exam-schedule/print', [\App\Http\Controllers\Admin\ReportController::class, 'printExamSchedule'])->name('report.print_exam_schedule');
     Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('report.attendance.index');
     Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('report.attendance.print');
+
+    // Tambahan Laporan Administrasi Ujian
+    Route::get('report/berita-acara', [\App\Http\Controllers\Admin\ReportController::class, 'beritaAcaraIndex'])->name('report.berita_acara.index');
+    Route::get('report/berita-acara/print', [\App\Http\Controllers\Admin\ReportController::class, 'printBeritaAcara'])->name('report.berita_acara.print');
+    
+    Route::get('report/tata-tertib-peserta', [\App\Http\Controllers\Admin\ReportController::class, 'tataTertibPeserta'])->name('report.tata_tertib_peserta.print');
+    Route::get('report/tata-tertib-pengawas', [\App\Http\Controllers\Admin\ReportController::class, 'tataTertibPengawas'])->name('report.tata_tertib_pengawas.print');
+    
+    Route::get('report/denah-ruang', [\App\Http\Controllers\Admin\ReportController::class, 'denahRuangIndex'])->name('report.denah_ruang.index');
+    Route::get('report/denah-ruang/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDenahRuang'])->name('report.denah_ruang.print');
     
     // Recap results
     Route::get('recap/exam-result', [\App\Http\Controllers\Admin\RecapController::class, 'examResult'])->name('recap.exam_result');

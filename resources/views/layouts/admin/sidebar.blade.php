@@ -338,6 +338,34 @@
                                         <p>Cetak Absen Pengawas</p>
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.berita_acara.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.berita_acara.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Berita Acara</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.tata_tertib_peserta.print') }}" target="_blank"
+                                        class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tata Tertib Peserta</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.tata_tertib_pengawas.print') }}" target="_blank"
+                                        class="nav-link">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tata Tertib Pengawas</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.denah_ruang.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.denah_ruang.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Denah Ruang Ujian</p>
+                                    </a>
+                                </li>
                             @endif
                         </ul>
                     </li>

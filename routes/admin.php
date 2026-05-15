@@ -58,6 +58,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('student/cards', [\App\Http\Controllers\Admin\StudentController::class, 'printCards'])->name('admin.student.cards');
     Route::get('student/upload-photo', [\App\Http\Controllers\Admin\StudentController::class, 'uploadPhoto'])->name('admin.student.upload_photo');
     Route::post('student/upload-photo', [\App\Http\Controllers\Admin\StudentController::class, 'storePhoto'])->name('admin.student.store_photo');
+    Route::post('student/upload-photo-ajax', [\App\Http\Controllers\Admin\StudentController::class, 'storePhotoAjax'])->name('admin.student.store_photo_ajax');
     Route::post('student/broadcast/email', [\App\Http\Controllers\Admin\StudentController::class, 'broadcastEmail'])->name('admin.student.broadcast.email');
     Route::post('student/broadcast/whatsapp', [\App\Http\Controllers\Admin\StudentController::class, 'broadcastWhatsapp'])->name('admin.student.broadcast.whatsapp');
     Route::resource('student', \App\Http\Controllers\Admin\StudentController::class)->names('admin.student');
@@ -117,6 +118,16 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('report/desk-card/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDeskCard'])->name('admin.report.desk_card.print');
     Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('admin.report.attendance.index');
     Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('admin.report.attendance.print');
+
+    // Tambahan Laporan Administrasi Ujian
+    Route::get('report/berita-acara', [\App\Http\Controllers\Admin\ReportController::class, 'beritaAcaraIndex'])->name('admin.report.berita_acara.index');
+    Route::get('report/berita-acara/print', [\App\Http\Controllers\Admin\ReportController::class, 'printBeritaAcara'])->name('admin.report.berita_acara.print');
+    
+    Route::get('report/tata-tertib-peserta', [\App\Http\Controllers\Admin\ReportController::class, 'tataTertibPeserta'])->name('admin.report.tata_tertib_peserta.print');
+    Route::get('report/tata-tertib-pengawas', [\App\Http\Controllers\Admin\ReportController::class, 'tataTertibPengawas'])->name('admin.report.tata_tertib_pengawas.print');
+    
+    Route::get('report/denah-ruang', [\App\Http\Controllers\Admin\ReportController::class, 'denahRuangIndex'])->name('admin.report.denah_ruang.index');
+    Route::get('report/denah-ruang/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDenahRuang'])->name('admin.report.denah_ruang.print');
 
     // Route Attendance Proctor (Dedicated)
     Route::get('report/attendance-proctor', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceProctorIndex'])->name('admin.report.attendance_proctor.index');

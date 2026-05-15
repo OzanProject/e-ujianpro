@@ -33,7 +33,7 @@
                     </div>
                 @endif
                 
-                <form action="{{ route('admin.student.store_photo') }}" method="POST" enctype="multipart/form-data">
+                <form id="form-upload-photo" action="{{ route('admin.student.store_photo_ajax') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
                         <label for="photos">Pilih Foto (Bisa Pilih Banyak)</label>
@@ -44,12 +44,18 @@
                             </div>
                         </div>
                         <small class="text-muted">Tekan Ctrl (Windows) atau Command (Mac) untuk memilih banyak foto sekaligus.</small>
+                        
+                        <div class="progress mt-3 d-none" id="upload-progress-wrapper" style="height: 25px;">
+                            <div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                        <div id="upload-status" class="mt-2 text-sm font-weight-bold"></div>
+
                         <div id="preview-container" class="mt-3 d-flex flex-wrap"></div>
                     </div>
 
                     <div class="form-group text-right">
                         <a href="{{ route('admin.student.index') }}" class="btn btn-default">Kembali</a>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Mulai Upload</button>
+                        <button type="submit" id="btn-submit" class="btn btn-primary"><i class="fas fa-upload"></i> Mulai Upload</button>
                     </div>
                 </form>
             </div>
@@ -90,6 +96,87 @@
                     }
                     reader.readAsDataURL(file);
                 }
+            });
+        }
+    });
+    // AJAX Upload Logic
+    $('#form-upload-photo').on('submit', async function(e) {
+        e.preventDefault();
+        
+        var files = $('#photos')[0].files;
+        if (files.length === 0) {
+            Swal.fire('Error', 'Silakan pilih foto terlebih dahulu.', 'error');
+            return;
+        }
+
+        var btnSubmit = $('#btn-submit');
+        var progressWrapper = $('#upload-progress-wrapper');
+        var progressBar = $('#upload-progress-bar');
+        var statusText = $('#upload-status');
+        
+        btnSubmit.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Sedang Mengupload...');
+        progressWrapper.removeClass('d-none');
+        
+        var totalFiles = files.length;
+        var successCount = 0;
+        var failCount = 0;
+        var failedFiles = [];
+        
+        for (var i = 0; i < totalFiles; i++) {
+            var file = files[i];
+            var formData = new FormData();
+            formData.append('photo', file);
+            formData.append('_token', $('input[name="_token"]').val());
+            
+            statusText.text('Mengupload: ' + file.name + ' (' + (i+1) + ' dari ' + totalFiles + ')');
+            
+            try {
+                var response = await $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false
+                });
+                
+                if (response.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    failedFiles.push(file.name + ' (NIS tidak ditemukan)');
+                }
+            } catch (error) {
+                failCount++;
+                var msg = error.responseJSON && error.responseJSON.message ? error.responseJSON.message : 'Error Server';
+                failedFiles.push(file.name + ' (' + msg + ')');
+            }
+            
+            var percentage = Math.round(((i + 1) / totalFiles) * 100);
+            progressBar.css('width', percentage + '%').attr('aria-valuenow', percentage).text(percentage + '%');
+        }
+        
+        btnSubmit.prop('disabled', false).html('<i class="fas fa-upload"></i> Mulai Upload');
+        statusText.text('Selesai!');
+        
+        var finalMessage = `<b>${successCount} foto berhasil diupload.</b>`;
+        if (failCount > 0) {
+            finalMessage += `<br><br><span class="text-danger">${failCount} foto gagal diproses:</span><br><div style="max-height: 150px; overflow-y: auto; text-align: left; font-size: 12px; margin-top: 10px; border: 1px solid #eee; padding: 5px;">` + failedFiles.join('<br>') + `</div>`;
+            Swal.fire({
+                title: 'Upload Selesai!',
+                html: finalMessage,
+                icon: 'warning',
+                confirmButtonText: 'Tutup'
+            }).then(() => {
+                window.location.href = "{{ route('admin.student.index') }}";
+            });
+        } else {
+            Swal.fire({
+                title: 'Berhasil!',
+                html: finalMessage,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = "{{ route('admin.student.index') }}";
             });
         }
     });
