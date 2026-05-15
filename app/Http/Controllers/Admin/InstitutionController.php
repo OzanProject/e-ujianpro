@@ -74,4 +74,21 @@ class InstitutionController extends Controller
 
         return redirect()->route('admin.institution.index')->with('success', 'Data lembaga berhasil diperbarui.');
     }
+    public function deleteAsset($type)
+    {
+        $institution = Institution::where('user_id', auth()->id())->firstOrFail();
+        $allowedTypes = ['logo', 'logo_kiri', 'logo_kanan', 'signature', 'stamp'];
+
+        if (in_array($type, $allowedTypes)) {
+            if ($institution->{$type}) {
+                Storage::disk('public')->delete($institution->{$type});
+                $institution->{$type} = null;
+                $institution->save();
+                
+                return redirect()->back()->with('success', ucfirst(str_replace('_', ' ', $type)) . ' berhasil dihapus.');
+            }
+        }
+
+        return redirect()->back()->with('error', 'Gagal menghapus aset.');
+    }
 }

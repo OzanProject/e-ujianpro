@@ -10,7 +10,8 @@
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
-            padding: 15mm;
+            margin: 0;
+            padding: 0;
         }
         .header-table {
             width: 100%;
@@ -73,14 +74,20 @@
             vertical-align: middle;
         }
         
-        .footer {
-            margin-top: 30px;
-            width: 100%;
-            text-align: right;
-        }
+        thead { display: table-header-group; }
+        tfoot { display: table-row-group; }
+        tr { page-break-inside: avoid; }
+        .footer { page-break-inside: avoid; margin-top: 30px; width: 100%; text-align: right; }
+        
+        /* Master Table for Margins */
+        .page-container { width: 100%; border: none; border-collapse: collapse; }
+        .page-header-space { height: 15mm; border: none; padding: 0; }
+        .page-footer-space { height: 15mm; border: none; padding: 0; }
+        .page-content-cell { padding: 0 15mm; border: none; }
         
         @media print {
             .no-print { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         .no-print {
             background: #333; color: #fff; padding: 10px; text-align: center; margin-bottom: 20px;
@@ -94,86 +101,100 @@
     <a href="{{ route('admin.report.attendance.index') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
-@include('layouts.print_header', ['institution' => $institution])
-<div style="text-align: center; margin-bottom: 20px;">
-    <h3 style="margin:0; text-decoration: underline;">DAFTAR HADIR PESERTA UJIAN</h3>
-</div>
-
-<table class="info-table">
-    <tr>
-        <td width="150">Mata Pelajaran</td>
-        <td width="10">:</td>
-        <td>{{ $session ? $session->subject->name : '..................................................' }}</td>
-        
-        <td width="100">Hari / Tanggal</td>
-        <td width="10">:</td>
-        <td>{{ $session ? $session->start_time->isoFormat('dddd, D MMMM Y') : '..................................................' }}</td>
-    </tr>
-    <tr>
-        <td>Kelas / Ruang</td>
-        <td>:</td>
-        <td>{{ $room ? $room->name : '....................' }}</td>
-        
-        <td>Waktu</td>
-        <td>:</td>
-        <td>{{ $session ? $session->start_time->format('H:i') . ' - ' . $session->end_time->format('H:i') : '..................................................' }}</td>
-    </tr>
-</table>
-
-<table class="main-table">
+<table class="page-container">
     <thead>
-        <tr>
-            <th width="30">NO</th>
-            <th width="100">NO PESERTA / NIS</th>
-            <th>NAMA PESERTA</th>
-            <th width="180">TANDA TANGAN</th>
-            <th width="80">KET</th>
-        </tr>
+        <tr><td class="page-header-space"></td></tr>
     </thead>
     <tbody>
-        @foreach($students as $index => $student)
-        <tr>
-            <td class="center">{{ $loop->iteration }}</td>
-            <td class="center">{{ $student->nis }}</td>
-            <td>{{ strtoupper($student->name) }}</td>
-            <td class="signature-box">
-                @if($loop->iteration % 2 != 0)
-                    {{ $loop->iteration }}. 
-                @else
-                    <div style="text-align: center; padding-left: 50px;">{{ $loop->iteration }}.</div>
-                @endif
-            </td>
-            <td></td>
-        </tr>
-        @endforeach
-        {{-- Add empty rows if needed --}} 
-        @for($i = 0; $i < 3; $i++)
-         <tr>
-            <td class="center"></td>
-            <td class="center"></td>
-            <td></td>
-            <td class="signature-box"></td>
-            <td></td>
-        </tr>
-        @endfor
+        <tr><td class="page-content-cell">
+
+            @include('layouts.print_header', ['institution' => $institution])
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="margin:0; text-decoration: underline;">DAFTAR HADIR PESERTA UJIAN</h3>
+            </div>
+            
+            <table class="info-table">
+                <tr>
+                    <td width="150">Mata Pelajaran</td>
+                    <td width="10">:</td>
+                    <td>{{ $session ? $session->subject->name : '..................................................' }}</td>
+                    
+                    <td width="100">Hari / Tanggal</td>
+                    <td width="10">:</td>
+                    <td>{{ $session ? $session->start_time->isoFormat('dddd, D MMMM Y') : '..................................................' }}</td>
+                </tr>
+                <tr>
+                    <td>Kelas / Ruang</td>
+                    <td>:</td>
+                    <td>{{ $room ? $room->name : '....................' }}</td>
+                    
+                    <td>Waktu</td>
+                    <td>:</td>
+                    <td>{{ $session ? $session->start_time->format('H:i') . ' - ' . $session->end_time->format('H:i') : '..................................................' }}</td>
+                </tr>
+            </table>
+            
+            <table class="main-table">
+                <thead>
+                    <tr>
+                        <th width="30">NO</th>
+                        <th width="100">NO PESERTA / NIS</th>
+                        <th>NAMA PESERTA</th>
+                        <th width="180">TANDA TANGAN</th>
+                        <th width="80">KET</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($students as $index => $student)
+                    <tr>
+                        <td class="center">{{ $loop->iteration }}</td>
+                        <td class="center">{{ $student->nis }}</td>
+                        <td>{{ strtoupper($student->name) }}</td>
+                        <td class="signature-box">
+                            @if($loop->iteration % 2 != 0)
+                                {{ $loop->iteration }}. 
+                            @else
+                                <div style="text-align: center; padding-left: 50px;">{{ $loop->iteration }}.</div>
+                            @endif
+                        </td>
+                        <td></td>
+                    </tr>
+                    @endforeach
+                    {{-- Add empty rows if needed --}} 
+                    @for($i = 0; $i < 3; $i++)
+                     <tr>
+                        <td class="center"></td>
+                        <td class="center"></td>
+                        <td></td>
+                        <td class="signature-box"></td>
+                        <td></td>
+                    </tr>
+                    @endfor
+                </tbody>
+            </table>
+            
+            <div class="footer">
+                <div style="float: right; width: 220px; text-align: center; position: relative;">
+                    <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+                    <p style="margin-bottom: 40px;">Pengawas Ruang,</p>
+                    
+                    <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px;">
+                         {{-- Typically signed by Invigilator manual, but if user wants dynamic headmaster/admin signature optionally: --}}
+                         {{-- Leaving space for manual signature as requested "Pengawas Ruang" usually implies manual. --}}
+                         <div style="height: 80px; width: 100%;"></div>
+                    </div>
+            
+                    <p style="margin: 0; font-weight: bold; text-decoration: underline;">( ..................................................... )</p>
+                    <p style="margin: 2px 0;">NIP. ........................................</p>
+                </div>
+            </div>
+
+        </td></tr>
     </tbody>
+    <tfoot>
+        <tr><td class="page-footer-space"></td></tr>
+    </tfoot>
 </table>
-
-<div class="footer">
-    <div style="float: right; width: 220px; text-align: center; position: relative;">
-        <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
-        <p style="margin-bottom: 40px;">Pengawas Ruang,</p>
-        
-        <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px;">
-             {{-- Typically signed by Invigilator manual, but if user wants dynamic headmaster/admin signature optionally: --}}
-             {{-- Leaving space for manual signature as requested "Pengawas Ruang" usually implies manual. --}}
-             <div style="height: 80px; width: 100%;"></div>
-        </div>
-
-        <p style="margin: 0; font-weight: bold; text-decoration: underline;">( ..................................................... )</p>
-        <p style="margin: 2px 0;">NIP. ........................................</p>
-    </div>
-</div>
 
 </body>
 </html>

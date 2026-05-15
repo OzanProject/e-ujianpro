@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Tata Tertib Pengawas Ujian</title>
     <style>
-        @page { size: A4; margin: 10mm 15mm; }
+        @page { size: A4; margin: 0; }
         body { 
             font-family: Arial, Helvetica, sans-serif; 
             font-size: 10pt; 
             line-height: 1.5; 
             color: #000; 
             margin: 0;
-            padding: 0;
+            padding: 15mm;
         }
         .header-table { 
             border-bottom: 3px double #000; 
@@ -94,8 +94,8 @@
             <p style="margin: 0;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
             <p style="margin: 0;">Kepala Sekolah,</p>
             
-            <div class="qr-code-box">
-                {!! QrCode::size(45)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            <div style="margin-top: 10px;">
+                {!! QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
             </div>
             
             <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '...................................') }}</p>

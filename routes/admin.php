@@ -91,6 +91,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     // Institution Data
     Route::get('institution', [App\Http\Controllers\Admin\InstitutionController::class, 'index'])->name('admin.institution.index');
     Route::put('institution', [App\Http\Controllers\Admin\InstitutionController::class, 'update'])->name('admin.institution.update');
+    Route::delete('institution/delete-asset/{type}', [App\Http\Controllers\Admin\InstitutionController::class, 'deleteAsset'])->name('admin.institution.delete_asset');
 
     // Score Scales (Konversi Skor)
     Route::resource('score-scales', App\Http\Controllers\Admin\ScoreScaleController::class)

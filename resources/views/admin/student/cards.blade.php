@@ -246,12 +246,11 @@
                  <div class="footer">
                     <div style="font-size: 9px; margin-bottom: 2px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                     
-                    <div style="position: relative; height: 45px; width: 100%; margin: 5px 0; display: flex; justify-content: flex-end; padding-right: 15px;">
-                        {!! QrCode::size(45)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+                    <div style="position: relative; height: 55px; width: 100%; margin: 5px 0; display: flex; justify-content: flex-end; padding-right: 15px;">
+                        {!! QrCode::size(55)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
                     </div>
-                    
-                    <div style="font-size: 10px; font-weight: bold; text-decoration: underline; margin-top: -2px; position: relative; z-index: 3;">{{ $institution->name_head_master ?? ($institution->head_master ?? 'Kepala Sekolah') }}</div>
-                    <div style="font-size: 9px;">NIP. {{ $institution->nip_head_master ?? '-' }}</div>
+                    <div style="font-size: 9px; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? 'Kepala Sekolah' }}</div>
+                    <div style="font-size: 8px;">NIP. {{ $institution->nip_head_master ?? '-' }}</div>
                  </div>
             </div>
         </div>

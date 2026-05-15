@@ -5,12 +5,14 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 15mm;
+            margin: 0;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
             color: #333;
+            margin: 0;
+            padding: 0;
             -webkit-print-color-adjust: exact;
         }
         
@@ -67,6 +69,16 @@
             page-break-inside: avoid;
         }
         
+        thead { display: table-header-group; }
+        tfoot { display: table-row-group; }
+        tr { page-break-inside: avoid; }
+        
+        /* Master Table for Margins */
+        .page-container { width: 100%; border: none; border-collapse: collapse; }
+        .page-header-space { height: 15mm; border: none; padding: 0; }
+        .page-footer-space { height: 15mm; border: none; padding: 0; }
+        .page-content-cell { padding: 0 15mm; border: none; }
+        
         @media print {
             .no-print { display: none; }
             .main-table { box-shadow: none; }
@@ -83,12 +95,19 @@
     <a href="{{ route('admin.report.exam_schedule') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
-@include('layouts.print_header', ['institution' => $institution])
+<table class="page-container">
+    <thead>
+        <tr><td class="page-header-space"></td></tr>
+    </thead>
+    <tbody>
+        <tr><td class="page-content-cell">
 
-<div class="title-section">
-    <h3>JADWAL PELAKSANAAN UJIAN</h3>
-    <h5>Periode: {{ \Carbon\Carbon::parse($startDate)->locale('id')->isoFormat('D MMMM Y') }} s.d. {{ \Carbon\Carbon::parse($endDate)->locale('id')->isoFormat('D MMMM Y') }}</h5>
-</div>
+            @include('layouts.print_header', ['institution' => $institution])
+            
+            <div class="title-section">
+                <h3>JADWAL PELAKSANAAN UJIAN</h3>
+                <h5>Periode: {{ \Carbon\Carbon::parse($startDate)->locale('id')->isoFormat('D MMMM Y') }} s.d. {{ \Carbon\Carbon::parse($endDate)->locale('id')->isoFormat('D MMMM Y') }}</h5>
+            </div>
 
 <table class="main-table">
     <thead>
@@ -130,13 +149,20 @@
         <p style="margin-bottom: 40px;">Mengetahui,<br>Kepala Sekolah</p>
         
         <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center;">
-            {!! QrCode::size(70)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            {!! QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
         </div>
 
         <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '.........................') }}</p>
         <p style="margin: 2px 0;">NIP. {{ $institution->nip_head_master ?? '-' }}</p>
     </div>
 </div>
+
+        </td></tr>
+    </tbody>
+    <tfoot>
+        <tr><td class="page-footer-space"></td></tr>
+    </tfoot>
+</table>
 
 </body>
 </html>

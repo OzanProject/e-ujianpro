@@ -280,6 +280,13 @@
                                     <p>Koreksi Ujian</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route($baseRoute . '.recap.exam_result') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.recap.exam_result') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-danger"></i>
+                                    <p>Reset Ujian</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endif

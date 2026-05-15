@@ -10,7 +10,8 @@
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 13px;
-            padding: 15mm;
+            margin: 0;
+            padding: 0;
         }
         .header-table {
             width: 100%;
@@ -71,15 +72,20 @@
             vertical-align: middle;
         }
         
-        .footer {
-            margin-top: 30px;
-            width: 100%;
-            text-align: right;
-            page-break-inside: avoid;
-        }
+        thead { display: table-header-group; }
+        tfoot { display: table-row-group; }
+        tr { page-break-inside: avoid; }
+        .footer { page-break-inside: avoid; margin-top: 30px; width: 100%; text-align: right; }
+        
+        /* Master Table for Margins */
+        .page-container { width: 100%; border: none; border-collapse: collapse; }
+        .page-header-space { height: 15mm; border: none; padding: 0; }
+        .page-footer-space { height: 15mm; border: none; padding: 0; }
+        .page-content-cell { padding: 0 15mm; border: none; }
         
         @media print {
             .no-print { display: none; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
         .no-print {
             background: #333; color: #fff; padding: 10px; text-align: center; margin-bottom: 20px;
@@ -93,10 +99,17 @@
     <a href="{{ route('admin.report.attendance.index') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
-@include('layouts.print_header', ['institution' => $institution])
-<div style="text-align: center; margin-bottom: 20px;">
-    <h3 style="margin:0; text-decoration: underline;">DAFTAR HADIR PENGAWAS UJIAN</h3>
-</div>
+<table class="page-container">
+    <thead>
+        <tr><td class="page-header-space"></td></tr>
+    </thead>
+    <tbody>
+        <tr><td class="page-content-cell">
+
+            @include('layouts.print_header', ['institution' => $institution])
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="margin:0; text-decoration: underline;">DAFTAR HADIR PENGAWAS UJIAN</h3>
+            </div>
 
 <table class="info-table">
     <tr>
@@ -162,13 +175,20 @@
         <p style="margin-bottom: 40px;">Kepala Sekolah,</p>
         
         <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center;">
-            {!! QrCode::size(70)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            {!! QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
         </div>
 
         <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '.........................') }}</p>
         <p style="margin: 2px 0;">NIP. {{ $institution->nip_head_master ?? '-' }}</p>
     </div>
 </div>
+
+        </td></tr>
+    </tbody>
+    <tfoot>
+        <tr><td class="page-footer-space"></td></tr>
+    </tfoot>
+</table>
 
 </body>
 </html>

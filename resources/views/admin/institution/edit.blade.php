@@ -101,6 +101,13 @@
                                     </div>
                                 </div>
                                 <small class="text-muted">Biarkan kosong jika tidak ingin mengubah logo.</small>
+                                @if($institution->logo)
+                                    <div class="mt-1">
+                                        <button type="button" class="btn btn-xs btn-danger" onclick="confirmDeleteAsset('logo')">
+                                            <i class="fas fa-trash"></i> Hapus Logo Utama
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                             
                             <div class="mt-3 text-center p-3 bg-light border rounded">
@@ -124,6 +131,13 @@
                             </div>
                             <div class="text-center p-2 mb-3 bg-light border rounded">
                                 <img id="inst_logo_kiri_preview" src="{{ $institution->logo_kiri ? asset('storage/' . $institution->logo_kiri) : '' }}" alt="Preview Kiri" style="max-height: 100px; max-width: 100%; object-fit: contain; {{ $institution->logo_kiri ? '' : 'display:none;' }}">
+                                @if($institution->logo_kiri)
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-xs btn-danger" onclick="confirmDeleteAsset('logo_kiri')">
+                                            <i class="fas fa-trash"></i> Hapus Logo Kiri
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Logo Kanan --}}
@@ -138,6 +152,13 @@
                             </div>
                             <div class="text-center p-2 bg-light border rounded mb-3">
                                 <img id="inst_logo_kanan_preview" src="{{ $institution->logo_kanan ? asset('storage/' . $institution->logo_kanan) : '' }}" alt="Preview Kanan" style="max-height: 100px; max-width: 100%; object-fit: contain; {{ $institution->logo_kanan ? '' : 'display:none;' }}">
+                                @if($institution->logo_kanan)
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-xs btn-danger" onclick="confirmDeleteAsset('logo_kanan')">
+                                            <i class="fas fa-trash"></i> Hapus Logo Kanan
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Tanda Tangan dan Stempel --}}
@@ -156,6 +177,13 @@
                                     </div>
                                     <div class="text-center p-2 mb-3 bg-light border rounded">
                                         <img id="inst_signature_preview" src="{{ $institution->signature ? asset('storage/' . $institution->signature) : '' }}" alt="Preview TTD" style="max-height: 100px; max-width: 100%; object-fit: contain; {{ $institution->signature ? '' : 'display:none;' }}">
+                                        @if($institution->signature)
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-xs btn-danger" onclick="confirmDeleteAsset('signature')">
+                                                    <i class="fas fa-trash"></i> Hapus TTD
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -171,6 +199,13 @@
                                     </div>
                                     <div class="text-center p-2 mb-3 bg-light border rounded">
                                         <img id="inst_stamp_preview" src="{{ $institution->stamp ? asset('storage/' . $institution->stamp) : '' }}" alt="Preview Stempel" style="max-height: 100px; max-width: 100%; object-fit: contain; {{ $institution->stamp ? '' : 'display:none;' }}">
+                                        @if($institution->stamp)
+                                            <div class="mt-2">
+                                                <button type="button" class="btn btn-xs btn-danger" onclick="confirmDeleteAsset('stamp')">
+                                                    <i class="fas fa-trash"></i> Hapus Stempel
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -187,6 +222,11 @@
     </div>
 </section>
 
+<form id="deleteAssetForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 <script>
     function previewImage(input, targetId) {
         const preview = document.getElementById(targetId);
@@ -198,6 +238,14 @@
                 preview.style.display = 'block';
             }
             reader.readAsDataURL(file);
+        }
+    }
+
+    function confirmDeleteAsset(type) {
+        if (confirm('Apakah Anda yakin ingin menghapus file ini?')) {
+            const form = document.getElementById('deleteAssetForm');
+            form.action = "{{ url('admin/institution/delete-asset') }}/" + type;
+            form.submit();
         }
     }
 </script>
