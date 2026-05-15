@@ -61,25 +61,25 @@
         
         /* Master Table for Margins */
         .page-container { width: 100%; border: none; border-collapse: collapse; }
-        .page-header-space { height: 10mm; border: none; padding: 0; }
-        .page-footer-space { height: 10mm; border: none; padding: 0; }
+        .page-header-space { height: 8mm; border: none; padding: 0; }
+        .page-footer-space { height: 5mm; border: none; padding: 0; }
         .page-content-cell { padding: 0 12mm; border: none; }
 
         .main-table th, .main-table td {
             border: 1px solid #ddd;
-            padding: 7px 6px;
-            font-size: 11px;
+            padding: 9px 6px;
+            font-size: 12px;
         }
-        .main-table th { font-size: 10px; }
+        .main-table th { font-size: 11px; }
         
         .title-section {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #ffd700;
-            padding-bottom: 5px;
+            padding-bottom: 8px;
         }
         .footer {
-            margin-top: 15px;
+            margin-top: 20px;
             width: 100%;
             page-break-inside: avoid;
         }
