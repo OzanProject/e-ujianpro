@@ -212,6 +212,9 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('report/exam-schedule/print', [\App\Http\Controllers\Admin\ReportController::class, 'printExamSchedule'])->name('report.print_exam_schedule');
     Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('report.attendance.index');
     Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('report.attendance.print');
+    Route::get('report/student-room', [\App\Http\Controllers\Admin\ReportController::class, 'studentRoomIndex'])->name('report.student_room.index');
+    Route::get('report/student-room/print', [\App\Http\Controllers\Admin\ReportController::class, 'studentRoomPrint'])->name('report.student_room.print');
+    Route::get('report/attendance-proctor', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceProctorIndex'])->name('report.attendance_proctor.index');
 
     // Tambahan Laporan Administrasi Ujian
     Route::get('report/berita-acara', [\App\Http\Controllers\Admin\ReportController::class, 'beritaAcaraIndex'])->name('report.berita_acara.index');

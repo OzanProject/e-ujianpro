@@ -320,8 +320,8 @@
                             </li>
 
                             <li class="nav-item">
-                                <a href="{{ route('admin.report.student_room.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.report.student_room.index') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.report.student_room.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.report.student_room.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Daftar Peserta per Ruang</p>
                                 </a>
@@ -338,8 +338,8 @@
                             @endif
 
                             <li class="nav-item">
-                                <a href="{{ route('admin.report.attendance.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.report.attendance.index') ? 'active' : '' }}">
+                                <a href="{{ route($baseRoute . '.report.attendance.index') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.report.attendance.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Cetak Daftar Hadir</p>
                                 </a>
@@ -347,8 +347,8 @@
 
                             @if($user->role !== 'pengajar')
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.report.attendance_proctor.index') }}"
-                                        class="nav-link {{ request()->routeIs('admin.report.attendance_proctor.index') ? 'active' : '' }}">
+                                    <a href="{{ route($baseRoute . '.report.attendance_proctor.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.attendance_proctor.index') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Cetak Absen Pengawas</p>
                                     </a>
