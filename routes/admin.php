@@ -67,6 +67,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
 
     // Route Resource Jadwal Ujian
     Route::post('exam_session/{exam_session}/regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'regenerateToken'])->name('admin.exam_session.regenerate_token');
+    Route::post('exam_session/bulk-regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'bulkRegenerateToken'])->name('admin.exam_session.bulk_regenerate_token');
     Route::resource('exam_session', \App\Http\Controllers\Admin\ExamSessionController::class)->names('admin.exam_session');
 
     // Route Monitoring (Full List for Admin)

@@ -228,4 +228,35 @@ class ExamSessionController extends Controller
 
         return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Token ujian berhasil diperbarui.');
     }
+    public function bulkRegenerateToken(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:exam_sessions,id'
+        ]);
+
+        $user = auth()->user();
+        $sessions = ExamSession::whereIn('id', $request->ids)->get();
+        $count = 0;
+
+        foreach ($sessions as $session) {
+            // Security Check
+            $canEdit = false;
+            if ($user->role === 'pengajar') {
+                $canEdit = $user->subjects->contains($session->subject_id);
+            } else {
+                $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+                $subject = Subject::find($session->subject_id);
+                $canEdit = $subject && $subject->created_by == $creatorId;
+            }
+
+            if ($canEdit) {
+                $session->token = strtoupper(\Illuminate\Support\Str::random(5));
+                $session->save();
+                $count++;
+            }
+        }
+
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', "$count token ujian berhasil diperbarui masal.");
+    }
 }
