@@ -14,23 +14,32 @@ class ReadingTextController extends Controller
         return auth()->user()->role === 'pengajar' ? 'pengajar.reading_text' : 'admin.reading_text';
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $query = ReadingText::with('subject')->latest();
 
         if ($user->role === 'pengajar') {
-            $query->whereIn('subject_id', $user->subjects->pluck('id'));
+            $subjects = $user->subjects;
+            $query->whereIn('subject_id', $subjects->pluck('id'));
         } else {
             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
-            $subjectIds = Subject::where('created_by', $creatorId)->pluck('id');
-            $query->whereIn('subject_id', $subjectIds);
+            $subjects = Subject::where('created_by', $creatorId)->get();
+            $query->whereIn('subject_id', $subjects->pluck('id'));
         }
 
-        $readingTexts = $query->paginate(10);
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        $perPage = in_array((int) $request->get('per_page', 10), [10, 20, 50, 100])
+            ? (int) $request->get('per_page', 10)
+            : 10;
+
+        $readingTexts = $query->withCount('questions')->paginate($perPage)->withQueryString();
         $baseRoute = $this->getBaseRoute();
 
-        return view('admin.reading_text.index', compact('readingTexts', 'baseRoute'));
+        return view('admin.reading_text.index', compact('readingTexts', 'subjects', 'baseRoute'));
     }
 
     public function create()
@@ -116,5 +125,27 @@ class ReadingTextController extends Controller
 
         $readingText->delete();
         return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Bacaan berhasil dihapus.');
+    }
+    public function deleteAll(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:reading_texts,id'
+        ]);
+
+        $user = auth()->user();
+        $query = ReadingText::whereIn('id', $request->ids);
+
+        if ($user->role === 'pengajar') {
+            $query->whereIn('subject_id', $user->subjects->pluck('id'));
+        } else {
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subjectIds = Subject::where('created_by', $creatorId)->pluck('id');
+            $query->whereIn('subject_id', $subjectIds);
+        }
+
+        $count = $query->delete();
+
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', "$count bacaan berhasil dihapus masal.");
     }
 }

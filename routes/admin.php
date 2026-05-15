@@ -40,6 +40,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('admin.question.template.word');
     Route::get('question/export-word', [\App\Http\Controllers\Admin\QuestionController::class, 'exportWord'])->name('admin.question.export.word');
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class)->names('admin.question');
+    Route::post('reading_text/delete-all', [\App\Http\Controllers\Admin\ReadingTextController::class, 'deleteAll'])->name('admin.reading_text.delete_all');
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class)->names('admin.reading_text');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class)->names('admin.question_group');
 

@@ -23,17 +23,12 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .main-table th, .main-table td {
-            border: 1px solid #ddd;
-            padding: 10px 8px;
-        }
         .main-table th {
             background: linear-gradient(to bottom, #004d40, #00695c); /* Dark Green Theme */
             color: #fff;
             text-align: center;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 12px;
             border-color: #004d40;
         }
         .main-table tr:nth-child(even) {
@@ -44,12 +39,7 @@
         }
         .center { text-align: center; }
         
-        .title-section {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #ffd700; /* Gold Line */
-            padding-bottom: 10px;
-        }
+
         .title-section h3 {
             margin: 0;
             color: #004d40;
@@ -63,11 +53,7 @@
             font-weight: normal;
         }
 
-        .footer {
-            margin-top: 40px;
-            width: 100%;
-            page-break-inside: avoid;
-        }
+
         
         thead { display: table-header-group; }
         tfoot { display: table-row-group; }
@@ -75,9 +61,28 @@
         
         /* Master Table for Margins */
         .page-container { width: 100%; border: none; border-collapse: collapse; }
-        .page-header-space { height: 15mm; border: none; padding: 0; }
-        .page-footer-space { height: 15mm; border: none; padding: 0; }
-        .page-content-cell { padding: 0 15mm; border: none; }
+        .page-header-space { height: 10mm; border: none; padding: 0; }
+        .page-footer-space { height: 10mm; border: none; padding: 0; }
+        .page-content-cell { padding: 0 12mm; border: none; }
+
+        .main-table th, .main-table td {
+            border: 1px solid #ddd;
+            padding: 7px 6px;
+            font-size: 11px;
+        }
+        .main-table th { font-size: 10px; }
+        
+        .title-section {
+            text-align: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 5px;
+        }
+        .footer {
+            margin-top: 15px;
+            width: 100%;
+            page-break-inside: avoid;
+        }
         
         @media print {
             .no-print { display: none; }
