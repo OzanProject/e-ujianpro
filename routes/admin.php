@@ -121,8 +121,12 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('report/attendance', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceIndex'])->name('admin.report.attendance.index');
     Route::get('report/attendance/print', [\App\Http\Controllers\Admin\ReportController::class, 'printAttendance'])->name('admin.report.attendance.print');
 
-    // Tambahan Laporan Administrasi Ujian
-    Route::get('report/berita-acara', [\App\Http\Controllers\Admin\ReportController::class, 'beritaAcaraIndex'])->name('admin.report.berita_acara.index');
+    // Tambahan Laporan
+    Route::get('report/student-room', [App\Http\Controllers\Admin\ReportController::class, 'studentRoomIndex'])->name('admin.report.student_room.index');
+    Route::get('report/student-room/print', [App\Http\Controllers\Admin\ReportController::class, 'studentRoomPrint'])->name('admin.report.student_room.print');
+    
+    // Berita Acara
+    Route::get('report/berita-acara', [App\Http\Controllers\Admin\ReportController::class, 'beritaAcaraIndex'])->name('admin.report.berita_acara.index');
     Route::get('report/berita-acara/print', [\App\Http\Controllers\Admin\ReportController::class, 'printBeritaAcara'])->name('admin.report.berita_acara.print');
     
     Route::get('report/tata-tertib-peserta', [\App\Http\Controllers\Admin\ReportController::class, 'tataTertibPeserta'])->name('admin.report.tata_tertib_peserta.print');

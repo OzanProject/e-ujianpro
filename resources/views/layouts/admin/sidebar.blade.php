@@ -319,6 +319,14 @@
                                 </a>
                             </li>
 
+                            <li class="nav-item">
+                                <a href="{{ route('admin.report.student_room.index') }}"
+                                    class="nav-link {{ request()->routeIs('admin.report.student_room.index') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Daftar Peserta per Ruang</p>
+                                </a>
+                            </li>
+
                             @if($user->role !== 'pengajar')
                                 <li class="nav-item">
                                     <a href="{{ route($baseRoute . '.report.desk_card.index') }}"

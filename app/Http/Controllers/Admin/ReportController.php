@@ -348,4 +348,33 @@ class ReportController extends Controller
 
         return view('admin.report.denah_ruang.print', compact('room', 'students', 'institution'));
     }
+    public function studentRoomIndex()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
+        $rooms = \App\Models\ExamRoom::whereIn('created_by', $allIds)->get();
+        
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.student_room.index', compact('rooms', 'baseRoute'));
+    }
+
+    public function studentRoomPrint(Request $request)
+    {
+        $request->validate([
+            'exam_room_id' => 'required|exists:exam_rooms,id'
+        ]);
+
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $room = \App\Models\ExamRoom::with(['students' => function($q) {
+            $q->orderBy('name', 'asc');
+        }])->findOrFail($request->exam_room_id);
+
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+
+        return view('admin.report.student_room.print', compact('room', 'institution'));
+    }
 }
