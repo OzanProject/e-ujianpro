@@ -187,6 +187,7 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class);
 
     // Additional Teaching Resources
+    Route::post('question_group/generate', [\App\Http\Controllers\Admin\QuestionGroupController::class, 'generate'])->name('question_group.generate');
     Route::resource('question_group', \App\Http\Controllers\Admin\QuestionGroupController::class);
     Route::resource('reading_text', \App\Http\Controllers\Admin\ReadingTextController::class);
     Route::resource('learning_material', \App\Http\Controllers\Admin\LearningMaterialController::class);

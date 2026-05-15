@@ -114,4 +114,61 @@ class QuestionGroupController extends Controller
         $questionGroup->delete();
         return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Grup soal berhasil dihapus.');
     }
+    public function generate(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'strategy' => 'required|in:type,difficulty',
+        ]);
+
+        $user = auth()->user();
+        if ($user->role === 'pengajar' && !$user->subjects->contains($request->subject_id)) {
+            abort(403, 'Akses Ditolak.');
+        }
+
+        $questions = \App\Models\Question::where('subject_id', $request->subject_id)->get();
+        $strategy = $request->strategy;
+        $createdCount = 0;
+        $mappedCount = 0;
+
+        $groupedQuestions = $questions->groupBy($strategy);
+
+        foreach ($groupedQuestions as $key => $items) {
+            if (empty($key)) continue;
+
+            // Clean up name
+            $name = ucwords(str_replace('_', ' ', $key));
+            if ($strategy === 'type') {
+                $typeMap = [
+                    'multiple_choice' => 'Pilihan Ganda Tunggal',
+                    'multiple_choice_complex' => 'Pilihan Ganda Kompleks',
+                    'boolean_grid' => 'Benar / Salah',
+                    'essay' => 'Esai / Uraian'
+                ];
+                $name = $typeMap[$key] ?? $name;
+            }
+
+            // Create or Find Group
+            $group = QuestionGroup::firstOrCreate(
+                [
+                    'subject_id' => $request->subject_id,
+                    'name' => $name,
+                    'created_by' => $user->id
+                ]
+            );
+
+            if ($group->wasRecentlyCreated) {
+                $createdCount++;
+            }
+
+            // Map Questions
+            foreach ($items as $question) {
+                $question->update(['question_group_id' => $group->id]);
+                $mappedCount++;
+            }
+        }
+
+        return redirect()->route($this->getBaseRoute() . '.index')
+            ->with('success', "Berhasil: $createdCount grup baru dibuat dan $mappedCount soal berhasil dikelompokkan secara otomatis.");
+    }
 }
