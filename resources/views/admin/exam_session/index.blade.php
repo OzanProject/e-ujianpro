@@ -12,7 +12,16 @@
                     <h5 class="font-weight-bold text-dark mb-1">Daftar Jadwal Ujian</h5>
                     <p class="text-muted text-sm mb-0">Kelola sesi ujian, waktu, dan token akses siswa.</p>
                 </div>
-                <div>
+                <div class="d-flex align-items-center">
+                    <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mr-3 d-flex align-items-center">
+                        <label class="text-xs font-weight-bold text-muted mb-0 mr-2">TAMPILKAN:</label>
+                        <select name="per_page" class="form-control form-control-sm rounded-pill border-gray-300" onchange="this.form.submit()" style="width: 100px;">
+                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 data</option>
+                            <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 data</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 data</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100 data</option>
+                        </select>
+                    </form>
                     <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary shadow-sm rounded-pill px-4 font-weight-bold">
                         <i class="fas fa-plus mr-2"></i> Buat Jadwal Baru
                     </a>

@@ -32,10 +32,15 @@ class ExamSessionController extends Controller
             $subjectIds = Subject::where('created_by', $creatorId)->pluck('id');
         }
 
+        $perPage = in_array((int) request('per_page', 10), [10, 20, 50, 100])
+            ? (int) request('per_page', 10)
+            : 10;
+
         $examSessions = ExamSession::whereIn('subject_id', $subjectIds)
             ->with(['subject', 'examPackage'])
             ->latest()
-            ->paginate(10);
+            ->paginate($perPage)
+            ->withQueryString();
 
         // Lazy Backfill: Generate token if missing (Only for items in current page to be efficient)
         foreach ($examSessions as $session) {
