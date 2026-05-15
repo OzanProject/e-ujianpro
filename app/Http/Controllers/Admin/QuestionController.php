@@ -19,13 +19,7 @@ class QuestionController extends Controller
 
         if ($user->role === 'pengajar') {
             $subjects = $user->subjects;
-
-            $query = Question::whereIn('subject_id', $subjects->pluck('id'))
-                ->where(function ($q) use ($user) {
-                    $q->where('created_by', $user->id)
-                        ->orWhereNull('created_by');
-                })
-                ->with('subject');
+            $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         } else {
             $subjects = Subject::where('created_by', auth()->id())->get();
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
