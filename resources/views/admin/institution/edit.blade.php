@@ -58,13 +58,9 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">{{ url('/') }}/</span>
                                     </div>
-                                    <input type="text" class="form-control" id="subdomain" name="subdomain" value="{{ old('subdomain', $institution->subdomain) }}" placeholder="hanya-huruf-angka" {{ $institution->subdomain ? 'readonly' : '' }}>
+                                    <input type="text" class="form-control" id="subdomain" name="subdomain" value="{{ old('subdomain', $institution->subdomain) }}" placeholder="hanya-huruf-angka">
                                 </div>
-                                @if(!$institution->subdomain)
-                                    <small class="form-text text-muted">Username unik untuk link akses sekolah (misal: smpn1). Tidak bisa diubah setelah disimpan.</small>
-                                @else
-                                    <small class="form-text text-muted">URL akses sekolah. Hubungi admin jika ingin mengubah.</small>
-                                @endif
+                                <small class="form-text text-danger font-weight-bold"><i class="fas fa-exclamation-triangle"></i> Perhatian: Mengubah URL akan menyebabkan link yang sudah disebar ke siswa tidak dapat dibuka.</small>
                             </div>
                             <div class="form-group">
                                 <label for="email">Email</label>
@@ -247,6 +243,21 @@
             form.action = "{{ url('admin/institution/delete-asset') }}/" + type;
             form.submit();
         }
+    }
+
+    // Dynamic Subdomain Generation
+    const nameInput = document.getElementById('name');
+    const subdomainInput = document.getElementById('subdomain');
+
+    if (nameInput && subdomainInput) {
+        nameInput.addEventListener('input', function() {
+            let slug = this.value.toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove non-word chars
+                .replace(/\s+/g, '-')     // Replace spaces with -
+                .replace(/-+/g, '-')      // Replace multiple - with single -
+                .trim();
+            subdomainInput.value = slug;
+        });
     }
 </script>
 @endsection
