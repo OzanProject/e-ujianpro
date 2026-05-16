@@ -52,8 +52,40 @@ class StudentController extends Controller
         $groups = StudentGroup::all(); // Automatically scoped via Multitenantable
         $groups = StudentGroup::sortCollection($groups);
         $rooms = \App\Models\ExamRoom::all(); // Automatically scoped
-        
-        return view('admin.student.index', compact('students', 'groups', 'rooms'));
+
+        // Calculate Stats
+        $statsRaw = Student::select('student_group_id', 'gender', \DB::raw('count(*) as count'))
+            ->groupBy('student_group_id', 'gender')
+            ->get();
+
+        $groupStats = [];
+        $totalMale = 0;
+        $totalFemale = 0;
+
+        foreach ($statsRaw as $stat) {
+            $groupId = $stat->student_group_id ?? 0;
+            if (!isset($groupStats[$groupId])) {
+                $groupStats[$groupId] = ['L' => 0, 'P' => 0, 'name' => 'Tanpa Kelompok'];
+            }
+            
+            $gender = strtoupper($stat->gender ?? '');
+            if ($gender == 'L') {
+                $groupStats[$groupId]['L'] = $stat->count;
+                $totalMale += $stat->count;
+            } elseif ($gender == 'P') {
+                $groupStats[$groupId]['P'] = $stat->count;
+                $totalFemale += $stat->count;
+            }
+        }
+
+        // Map names
+        foreach ($groups as $group) {
+            if (isset($groupStats[$group->id])) {
+                $groupStats[$group->id]['name'] = $group->name;
+            }
+        }
+
+        return view('admin.student.index', compact('students', 'groups', 'rooms', 'groupStats', 'totalMale', 'totalFemale'));
     }
 
     /**

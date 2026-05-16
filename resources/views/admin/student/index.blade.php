@@ -105,6 +105,63 @@
             </div>
         </div>
     </div>
+    
+    <!-- Student Gender Stats -->
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-3">
+            <div class="info-box shadow-sm mb-3">
+                <span class="info-box-icon bg-primary elevation-1"><i class="fas fa-mars"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Total Laki-laki (L)</span>
+                    <span class="info-box-number">
+                        {{ $totalMale }}
+                        <small>Siswa</small>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+            <div class="info-box shadow-sm mb-3">
+                <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-venus"></i></span>
+                <div class="info-box-content">
+                    <span class="info-box-text">Total Perempuan (P)</span>
+                    <span class="info-box-number">
+                        {{ $totalFemale }}
+                        <small>Siswi</small>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header p-2">
+                    <h3 class="card-title mt-1 ml-2"><strong>Statistik Per Kelompok / Kelas</strong></h3>
+                </div>
+                <div class="card-body p-0" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th class="pl-3">Kelompok / Kelas</th>
+                                <th class="text-center">L</th>
+                                <th class="text-center">P</th>
+                                <th class="text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($groupStats as $id => $stat)
+                                <tr>
+                                    <td class="pl-3">{{ $stat['name'] }}</td>
+                                    <td class="text-center text-primary">{{ $stat['L'] }}</td>
+                                    <td class="text-center text-danger">{{ $stat['P'] }}</td>
+                                    <td class="text-center font-weight-bold">{{ $stat['L'] + $stat['P'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Data Table -->
     <div class="row">
