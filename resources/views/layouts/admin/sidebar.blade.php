@@ -361,6 +361,13 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.daily_log.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.daily_log.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Catatan Kejadian Penting</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a href="{{ route($baseRoute . '.report.tata_tertib_peserta.print') }}" target="_blank"
                                         class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>

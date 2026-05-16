@@ -229,6 +229,10 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('report/denah-ruang', [\App\Http\Controllers\Admin\ReportController::class, 'denahRuangIndex'])->name('report.denah_ruang.index');
     Route::get('report/denah-ruang/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDenahRuang'])->name('report.denah_ruang.print');
     
+    // Buku Catatan Harian
+    Route::get('report/daily-log', [\App\Http\Controllers\Admin\ReportController::class, 'dailyLogIndex'])->name('report.daily_log.index');
+    Route::get('report/daily-log/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDailyLog'])->name('report.daily_log.print');
+    
     // Recap results
     Route::get('recap/exam-result', [\App\Http\Controllers\Admin\RecapController::class, 'examResult'])->name('recap.exam_result');
     Route::get('recap/exam-result/print', [\App\Http\Controllers\Admin\RecapController::class, 'printExamResult'])->name('recap.print_exam_result');

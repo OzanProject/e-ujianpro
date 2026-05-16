@@ -377,4 +377,50 @@ class ReportController extends Controller
 
         return view('admin.report.student_room.print', compact('room', 'institution'));
     }
+
+    public function dailyLogIndex()
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
+        
+        $rooms = \App\Models\ExamRoom::whereIn('created_by', $allIds)->get();
+
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::whereIn('created_by', $allIds)->pluck('id');
+
+        $sessions = ExamSession::with('subject')
+            ->whereIn('subject_id', $subjectIds)
+            ->where('start_time', '>=', now()->subDays(7)) 
+            ->orderBy('start_time', 'asc')
+            ->get();
+            
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.report.daily_log.index', compact('rooms', 'sessions', 'baseRoute'));
+    }
+
+    public function printDailyLog(Request $request)
+    {
+        $user = Auth::user();
+        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+        
+        $request->validate([
+             'exam_session_id' => 'required',
+             'exam_room_id' => 'required',
+        ]);
+
+        $session = ExamSession::with('subject')->findOrFail($request->exam_session_id);
+        
+        $roomName = 'Semua Ruangan';
+        if ($request->exam_room_id != 'all') {
+             $room = \App\Models\ExamRoom::findOrFail($request->exam_room_id);
+             $roomName = $room->name;
+        }
+        
+        $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+
+        return view('admin.report.daily_log.print', compact('session', 'roomName', 'institution'));
+    }
 }

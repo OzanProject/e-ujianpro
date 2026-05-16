@@ -139,6 +139,10 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     
     Route::get('report/denah-ruang', [\App\Http\Controllers\Admin\ReportController::class, 'denahRuangIndex'])->name('admin.report.denah_ruang.index');
     Route::get('report/denah-ruang/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDenahRuang'])->name('admin.report.denah_ruang.print');
+    
+    // Buku Catatan Harian
+    Route::get('report/daily-log', [\App\Http\Controllers\Admin\ReportController::class, 'dailyLogIndex'])->name('admin.report.daily_log.index');
+    Route::get('report/daily-log/print', [\App\Http\Controllers\Admin\ReportController::class, 'printDailyLog'])->name('admin.report.daily_log.print');
 
     // Route Attendance Proctor (Dedicated)
     Route::get('report/attendance-proctor', [\App\Http\Controllers\Admin\ReportController::class, 'attendanceProctorIndex'])->name('admin.report.attendance_proctor.index');
