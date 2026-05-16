@@ -857,11 +857,33 @@ class WordQuestionImporter
 
         $compact = preg_replace('/\s+/u', '', $answer);
 
-        if (preg_match('/^[BSTF](,[BSTF])+$/iu', $compact)) {
+        // 1. Cek apakah ini format boolean grid (B,S,B atau TRUE,FALSE,TRUE)
+        $booleanParts = explode(',', $answer);
+        $isBooleanList = true;
+        $normalizedBooleans = [];
+        
+        foreach ($booleanParts as $part) {
+            $p = trim($part);
+            if (preg_match('/^(TRUE|FALSE|BENAR|SALAH|T|F|B|S)$/iu', $p)) {
+                $normalizedBooleans[] = strtoupper(substr($p, 0, 1));
+            } else {
+                $isBooleanList = false;
+                break;
+            }
+        }
+
+        if ($isBooleanList && count($normalizedBooleans) > 0) {
+            return implode(',', $normalizedBooleans);
+        }
+
+        // 2. Cek format single letters (A,B,C)
+        if (preg_match('/^[A-E](,[A-E])*$/iu', $compact)) {
             return strtoupper($compact);
         }
 
+        // 3. Extract letters A-E (Hanya jika bukan format boolean di atas)
         if (preg_match_all('/[A-E]/iu', $compact, $matches)) {
+            // Pastikan tidak merusak kata-kata seperti TRUE/FALSE yang tersisa
             return implode(',', array_map('strtoupper', $matches[0]));
         }
 
