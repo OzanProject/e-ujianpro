@@ -32,16 +32,6 @@ class WordQuestionImporter
         $this->subjectId = (int) $subjectId;
     }
 
-    /**
-     * Import utama.
-     *
-     * Prinsip parser:
-     * 1. Apa pun sebelum nomor soal = stimulus/bacaan soal berikutnya.
-     * 2. Baris bernomor 1. / 2. / dst = pertanyaan inti/stem.
-     * 3. A. / B. / C. / D. / E. = opsi.
-     * 4. Teks/gambar setelah opsi selesai = stimulus soal berikutnya.
-     * 5. Kunci boleh ada di tabel akhir No | Kunci | Pengecoh | Level.
-     */
     public function import($filePath): array
     {
         $this->errors = [];
@@ -79,7 +69,7 @@ class WordQuestionImporter
         $pendingReading = '';
 
         foreach ($rawLines as $i => $line) {
-            $line = trim($line);
+            $line = trim((string) $line);
             $cleanLine = $this->cleanText($line);
             $hasImage = $this->containsImage($line);
             $nextCleanLine = $this->getNextCleanLine($rawLines, $i);
@@ -96,13 +86,50 @@ class WordQuestionImporter
                 break;
             }
 
-            if (!$hasImage && preg_match('/^(\d+)\.\s+(.*)/u', $cleanLine, $questionMatches)) {
+            /*
+             * Deteksi nomor soal.
+             * Support:
+             * 1. Soal
+             * 1.Soal
+             *
+             * Jangan batasi dengan !$hasImage, karena nomor 12 Bahasa Inggris
+             * bisa terbaca satu area dengan gambar/infografis.
+             */
+            if (preg_match('/^(?:\(\s*(\d{1,3})\s*\)|(\d{1,3})[\.\)]?)\s*(.*)/u', $cleanLine, $questionMatches)) {
+                $number = (int) ($questionMatches[1] ?: $questionMatches[2]);
+
+                /*
+                 * Pengaman agar angka aneh dari dokumen/gambar/style Word
+                 * tidak dianggap sebagai nomor soal.
+                 * Juga pastikan nomor soal berurutan atau masuk akal.
+                 */
+                if ($number > 100 || ($currentQuestion && $number < $currentQuestion['number'] && $number < 10)) {
+                    if ($currentQuestion) {
+                        if (empty($currentQuestion['options'])) {
+                            $currentQuestion['content'] = $this->appendHtml($currentQuestion['content'], $line);
+                        } else {
+                            $lastOptionKey = array_key_last($currentQuestion['options']);
+
+                            if ($lastOptionKey !== null) {
+                                $currentQuestion['options'][$lastOptionKey]['content'] = $this->appendHtml(
+                                    $currentQuestion['options'][$lastOptionKey]['content'],
+                                    $line
+                                );
+                            }
+                        }
+                    } else {
+                        $pendingReading = $this->appendHtml($pendingReading, $line);
+                    }
+
+                    continue;
+                }
+
                 if ($currentQuestion) {
                     $questions[] = $currentQuestion;
                 }
 
-                $number = (int) $questionMatches[1];
-                $content = preg_replace('/^(\s*<[^>]*>\s*)*\d+\.(\s*<[^>]*>\s*)*\s*/iu', '', $line);
+                $content = preg_replace('/^(\s*<[^>]*>\s*)*(?:\(\d{1,3}\)|\d{1,3}[\.\)]?)\s*/iu', '', $line);
+                $splitData = $this->splitQuestionAndInlineOptions($content);
 
                 $answerData = $this->answerMap[$number] ?? [];
                 $answer = $answerData['answer'] ?? '';
@@ -110,8 +137,8 @@ class WordQuestionImporter
                 $currentQuestion = [
                     'number' => $number,
                     'reading' => $pendingReading,
-                    'content' => $content,
-                    'options' => [],
+                    'content' => $splitData['content'],
+                    'options' => $splitData['options'],
                     'answer' => $answer,
                     'difficulty' => $answerData['difficulty'] ?? 'easy',
                     'type' => $this->detectQuestionType($answer),
@@ -121,10 +148,27 @@ class WordQuestionImporter
                 continue;
             }
 
-            if ($currentQuestion && !$hasImage && preg_match('/^(?:\[\s*\]\s*)?([A-Ea-e])[\.)]\s*(.*)/iu', $cleanLine, $optionMatches)) {
-                $letter = strtoupper($optionMatches[1]);
+            /*
+             * Deteksi opsi:
+             * A. Jawaban
+             * A) Jawaban
+             * [ ] A. Jawaban
+             * A. OneB. TwoC. ThreeD. Four
+             */
+            if ($currentQuestion && preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
+                $inlineOptions = $this->extractInlineOptions($line);
+
+                if (count($inlineOptions) >= 2) {
+                    foreach ($inlineOptions as $optionIndex => $optionData) {
+                        $currentQuestion['options'][$optionIndex] = $optionData;
+                    }
+
+                    continue;
+                }
+
+                $letter = strtoupper($optionMatches[1] ?: $optionMatches[2]);
                 $optionIndex = $this->letterToIndex($letter);
-                $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?[A-Ea-e][\.)](\s*<[^>]*>\s*)*\s*/iu', '', $line);
+                $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):]?)\s*/iu', '', $line);
 
                 $currentQuestion['options'][$optionIndex] = [
                     'content' => $optionContent,
@@ -133,14 +177,31 @@ class WordQuestionImporter
                 continue;
             }
 
-            if ($currentQuestion && !$hasImage && preg_match('/^(?:Kunci|Jawaban):\s*(.*)/iu', $cleanLine, $answerMatches)) {
+            /*
+             * Support opsi dari bullet/list Word.
+             */
+            if ($currentQuestion && !$hasImage && preg_match('/^\[LIST_ITEM_MARKER\]\s*(.*)/iu', $cleanLine)) {
+                $optionIndex = count($currentQuestion['options']);
+
+                if ($optionIndex <= 4) {
+                    $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*\[LIST_ITEM_MARKER\]\s*/iu', '', $line);
+
+                    $currentQuestion['options'][$optionIndex] = [
+                        'content' => $optionContent,
+                    ];
+
+                    continue;
+                }
+            }
+
+            if ($currentQuestion && !$hasImage && preg_match('/^(?:Kunci|Jawaban|Answer|Key):\s*(.*)/iu', $cleanLine, $answerMatches)) {
                 $answer = $this->normalizeAnswer($answerMatches[1]);
                 $currentQuestion['answer'] = $answer;
                 $currentQuestion['type'] = $this->detectQuestionType($answer);
                 continue;
             }
 
-            if ($currentQuestion && !$hasImage && preg_match('/^(?:Tingkat|Kesulitan|Level):\s*(.*)/iu', $cleanLine, $difficultyMatches)) {
+            if ($currentQuestion && !$hasImage && preg_match('/^(?:Tingkat|Kesulitan|Level|Difficulty):\s*(.*)/iu', $cleanLine, $difficultyMatches)) {
                 $currentQuestion['difficulty'] = $this->normalizeDifficulty($difficultyMatches[1]);
                 continue;
             }
@@ -150,12 +211,17 @@ class WordQuestionImporter
                 continue;
             }
 
+            /*
+             * Gambar di tengah soal jangan langsung memutus soal.
+             * Ini penting untuk nomor 12 Bahasa Inggris.
+             */
+            if ($hasImage) {
+                $currentQuestion['reading'] = $this->appendHtml($currentQuestion['reading'], $line);
+                continue;
+            }
+
             if (empty($currentQuestion['options'])) {
-                if ($hasImage) {
-                    $currentQuestion['reading'] = $this->appendHtml($currentQuestion['reading'], $line);
-                } else {
-                    $currentQuestion['content'] = $this->appendHtml($currentQuestion['content'], $line);
-                }
+                $currentQuestion['content'] = $this->appendHtml($currentQuestion['content'], $line);
                 continue;
             }
 
@@ -183,6 +249,30 @@ class WordQuestionImporter
 
         foreach ($questions as $index => $questionData) {
             $number = $questionData['number'] ?? ($index + 1);
+
+            /*
+             * Rescue aman:
+             * Jika soal sudah terbentuk tapi opsi kosong, scan ulang rawLines
+             * dari nomor soal tersebut sampai sebelum nomor berikutnya.
+             *
+             * Ini memperbaiki kasus Bahasa Inggris nomor 12:
+             * pertanyaan + opsi terpisah oleh gambar/halaman.
+             */
+            if (empty($questionData['options'])) {
+                $rescued = $this->rescueOptionsFromRawLines($rawLines, (int) $number);
+
+                if (!empty($rescued['options'])) {
+                    $questionData['options'] = $rescued['options'];
+
+                    if (!empty(trim(strip_tags($rescued['content'] ?? '')))) {
+                        $questionData['content'] = $rescued['content'];
+                    }
+
+                    if (!empty($rescued['reading'])) {
+                        $questionData['reading'] = $this->appendHtml($questionData['reading'] ?? '', $rescued['reading']);
+                    }
+                }
+            }
 
             if (isset($this->answerMap[$number])) {
                 $questionData['answer'] = $questionData['answer'] ?: $this->answerMap[$number]['answer'];
@@ -218,6 +308,10 @@ class WordQuestionImporter
             return;
         }
 
+        /*
+         * Jangan pecah nomor soal secara global.
+         * Ini menjaga mapel lain tetap aman dan menghindari nomor palsu.
+         */
         $parts = explode('<br>', $html);
 
         foreach ($parts as $part) {
@@ -227,6 +321,220 @@ class WordQuestionImporter
                 $rawLines[] = $part;
             }
         }
+    }
+
+    private function splitQuestionAndInlineOptions(string $html): array
+    {
+        $html = trim($html);
+
+        if ($html === '') {
+            return [
+                'content' => '',
+                'options' => [],
+            ];
+        }
+
+        $options = $this->extractInlineOptions($html);
+
+        /*
+         * Kalau opsi kurang dari 2, jangan dipaksa pecah.
+         * Ini mencegah kalimat biasa rusak.
+         */
+        if (count($options) < 2) {
+            return [
+                'content' => $html,
+                'options' => [],
+            ];
+        }
+
+        if (!preg_match('/(?:^|\s|[?!.:])(?:\(([A-Ea-e])\)|([A-Ea-e])[\.\):])\s*/u', $html, $firstMatch, PREG_OFFSET_CAPTURE)) {
+            return [
+                'content' => $html,
+                'options' => [],
+            ];
+        }
+
+        $firstOptionPos = $firstMatch[1][1] ?? null;
+
+        if ($firstOptionPos === null) {
+            return [
+                'content' => $html,
+                'options' => [],
+            ];
+        }
+
+        $content = trim(substr($html, 0, $firstOptionPos));
+
+        if ($content === '') {
+            return [
+                'content' => $html,
+                'options' => [],
+            ];
+        }
+
+        return [
+            'content' => $content,
+            'options' => $options,
+        ];
+    }
+
+    private function extractInlineOptions(string $html): array
+    {
+        $options = [];
+
+        /*
+         * Membaca opsi:
+         * A. Opsi
+         * B. Opsi
+         * A. OpsiB. OpsiC. Opsi
+         *
+         * Lookahead support:
+         * - label opsi berikutnya
+         * - nomor soal berikutnya
+         * - akhir string
+         */
+        preg_match_all(
+            '/(?:^|<br>|\s|(?<=[?!.:]))(?:\(([A-Ea-e])\)|([A-Ea-e])[\.\):])\s*(.*?)(?=(?:<br>|\s|(?<=[?!.:]))?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):])\s*|(?:<br>|\s)?(?:\(\d{1,3}\)|\d{1,3}[\.\)])\s*|$)/uis',
+            $html,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        foreach ($matches as $match) {
+            $letter = strtoupper(trim($match[1] ?? ''));
+            $content = trim($match[2] ?? '');
+
+            if ($letter === '' || $content === '') {
+                continue;
+            }
+
+            $index = $this->letterToIndex($letter);
+
+            $options[$index] = [
+                'content' => $content,
+            ];
+        }
+
+        ksort($options);
+
+        return $options;
+    }
+
+    private function rescueOptionsFromRawLines(array $rawLines, int $questionNumber): array
+    {
+        $found = false;
+        $contentParts = [];
+        $readingParts = [];
+        $options = [];
+
+        foreach ($rawLines as $line) {
+            $line = trim((string) $line);
+            $cleanLine = $this->cleanText($line);
+            $hasImage = $this->containsImage($line);
+
+            if ($cleanLine === '' && !$hasImage) {
+                continue;
+            }
+
+            /*
+             * Mulai scan dari nomor soal yang dicari.
+             * Support:
+             * 12. Soal
+             * 12.Soal
+             */
+            if (
+                !$found
+                && preg_match('/^(?:\(\s*' . preg_quote((string) $questionNumber, '/') . '\s*\)|' . preg_quote((string) $questionNumber, '/') . '[\.\)]?)\s*(.*)/u', $cleanLine)
+            ) {
+                $found = true;
+
+                $questionLine = preg_replace(
+                    '/^(\s*<[^>]*>\s*)*(?:\(' . preg_quote((string) $questionNumber, '/') . '\)|' . preg_quote((string) $questionNumber, '/') . '[\.\)]?)\s*/iu',
+                    '',
+                    $line
+                );
+
+                $split = $this->splitQuestionAndInlineOptions($questionLine);
+
+                if (!empty(trim(strip_tags($split['content'] ?? '')))) {
+                    $contentParts[] = $split['content'];
+                }
+
+                foreach (($split['options'] ?? []) as $optionIndex => $optionData) {
+                    $options[$optionIndex] = $optionData;
+                }
+
+                continue;
+            }
+
+            if (!$found) {
+                continue;
+            }
+
+            /*
+             * Berhenti ketika menemukan nomor soal berikutnya.
+             */
+            if (!$hasImage && $this->isNumberedQuestionLine($cleanLine, $questionNumber)) {
+                break;
+            }
+
+            if (!$hasImage && $this->shouldSkipLine($cleanLine)) {
+                continue;
+            }
+
+            if ($hasImage) {
+                $readingParts[] = $line;
+                continue;
+            }
+
+            /*
+             * Ambil opsi A-E yang mungkin muncul sebelum/sesudah gambar.
+             */
+            if (preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
+                $inlineOptions = $this->extractInlineOptions($line);
+
+                if (count($inlineOptions) >= 2) {
+                    foreach ($inlineOptions as $optionIndex => $optionData) {
+                        $options[$optionIndex] = $optionData;
+                    }
+                } else {
+                    $letter = strtoupper($optionMatches[1] ?: $optionMatches[2]);
+                    $optionIndex = $this->letterToIndex($letter);
+                    $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):]?)\s*/iu', '', $line);
+
+                    $options[$optionIndex] = [
+                        'content' => $optionContent,
+                    ];
+                }
+
+                continue;
+            }
+
+            /*
+             * Kalau belum ada opsi, baris masih dianggap bagian pertanyaan.
+             * Kalau opsi sudah ada, baris tambahan ditempel ke opsi terakhir.
+             */
+            if (empty($options)) {
+                $contentParts[] = $line;
+            } else {
+                $lastOptionKey = array_key_last($options);
+
+                if ($lastOptionKey !== null) {
+                    $options[$lastOptionKey]['content'] = $this->appendHtml(
+                        $options[$lastOptionKey]['content'],
+                        $line
+                    );
+                }
+            }
+        }
+
+        ksort($options);
+
+        return [
+            'content' => implode('<br>', array_filter($contentParts)),
+            'reading' => implode('<br>', array_filter($readingParts)),
+            'options' => $options,
+        ];
     }
 
     private function appendHtml(?string $base, ?string $addition): string
@@ -247,8 +555,11 @@ class WordQuestionImporter
 
     private function isStartOfNextStimulus(string $htmlLine, string $cleanLine, bool $hasImage, ?string $nextCleanLine = null): bool
     {
+        /*
+         * Gambar tidak langsung dianggap stimulus soal berikutnya.
+         */
         if ($hasImage) {
-            return true;
+            return $nextCleanLine && $this->isNumberedQuestionLine($nextCleanLine, $this->getCurrentQuestionNumberFromHtml($htmlLine));
         }
 
         if ($cleanLine === '') {
@@ -257,23 +568,22 @@ class WordQuestionImporter
 
         $upper = strtoupper(trim($cleanLine));
 
-        foreach (['KUNCI:', 'JAWABAN:', 'TINGKAT:', 'KESULITAN:', 'LEVEL:'] as $prefix) {
+        foreach (['KUNCI:', 'JAWABAN:', 'ANSWER:', 'KEY:', 'TINGKAT:', 'KESULITAN:', 'LEVEL:', 'DIFFICULTY:'] as $prefix) {
             if (str_starts_with($upper, $prefix)) {
                 return false;
             }
         }
 
-        if (preg_match('/^(?:\[\s*\]\s*)?[A-Ea-e][\.)]\s+/u', $cleanLine)) {
-            return false;
-        }
+        $currentNum = $this->getCurrentQuestionNumberFromHtml($htmlLine);
 
-        if ($nextCleanLine && $this->isNumberedQuestionLine($nextCleanLine)) {
+        if ($nextCleanLine && $this->isNumberedQuestionLine($nextCleanLine, $currentNum)) {
             return true;
         }
 
         $words = preg_split('/\s+/u', trim($cleanLine));
 
-        return count(array_filter($words)) >= 5;
+        // Jika ada banyak kata dan baris berikutnya adalah nomor soal, baru anggap stimulus
+        return count(array_filter($words)) >= 10 && $nextCleanLine && $this->isNumberedQuestionLine($nextCleanLine, $currentNum);
     }
 
     private function normalizeQuestionToFormFormat(array $data): array
@@ -469,9 +779,32 @@ class WordQuestionImporter
         return null;
     }
 
-    private function isNumberedQuestionLine(string $line): bool
+    private function isNumberedQuestionLine(string $line, int $currentNumber = 0): bool
     {
-        return preg_match('/^\d+\.\s+/u', trim($line)) === 1;
+        $line = trim($this->cleanText($line));
+
+        if (!preg_match('/^(?:\(\d{1,3}\)|\d{1,3}[\.\)])\s*/u', $line, $matches)) {
+            return false;
+        }
+
+        preg_match('/\d+/', $matches[0], $numMatches);
+        $number = (int) $numMatches[0];
+
+        // Jika sedang memproses soal N, maka nomor soal berikutnya harus > N
+        // Ini mencegah list item 1, 2, 3 di dalam stimulus dianggap soal baru
+        if ($currentNumber > 0 && $number <= $currentNumber && $number < 10) {
+            return false;
+        }
+
+        return $number > 0 && $number <= 100;
+    }
+
+    private function getCurrentQuestionNumberFromHtml(string $html): int
+    {
+        if (preg_match('/^(\s*<[^>]*>\s*)*(?:\(\s*(\d{1,3})\s*\)|(\d{1,3})[\.\)])/iu', $html, $matches)) {
+            return (int) ($matches[2] ?: $matches[3]);
+        }
+        return 0;
     }
 
     private function shouldSkipLine(string $line): bool
@@ -485,6 +818,11 @@ class WordQuestionImporter
             || preg_match('/^Kelas\s*:/iu', $line)
             || preg_match('/^Semester\s*:/iu', $line)
             || preg_match('/^Berdoalah\s+sebelum/iu', $line)
+            || preg_match('/^Read\s+the\s+text\s+carefully/iu', $line)
+            || preg_match('/^Read\s+the\s+text\s+below/iu', $line)
+            || preg_match('/^Read\s+following\s+the\s+text\s+below/iu', $line)
+            || preg_match('/^Look\s+at\s+picture\s+and\s+answer/iu', $line)
+            || preg_match('/^Question\s+number\s+\d+/iu', $line)
             || preg_match('/^KUNCI\s+JAWABAN/iu', $line);
     }
 
@@ -510,13 +848,16 @@ class WordQuestionImporter
         $answer = preg_replace('/\s+/u', ' ', $answer);
         $answer = trim($answer);
 
-        if (preg_match_all('/\d+\s*[\.]\s*([BS])/iu', $answer, $matches) || preg_match_all('/\d+\s*[\)]\s*([BS])/iu', $answer, $matches)) {
+        if (
+            preg_match_all('/\d+\s*[\.]\s*([BSTF])/iu', $answer, $matches)
+            || preg_match_all('/\d+\s*[\)]\s*([BSTF])/iu', $answer, $matches)
+        ) {
             return implode(',', array_map('strtoupper', $matches[1]));
         }
 
         $compact = preg_replace('/\s+/u', '', $answer);
 
-        if (preg_match('/^[BS](,[BS])+$/iu', $compact)) {
+        if (preg_match('/^[BSTF](,[BSTF])+$/iu', $compact)) {
             return strtoupper($compact);
         }
 
@@ -541,7 +882,7 @@ class WordQuestionImporter
             $onlyBoolean = true;
 
             foreach ($parts as $part) {
-                if (!in_array($part, ['B', 'S'], true)) {
+                if (!in_array($part, ['B', 'S', 'T', 'F', 'TRUE', 'FALSE', 'BENAR', 'SALAH'], true)) {
                     $onlyBoolean = false;
                     break;
                 }
@@ -595,9 +936,9 @@ class WordQuestionImporter
         $values = [];
 
         foreach ($parts as $index => $part) {
-            if ($part === 'B') {
+            if (in_array($part, ['B', 'T', 'TRUE', 'BENAR'], true)) {
                 $values[$index] = 1;
-            } elseif ($part === 'S') {
+            } elseif (in_array($part, ['S', 'F', 'FALSE', 'SALAH'], true)) {
                 $values[$index] = 0;
             }
         }
@@ -628,8 +969,8 @@ class WordQuestionImporter
         $headerText = implode(' ', $headers);
 
         return str_contains($headerText, 'no')
-            && str_contains($headerText, 'kunci')
-            && (str_contains($headerText, 'level') || str_contains($headerText, 'kesulitan'));
+            && (str_contains($headerText, 'kunci') || str_contains($headerText, 'answer') || str_contains($headerText, 'key'))
+            && (str_contains($headerText, 'level') || str_contains($headerText, 'kesulitan') || str_contains($headerText, 'difficulty'));
     }
 
     private function parseAnswerKeyTable($table): void
@@ -739,13 +1080,25 @@ class WordQuestionImporter
             return false;
         }
 
-        $h1 = strtolower($this->cleanText($this->extractHtmlFromElement($firstRowCells[0])));
-        $h2 = strtolower($this->cleanText($this->extractHtmlFromElement($firstRowCells[1])));
-        $h3 = strtolower($this->cleanText($this->extractHtmlFromElement($firstRowCells[2])));
+        $headers = [];
 
-        return str_contains($h1, 'pernyataan')
-            && str_contains($h2, 'benar')
-            && str_contains($h3, 'salah');
+        foreach ($firstRowCells as $cell) {
+            $headers[] = strtolower($this->cleanText($this->extractHtmlFromElement($cell)));
+        }
+
+        $headerText = implode(' ', $headers);
+
+        $hasStatement = str_contains($headerText, 'pernyataan')
+            || str_contains($headerText, 'statement')
+            || str_contains($headerText, 'statements');
+
+        $hasTrue = str_contains($headerText, 'benar')
+            || str_contains($headerText, 'true');
+
+        $hasFalse = str_contains($headerText, 'salah')
+            || str_contains($headerText, 'false');
+
+        return $hasStatement && $hasTrue && $hasFalse;
     }
 
     private function convertGridTableToLines($table, array &$rawLines): void
@@ -765,17 +1118,32 @@ class WordQuestionImporter
                 continue;
             }
 
-            $statement = trim($this->extractHtmlFromElement($cells[0]));
+            /*
+             * Support:
+             * 1. Pernyataan | Benar | Salah
+             * 2. No | Statements | True | False
+             */
+            if (count($cells) >= 4) {
+                $statementCellIndex = 1;
+                $trueCellIndex = 2;
+                $falseCellIndex = 3;
+            } else {
+                $statementCellIndex = 0;
+                $trueCellIndex = 1;
+                $falseCellIndex = 2;
+            }
+
+            $statement = trim($this->extractHtmlFromElement($cells[$statementCellIndex]));
 
             if ($this->cleanText($statement) === '' && !$this->containsImage($statement)) {
                 continue;
             }
 
-            $letter = $letters[$rowIndex - 1] ?? 'A';
+            $letter = $letters[count($keys)] ?? $letters[$rowIndex - 1] ?? 'A';
             $rawLines[] = $letter . '. ' . $statement;
 
-            $benarMark = $this->cleanText($this->extractHtmlFromElement($cells[1]));
-            $salahMark = $this->cleanText($this->extractHtmlFromElement($cells[2]));
+            $benarMark = $this->cleanText($this->extractHtmlFromElement($cells[$trueCellIndex]));
+            $salahMark = $this->cleanText($this->extractHtmlFromElement($cells[$falseCellIndex]));
 
             if ($this->hasBooleanMark($benarMark) && !$this->hasBooleanMark($salahMark)) {
                 $keys[] = 'B';
@@ -783,11 +1151,17 @@ class WordQuestionImporter
             } elseif ($this->hasBooleanMark($salahMark) && !$this->hasBooleanMark($benarMark)) {
                 $keys[] = 'S';
                 $hasAnyMark = true;
+            } else {
+                $keys[] = null;
             }
         }
 
         if ($hasAnyMark && !empty($keys)) {
-            $rawLines[] = 'Kunci: ' . implode(',', $keys);
+            $filteredKeys = array_filter($keys, fn($key) => $key !== null);
+
+            if (count($filteredKeys) === count($keys)) {
+                $rawLines[] = 'Kunci: ' . implode(',', $filteredKeys);
+            }
         }
     }
 
@@ -799,7 +1173,7 @@ class WordQuestionImporter
             return false;
         }
 
-        return preg_match('/^(v|x|✓|✔|√|check|checked|ya|y|benar|salah|1)$/iu', $value) === 1;
+        return preg_match('/^(v|x|✓|✔|√|check|checked|ya|y|benar|salah|true|false|t|f|1)$/iu', $value) === 1;
     }
 
     private function extractHtmlFromElement($element): string
