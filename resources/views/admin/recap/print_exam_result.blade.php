@@ -82,7 +82,11 @@
         <p style="margin-bottom: 40px;">Kepala Sekolah,</p>
         
         <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center;">
-            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            @if(isset($institution) && ($institution->signature || $institution->stamp))
+                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            @else
+                <div style="height: 50px;"></div>
+            @endif
         </div>
 
         <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '.........................') }}</p>

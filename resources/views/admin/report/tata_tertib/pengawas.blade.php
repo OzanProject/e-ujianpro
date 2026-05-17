@@ -94,8 +94,12 @@
             <p style="margin: 0;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
             <p style="margin: 0;">Kepala Sekolah,</p>
             
-            <div style="margin-top: 10px;">
-                {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+            <div style="margin-top: 10px; display: flex; justify-content: center; align-items: center; min-height: 80px;">
+                @if(isset($institution) && ($institution->signature || $institution->stamp))
+                    {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(80)->margin(1)->generate('Dokumen Sah & Valid: ' . ($institution->name ?? 'Sekolah') . ' | ' . \Carbon\Carbon::now()->format('d-m-Y H:i')) !!}
+                @else
+                    <div style="height: 60px;"></div>
+                @endif
             </div>
             
             <p style="margin: 0; font-weight: bold; text-decoration: underline;">{{ $institution->name_head_master ?? ($institution->head_master ?? '...................................') }}</p>
