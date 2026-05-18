@@ -37,6 +37,9 @@ class WordQuestionImporter
         $this->errors = [];
         $this->answerMap = [];
 
+        // Sanitize unsupported images (EMF, WMF, TIFF) in docx ZIP before loading
+        $this->sanitizeDocxImages($filePath);
+
         $phpWord = IOFactory::load($filePath);
         $rawLines = [];
 
@@ -1263,6 +1266,9 @@ class WordQuestionImporter
             }
 
             $extension = $imageElement->getImageExtension() ?: 'png';
+            if (in_array(strtolower($extension), ['emf', 'wmf', 'tiff', 'eps'])) {
+                $extension = 'png';
+            }
             $filename = 'img_' . time() . '_' . uniqid() . '.' . $extension;
             $path = 'uploads/questions/' . $filename;
 
@@ -1273,6 +1279,36 @@ class WordQuestionImporter
             return '<br><img src="' . $url . '" style="max-width: 100%; height: auto;" class="my-2"/><br>';
         } catch (\Throwable $e) {
             return ' [Gagal Gambar] ';
+        }
+    }
+
+    private function sanitizeDocxImages($filePath): void
+    {
+        if (!class_exists('ZipArchive')) {
+            return;
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) === true) {
+            $unsupportedFiles = [];
+            
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+                if (preg_match('/\.(emf|wmf|tiff|eps)$/i', $name)) {
+                    $unsupportedFiles[] = $name;
+                }
+            }
+
+            if (!empty($unsupportedFiles)) {
+                // 1x1 transparent PNG base64
+                $png1x1 = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=');
+                
+                foreach ($unsupportedFiles as $fileName) {
+                    $zip->addFromString($fileName, $png1x1);
+                }
+            }
+            
+            $zip->close();
         }
     }
 }
