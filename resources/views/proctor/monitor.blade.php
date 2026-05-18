@@ -83,6 +83,15 @@
                             <option value="cheat_asc">Pelanggaran [▼]</option>
                         </select>
                     </div>
+                    <div class="d-flex align-items-center">
+                        <label class="mb-0 mr-2 text-sm font-weight-bold text-gray-600">Cari Nama:</label>
+                        <div class="input-group input-group-sm" style="width: 220px;">
+                            <input type="text" id="filterSearch" class="form-control rounded-left-pill border-right-0" placeholder="Ketik nama peserta...">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-white rounded-right-pill border-left-0"><i class="fas fa-search text-muted"></i></span>
+                            </div>
+                        </div>
+                    </div>
                     <span id="totalCount" class="badge badge-secondary px-3 py-2 rounded-pill">
                         <i class="fas fa-user mr-1"></i> <span id="countText">0</span> peserta
                     </span>
@@ -158,8 +167,17 @@
     function applyFilterAndRender() {
         const limit = parseInt(document.getElementById('filterLimit').value);
         const sort = document.getElementById('filterSort').value;
+        const searchQuery = document.getElementById('filterSearch').value.toLowerCase().trim();
 
         let sorted = [...allData];
+
+        // Apply real-time search filter by student name or student number
+        if (searchQuery) {
+            sorted = sorted.filter(item => 
+                (item.student_name || '').toLowerCase().includes(searchQuery) ||
+                (item.student_number || '').toLowerCase().includes(searchQuery)
+            );
+        }
 
         // Reset all sort icons
         document.querySelectorAll('.sort-header i').forEach(icon => {
@@ -289,9 +307,10 @@
             .catch(error => console.error('Error fetching data:', error));
     }
 
-    // Re-render when filter/sort changes
+    // Re-render when filter/sort/search changes
     document.getElementById('filterLimit').addEventListener('change', applyFilterAndRender);
     document.getElementById('filterSort').addEventListener('change', applyFilterAndRender);
+    document.getElementById('filterSearch').addEventListener('input', applyFilterAndRender);
 
     // Handle click on column headers to sort
     document.querySelectorAll('.sort-header').forEach(header => {
