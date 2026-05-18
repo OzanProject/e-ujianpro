@@ -238,4 +238,5 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('recap/exam-result/print', [\App\Http\Controllers\Admin\RecapController::class, 'printExamResult'])->name('recap.print_exam_result');
     Route::delete('recap/exam-result/reset/{exam_session_id}', [\App\Http\Controllers\Admin\RecapController::class, 'resetExamResult'])->name('recap.reset_exam_result');
     Route::delete('recap/exam-result/delete-attempt/{id}', [\App\Http\Controllers\Admin\RecapController::class, 'deleteExamAttempt'])->name('recap.delete_exam_attempt');
+    Route::post('recap/exam-result/recalculate/{exam_session_id}', [\App\Http\Controllers\Admin\RecapController::class, 'recalculateSessionScores'])->name('recap.recalculate_scores');
 });

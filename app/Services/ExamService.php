@@ -36,12 +36,12 @@ class ExamService
   {
     if ($session->exam_package_id) {
       return $session->examPackage->questions()
-        ->with('questionGroup')
+        ->with(['questionGroup', 'options'])
         ->get()
         ->keyBy('id');
     } else {
       return Question::where('subject_id', $session->subject_id)
-        ->with('questionGroup')
+        ->with(['questionGroup', 'options'])
         ->get()
         ->keyBy('id');
     }
@@ -65,9 +65,52 @@ class ExamService
       $q = $questions[$ans->question_id] ?? null;
       if ($q) {
         $groupId = $q->question_group_id ?? 'default';
+        $isCorrect = false;
 
-        $opt = QuestionOption::find($ans->question_option_id);
-        $isCorrect = $opt && $opt->is_correct;
+        if ($q->type === 'multiple_choice') {
+          // Standard Multiple Choice
+          $opt = $q->options->where('id', $ans->question_option_id)->first();
+          $isCorrect = $opt && $opt->is_correct;
+        } elseif ($q->type === 'multiple_choice_complex') {
+          // Complex Multiple Choice (Pilihan Ganda Kompleks)
+          $correctOptionIds = $q->options->where('is_correct', true)->pluck('id')->toArray();
+          $selectedOptionIds = [];
+          if ($ans->answer_text) {
+              $decoded = json_decode($ans->answer_text, true);
+              if (is_array($decoded)) {
+                  $selectedOptionIds = array_map('intval', $decoded);
+              }
+          }
+          $correctOptionIds = array_map('intval', $correctOptionIds);
+          sort($correctOptionIds);
+          sort($selectedOptionIds);
+          $isCorrect = (!empty($correctOptionIds) && $correctOptionIds === $selectedOptionIds);
+        } elseif ($q->type === 'boolean_grid') {
+          // Benar/Salah Grid (Ya/Tidak Grid)
+          $studentAnswers = [];
+          if ($ans->answer_text) {
+              $decoded = json_decode($ans->answer_text, true);
+              if (is_array($decoded)) {
+                  $studentAnswers = $decoded;
+              }
+          }
+          if ($q->options->isEmpty()) {
+              $isCorrect = false;
+          } else {
+              $isCorrect = true;
+              foreach ($q->options as $opt) {
+                  $expectedVal = $opt->is_correct ? "1" : "0";
+                  $studentVal = isset($studentAnswers[$opt->id]) ? (string)$studentAnswers[$opt->id] : null;
+                  if ($studentVal !== $expectedVal) {
+                      $isCorrect = false;
+                      break;
+                  }
+              }
+          }
+        } elseif ($q->type === 'essay') {
+          // Essay: is_correct is graded manually, but if it is already set, respect it
+          $isCorrect = (bool) $ans->is_correct;
+        }
 
         // Sync correctness if changed (e.g. answer key changed)
         if ($ans->is_correct != $isCorrect) {

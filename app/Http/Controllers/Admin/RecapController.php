@@ -213,4 +213,36 @@ class RecapController extends Controller
 
         return redirect()->back()->with('success', $message);
     }
+
+    public function recalculateSessionScores(Request $request, $exam_session_id)
+    {
+        $user = Auth::user();
+        $session = ExamSession::with('subject')->findOrFail($exam_session_id);
+
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+            $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+            $hasAccess = in_array($session->subject_id, $allowedSubjectIds);
+        } else {
+            $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+            $hasAccess = ($session->subject->created_by == $creatorId);
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $attempts = $session->attempts()->get();
+        $examService = new \App\Services\ExamService();
+
+        $count = 0;
+        foreach ($attempts as $attempt) {
+            $examService->gradeAttempt($attempt);
+            $count++;
+        }
+
+        return redirect()
+            ->route($this->getBaseRoute() . '.exam_result', ['exam_session_id' => $exam_session_id])
+            ->with('success', "Berhasil menghitung ulang nilai untuk $count peserta ujian. Semua nilai kompleks dan grid kini sudah terkoreksi dengan benar.");
+    }
 }

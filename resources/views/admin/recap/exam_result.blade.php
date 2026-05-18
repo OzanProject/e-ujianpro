@@ -48,6 +48,12 @@
                         <i class="fas fa-redo mr-2"></i> Reset Sesi
                     </button>
                 </form>
+                <form action="{{ route($baseRoute . '.recalculate_scores', $selectedSession->id) }}" method="POST" class="d-inline" onsubmit="return confirm('HITUNG ULANG NILAI SESI UJIAN\n\nTindakan ini akan:\n✓ Menghitung ulang semua nilai peserta ujian\n✓ Memperbaiki nilai kompleks dan grid yang sebelumnya bernilai NOL\n✓ TIDAK AKAN MENGHAPUS/RESET jawaban siswa\n\nYakin ingin menghitung ulang nilai sesi ini?');">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-primary mr-2">
+                        <i class="fas fa-calculator mr-2"></i> Hitung Ulang Nilai
+                    </button>
+                </form>
                 <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
                     <i class="fas fa-print mr-2"></i> Cetak Laporan
                 </a>

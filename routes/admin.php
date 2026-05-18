@@ -152,6 +152,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::get('recap/exam-result/print', [\App\Http\Controllers\Admin\RecapController::class, 'printExamResult'])->name('admin.recap.print_exam_result');
     Route::delete('recap/exam-result/reset/{exam_session_id}', [\App\Http\Controllers\Admin\RecapController::class, 'resetExamResult'])->name('admin.recap.reset_exam_result');
     Route::delete('recap/exam-result/delete-attempt/{id}', [\App\Http\Controllers\Admin\RecapController::class, 'deleteExamAttempt'])->name('admin.recap.delete_exam_attempt');
+    Route::post('recap/exam-result/recalculate/{exam_session_id}', [\App\Http\Controllers\Admin\RecapController::class, 'recalculateSessionScores'])->name('admin.recap.recalculate_scores');
 
 
 
