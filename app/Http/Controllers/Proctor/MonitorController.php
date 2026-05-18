@@ -67,13 +67,25 @@ class MonitorController extends Controller
     public function reset($subdomain, $id)
     {
         $attempt = ExamAttempt::findOrFail($id);
-        // Reset status to in_progress if needed
+        // Reset status to in_progress and update start_time to now() so their duration timer resets
         $attempt->status = 'in_progress';
+        $attempt->start_time = now();
         $attempt->end_time = null; // Clear end time if set
         $attempt->cheat_count = 0; // Reset cheating violations
         $attempt->save();
 
-        return response()->json(['success' => true, 'message' => 'Login siswa berhasil di-reset.']);
+        // Also check if the global session has expired or is close to expiring. If so, extend it!
+        $session = $attempt->examSession;
+        if ($session) {
+            $requiredEndTime = now()->addMinutes($session->duration + 15);
+            if ($session->end_time < $requiredEndTime || !$session->is_active) {
+                $session->end_time = $requiredEndTime;
+                $session->is_active = true;
+                $session->save();
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Login & waktu siswa berhasil di-reset. Siswa dapat melanjutkan ujian.']);
     }
 
     public function stop($subdomain, $id)
