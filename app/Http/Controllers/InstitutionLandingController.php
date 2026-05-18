@@ -5,23 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Institution;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class InstitutionLandingController extends Controller
 {
     /**
      * Display the landing page for a specific institution.
+     * If the user is already authenticated (as student or admin), redirect them directly.
      */
-    public function index($subdomain): View
+    public function index($subdomain)
     {
         $institution = Institution::where('subdomain', $subdomain)->firstOrFail();
 
-        // Share institution data globally for layout if needed, or just pass to view
-        // Ideally the layout detects this context too.
-        
+        // If already logged in as a STUDENT → go to student dashboard
+        if (Auth::guard('student')->check()) {
+            return redirect()->route('institution.student.dashboard', $subdomain);
+        }
+
+        // If already logged in as ADMIN/STAFF/PROCTOR → go to admin dashboard
+        if (Auth::guard('web')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return view('institution.landing', compact('institution'));
     }
+
     /**
-     * Display the branded login page for the institution.
+     * Display the branded login page for the institution (Admin/Staff).
      */
     public function login($subdomain): View
     {

@@ -41,11 +41,11 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold m-0 text-dark">Ringkasan Hasil</h4>
             <div>
-                <form action="{{ route($baseRoute . '.reset_exam_result', $selectedSession->id) }}" method="POST" class="d-inline" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA HASIL ujian pada sesi ini? Data yang dihapus tidak dapat dikembalikan!');">
+                <form action="{{ route($baseRoute . '.reset_exam_result', $selectedSession->id) }}" method="POST" class="d-inline" onsubmit="return confirm('RESET SESI UJIAN\n\nTindakan ini akan:\n✓ Menghapus semua hasil & jawaban pada sesi ini\n✓ Mengaktifkan kembali sesi jika tidak aktif\n✓ Memperpanjang waktu jika sudah lewat (otomatis +2 jam)\n✓ Siswa BISA mengikuti ujian lagi\n\nYakin ingin mereset sesi ini?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger mr-2">
-                        <i class="fas fa-trash-alt mr-2"></i> Reset Sesi
+                    <button type="submit" class="btn btn-outline-warning mr-2">
+                        <i class="fas fa-redo mr-2"></i> Reset Sesi
                     </button>
                 </form>
                 <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">

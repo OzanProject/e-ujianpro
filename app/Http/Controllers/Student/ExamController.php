@@ -312,10 +312,30 @@ class ExamController extends Controller
             ], 403);
         }
 
-        $attempt->increment('cheat_count');
+        // Use session to track warning count (not persisted to DB for tier 1)
+        $sessionKey = 'warn_count_attempt_' . $attempt->id;
+        $warningCount = session($sessionKey, 0) + 1;
+        session([$sessionKey => $warningCount]);
+
+        // Tier 1: First 3 violations → reduce time by 2 minutes each (120 seconds)
+        // Tier 2: 4th violation onwards → increment cheat_count (existing penalty system)
+        $timePenalty = 0;
+        $isCheating = false;
+
+        if ($warningCount <= 3) {
+            // Only time penalty, do NOT increment cheat_count
+            $timePenalty = 120; // 2 minutes per violation
+        } else {
+            // Real cheat: increment cheat_count
+            $attempt->increment('cheat_count');
+            $isCheating = true;
+        }
 
         return response()->json([
             'status' => 'success',
+            'tier' => $isCheating ? 'cheat' : 'warning',
+            'warning_count' => $warningCount,
+            'time_penalty' => $timePenalty,
             'current_cheat_count' => $attempt->cheat_count,
         ]);
     }

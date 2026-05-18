@@ -49,6 +49,19 @@ return Application::configure(basePath: dirname(__DIR__))
             // Default Admin/Global Login
             return route('login');
         });
+
+        // Smart Redirection for Already Authenticated Users (Redirect from Login to Dashboard)
+        $middleware->redirectUsersTo(function (\Illuminate\Http\Request $request) {
+            if (\Illuminate\Support\Facades\Auth::guard('student')->check()) {
+                if ($subdomain = $request->route('subdomain')) {
+                    return route('institution.student.dashboard', $subdomain);
+                }
+                return route('student.dashboard');
+            }
+
+            // Default dashboard for Admin / Proctor / Teacher / Operator
+            return '/admin/dashboard';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ...

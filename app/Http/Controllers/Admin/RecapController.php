@@ -131,11 +131,39 @@ class RecapController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
+        // 1. Hapus semua jawaban dan attempt pada sesi ini
         $attemptIds = $session->attempts()->pluck('id');
         \App\Models\ExamAnswer::whereIn('exam_attempt_id', $attemptIds)->delete();
         $session->attempts()->delete();
 
-        return redirect()->back()->with('success', 'Semua hasil ujian pada sesi ini telah di-reset (Dihapus permanen).');
+        // 2. Pastikan sesi AKTIF agar siswa bisa mengikuti ujian lagi
+        $sessionUpdates = [];
+        $notes = [];
+
+        // Aktifkan jika nonaktif
+        if (!$session->is_active) {
+            $sessionUpdates['is_active'] = true;
+            $notes[] = 'Sesi diaktifkan kembali';
+        }
+
+        // Jika end_time sudah lewat, perpanjang ke 2 jam dari sekarang
+        if ($session->end_time < now()) {
+            $sessionUpdates['end_time'] = now()->addHours(2);
+            $notes[] = 'Waktu ujian diperpanjang hingga 2 jam ke depan (' . now()->addHours(2)->format('H:i, d M Y') . ')';
+        }
+
+        if (!empty($sessionUpdates)) {
+            $session->update($sessionUpdates);
+        }
+
+        $message = 'Semua hasil ujian pada sesi ini berhasil direset. Siswa kini dapat mengikuti ujian kembali.';
+        if (!empty($notes)) {
+            $message .= ' Catatan: ' . implode('; ', $notes) . '.';
+        }
+
+        return redirect()
+            ->route($this->getBaseRoute() . '.exam_result', ['exam_session_id' => $exam_session_id])
+            ->with('success', $message);
     }
 
     public function deleteExamAttempt(Request $request, $id)
@@ -160,6 +188,29 @@ class RecapController extends Controller
         $attempt->answers()->delete();
         $attempt->delete();
 
-        return redirect()->back()->with('success', 'Hasil ujian siswa berhasil dihapus. Siswa tersebut sekarang dapat mengerjakan ulang jika waktu masih tersedia.');
+        // Pastikan sesi aktif agar siswa bisa mengikuti ujian lagi
+        $sessionUpdates = [];
+        $notes = [];
+
+        if (!$session->is_active) {
+            $sessionUpdates['is_active'] = true;
+            $notes[] = 'sesi diaktifkan kembali';
+        }
+
+        if ($session->end_time < now()) {
+            $sessionUpdates['end_time'] = now()->addHours(2);
+            $notes[] = 'waktu diperpanjang 2 jam ke depan';
+        }
+
+        if (!empty($sessionUpdates)) {
+            $session->update($sessionUpdates);
+        }
+
+        $message = 'Hasil ujian siswa berhasil dihapus. Siswa dapat mengikuti ujian kembali.';
+        if (!empty($notes)) {
+            $message .= ' Catatan: ' . implode(', ', $notes) . '.';
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 }

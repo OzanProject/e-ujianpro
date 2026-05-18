@@ -577,8 +577,21 @@
                     </div>
 
                     <div class="p-4 bg-gray-50 border-top rounded-bottom-lg">
-                        <button class="btn btn-finish" onclick="finishExam()">
-                            <i class="fas fa-check-circle mr-2"></i> Selesai Ujian
+                        <!-- Progress Summary -->
+                        <div class="mb-3 p-2 rounded-lg" style="background: #F0FDF4; border: 1px solid #BBF7D0;">
+                            <div class="d-flex justify-content-between align-items-center text-sm">
+                                <span class="text-muted font-weight-medium" style="font-size:0.78rem;">Terjawab</span>
+                                <span class="font-weight-bold" style="color:#059669;">
+                                    <span id="answered-count">0</span> / {{ count($questions) }}
+                                </span>
+                            </div>
+                            <div class="progress mt-1" style="height: 6px; border-radius: 10px;">
+                                <div id="answer-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-finish" id="btn-finish-exam" onclick="finishExam()">
+                            <i class="fas fa-paper-plane mr-2"></i> Selesai & Kumpulkan
                         </button>
                         <div class="mt-3 text-center">
                             <div class="d-flex justify-content-center gap-3 text-xs text-muted flex-wrap">
@@ -608,17 +621,32 @@
             const totalQuestions = {{ count($questions) }};
             let remainingSeconds = {{ $remainingSeconds }};
 
+            let examTimerInterval = null;
+
             function startTimer() {
                 const display = document.getElementById('timer-display');
-                const timer = setInterval(function () {
+                examTimerInterval = setInterval(function () {
                     if (remainingSeconds > 0) remainingSeconds--;
 
                     if (remainingSeconds <= 0) {
-                        clearInterval(timer);
+                        clearInterval(examTimerInterval);
                         display.textContent = "00:00:00";
                         display.classList.add('text-danger');
-                        alert('Waktu Habis!');
-                        forceFinishExam();
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: 'Waktu Habis!',
+                                text: 'Waktu pengerjaan ujian Anda telah habis. Jawaban otomatis dikumpulkan.',
+                                icon: 'info',
+                                allowOutsideClick: false,
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true
+                            }).then(() => forceFinishExam());
+                        } else {
+                            alert('Waktu Habis! Jawaban dikumpulkan otomatis.');
+                            forceFinishExam();
+                        }
                         return;
                     }
 
@@ -630,10 +658,41 @@
                         String(hours).padStart(2, '0') + ':' +
                         String(minutes).padStart(2, '0') + ':' +
                         String(seconds).padStart(2, '0');
+
+                    // Pulse warning when under 5 minutes
+                    if (remainingSeconds <= 300) {
+                        display.style.color = '#DC2626';
+                        display.style.animation = remainingSeconds % 2 === 0 ? 'none' : 'pulse 0.5s ease';
+                    }
                 }, 1000);
             }
 
             startTimer();
+
+            // Live answer progress tracker
+            function updateAnswerProgress() {
+                let answered = 0;
+                for (let i = 1; i <= totalQuestions; i++) {
+                    const navBtn = document.getElementById('nav-' + i);
+                    if (navBtn && (navBtn.classList.contains('answered') || navBtn.classList.contains('doubtful'))) {
+                        answered++;
+                    }
+                }
+                const pct = Math.round((answered / totalQuestions) * 100);
+                const countEl = document.getElementById('answered-count');
+                const barEl = document.getElementById('answer-progress');
+                if (countEl) countEl.textContent = answered;
+                if (barEl) barEl.style.width = pct + '%';
+
+                // Change bar color based on completion
+                if (barEl) {
+                    if (pct === 100) barEl.className = 'progress-bar bg-success';
+                    else if (pct >= 50) barEl.className = 'progress-bar bg-primary';
+                    else barEl.className = 'progress-bar bg-warning';
+                }
+            }
+
+            updateAnswerProgress(); // run once on load
 
             window.changeQuestion = function (n) {
                 goToQuestion(n);
@@ -709,6 +768,7 @@
                     const navBtn = document.getElementById('nav-' + index);
                     if (navBtn) navBtn.classList.add('answered');
                     saveAnswer(questionId, optionId, 'multiple_choice');
+                    updateAnswerProgress();
                 });
             });
 
@@ -723,6 +783,7 @@
                         selected.length > 0 ? navBtn.classList.add('answered') : navBtn.classList.remove('answered');
                     }
                     saveAnswer(questionId, selected, 'multiple_choice_complex');
+                    updateAnswerProgress();
                 });
             });
 
@@ -738,6 +799,7 @@
                     const navBtn = document.getElementById('nav-' + index);
                     if (navBtn && Object.keys(gridAnswers).length > 0) navBtn.classList.add('answered');
                     saveAnswer(questionId, gridAnswers, 'boolean_grid');
+                    updateAnswerProgress();
                 });
             });
 
@@ -753,6 +815,7 @@
                     }
                     clearTimeout(essayTimeout);
                     essayTimeout = setTimeout(() => saveAnswer(questionId, answer, 'essay'), 1000);
+                    updateAnswerProgress();
                 });
             });
 
@@ -784,12 +847,112 @@
             });
 
             window.finishExam = function () {
-                if (confirm('Apakah Anda yakin ingin menyelesaikan ujian ini? Jawaban tidak dapat diubah setelah ini.')) {
-                    forceFinishExam();
+                // Count unanswered questions
+                const unanswered = [];
+                const doubtful = [];
+
+                for (let i = 1; i <= totalQuestions; i++) {
+                    const navBtn = document.getElementById('nav-' + i);
+                    if (!navBtn) continue;
+                    if (navBtn.classList.contains('doubtful')) {
+                        doubtful.push(i);
+                    } else if (!navBtn.classList.contains('answered')) {
+                        unanswered.push(i);
+                    }
                 }
+
+                if (typeof Swal === 'undefined') {
+                    // Fallback jika SweetAlert tidak tersedia
+                    let msg = 'Ringkasan pengerjaan:\n';
+                    msg += `✅ Terjawab: ${totalQuestions - unanswered.length - doubtful.length} soal\n`;
+                    if (doubtful.length > 0) msg += `⚠️  Ragu-ragu: soal nomor ${doubtful.join(', ')}\n`;
+                    if (unanswered.length > 0) msg += `❌ Belum dijawab: soal nomor ${unanswered.join(', ')}\n`;
+                    msg += '\nYakin ingin mengumpulkan jawaban?';
+                    if (confirm(msg)) forceFinishExam();
+                    return;
+                }
+
+                // Build audit HTML
+                const answeredCount = totalQuestions - unanswered.length - doubtful.length;
+                const pct = Math.round((answeredCount / totalQuestions) * 100);
+
+                let auditHtml = `
+                    <div style="text-align:left; font-size:0.9rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="font-weight-bold">Progress Pengerjaan</span>
+                            <span class="font-weight-bold" style="color:#059669;">${pct}%</span>
+                        </div>
+                        <div class="progress mb-3" style="height:8px; border-radius:8px;">
+                            <div class="progress-bar ${pct===100 ? 'bg-success' : pct>=50 ? 'bg-primary' : 'bg-warning'}" style="width:${pct}%;"></div>
+                        </div>
+                        <div class="d-flex gap-3 mb-3" style="gap:8px; flex-wrap:wrap;">
+                            <div class="flex-fill p-2 rounded text-center" style="background:#F0FDF4; border:1px solid #BBF7D0;">
+                                <div style="font-size:1.4rem; font-weight:800; color:#059669;">${answeredCount}</div>
+                                <div style="font-size:0.72rem; color:#6B7280;">Terjawab</div>
+                            </div>
+                            <div class="flex-fill p-2 rounded text-center" style="background:#FFFBEB; border:1px solid #FDE68A;">
+                                <div style="font-size:1.4rem; font-weight:800; color:#D97706;">${doubtful.length}</div>
+                                <div style="font-size:0.72rem; color:#6B7280;">Ragu-ragu</div>
+                            </div>
+                            <div class="flex-fill p-2 rounded text-center" style="background:#FFF1F2; border:1px solid #FECDD3;">
+                                <div style="font-size:1.4rem; font-weight:800; color:#DC2626;">${unanswered.length}</div>
+                                <div style="font-size:0.72rem; color:#6B7280;">Belum Dijawab</div>
+                            </div>
+                        </div>`;
+
+                if (unanswered.length > 0) {
+                    auditHtml += `<div class="p-2 rounded mb-2" style="background:#FFF1F2; border:1px solid #FECDD3; font-size:0.82rem;">
+                        <strong style="color:#DC2626;">⚠️ Soal belum dijawab:</strong><br>
+                        <span style="color:#374151;">No. ${unanswered.join(', ')}</span>
+                    </div>`;
+                }
+
+                if (doubtful.length > 0) {
+                    auditHtml += `<div class="p-2 rounded mb-2" style="background:#FFFBEB; border:1px solid #FDE68A; font-size:0.82rem;">
+                        <strong style="color:#D97706;">⏳ Soal ragu-ragu:</strong><br>
+                        <span style="color:#374151;">No. ${doubtful.join(', ')}</span>
+                    </div>`;
+                }
+
+                auditHtml += `
+                        <p class="text-muted mt-2 mb-0" style="font-size:0.8rem;">Setelah dikumpulkan, jawaban <strong>tidak dapat diubah</strong>.</p>
+                    </div>`;
+
+                const hasIssues = unanswered.length > 0 || doubtful.length > 0;
+
+                Swal.fire({
+                    title: hasIssues ? '⚠️ Periksa Kembali Jawaban' : '✅ Siap Dikumpulkan',
+                    html: auditHtml,
+                    icon: hasIssues ? 'warning' : 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-paper-plane mr-1"></i> Ya, Kumpulkan Sekarang',
+                    cancelButtonText: hasIssues ? '<i class="fas fa-edit mr-1"></i> Kembali & Lengkapi' : 'Batal',
+                    confirmButtonColor: hasIssues ? '#F59E0B' : '#10B981',
+                    cancelButtonColor: '#6B7280',
+                    allowOutsideClick: false,
+                    width: '480px',
+                }).then((result) => {
+                    if (result.isConfirmed) forceFinishExam();
+                    else if (hasIssues && unanswered.length > 0) {
+                        // Auto-navigate to first unanswered
+                        goToQuestion(unanswered[0]);
+                    }
+                });
             };
 
+            let isSubmitting = false;
             function forceFinishExam() {
+                if (isSubmitting) return; // guard double submit
+                isSubmitting = true;
+
+                const finishBtn = document.getElementById('btn-finish-exam');
+                if (finishBtn) {
+                    finishBtn.disabled = true;
+                    finishBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengumpulkan...';
+                }
+
+                if (examTimerInterval) clearInterval(examTimerInterval);
+
                 const form = document.getElementById('finish-form');
                 form.action = '{{ request()->route("subdomain") ? route("institution.student.exam.finish", ["subdomain" => request()->route("subdomain"), "id" => $session->id]) : route("student.exam.finish", $session->id) }}';
                 form.submit();
@@ -801,9 +964,8 @@
 
             function reportCheat(triggerType) {
                 const now = Date.now();
-                if (now - lastCheatTime < 3000) return;
+                if (now - lastCheatTime < 3000) return; // debounce 3 seconds
                 lastCheatTime = now;
-                cheatCount++;
 
                 const url = '{{ request()->route("subdomain") ? route("institution.student.exam.report_cheat", request()->route("subdomain")) : route("student.exam.report_cheat") }}';
                 fetch(url, {
@@ -813,38 +975,71 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ exam_session_id: '{{ $session->id }}' })
-                }).catch(err => console.error('Reporting error:', err));
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
 
-                if (typeof Swal === 'undefined') {
-                    alert('Peringatan: Jangan meninggalkan halaman ujian.');
-                    if (cheatCount >= maxCheat) forceFinishExam();
-                    return;
-                }
+                    if (data.tier === 'warning') {
+                        // === TIER 1: Pengurangan Waktu ===
+                        const penalty = data.time_penalty || 120;
+                        remainingSeconds = Math.max(0, remainingSeconds - penalty);
 
-                if (cheatCount >= maxCheat) {
-                    Swal.fire({
-                        title: 'DISKUALIFIKASI!',
-                        text: 'Anda telah melanggar aturan ujian lebih dari ' + (maxCheat - 1) + ' kali. Ujian dihentikan otomatis.',
-                        icon: 'error',
-                        allowOutsideClick: false,
-                        confirmButtonText: 'Keluar'
-                    }).then(() => forceFinishExam());
-                    return;
-                }
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                title: '⚠️ Peringatan!',
+                                html: `Kamu terdeteksi meninggalkan halaman ujian.<br><br>` +
+                                    `<div class="p-3 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200" style="font-size:0.9rem;">` +
+                                    `Peringatan ke-<b>${data.warning_count}</b> dari 3.<br>` +
+                                    `Waktu dikurangi <b>${penalty / 60} menit</b>.</div><br>` +
+                                    `<span class="text-sm text-gray-500">Peringatan ke-4 akan menambah catatan pelanggaran.</span>`,
+                                icon: 'warning',
+                                confirmButtonText: 'Lanjutkan Ujian',
+                                confirmButtonColor: '#f59e0b',
+                                allowOutsideClick: false,
+                                backdrop: `rgba(251, 191, 36, 0.3)`
+                            });
+                        } else {
+                            alert(`Peringatan ${data.warning_count}/3: Jangan meninggalkan halaman ujian. Waktu dikurangi 2 menit.`);
+                        }
 
-                Swal.fire({
-                    title: 'PERINGATAN KECURANGAN!',
-                    html: `Dilarang meninggalkan halaman ujian!<br><br>` +
-                        `<div class="p-3 bg-red-100 text-red-700 rounded-lg">` +
-                        `Pelanggaran: <b>${cheatCount}</b> / ${maxCheat}<br>` +
-                        `Status: <b>Terdeteksi Pindah Tab/Aplikasi</b>` +
-                        `</div><br>` +
-                        `<span class="text-sm text-gray-500">Jika Anda melanggar ${maxCheat} kali, ujian akan diselesaikan otomatis.</span>`,
-                    icon: 'warning',
-                    confirmButtonText: 'Saya Mengerti, Lanjutkan Ujian',
-                    allowOutsideClick: false,
-                    backdrop: `rgba(239, 68, 68, 0.4)`
-                });
+                    } else {
+                        // === TIER 2: Cheat Count (Pelanggaran Nyata) ===
+                        cheatCount = data.current_cheat_count;
+
+                        if (typeof Swal === 'undefined') {
+                            alert('PELANGGARAN: Jangan meninggalkan halaman ujian!');
+                            if (cheatCount >= maxCheat) forceFinishExam();
+                            return;
+                        }
+
+                        if (cheatCount >= maxCheat) {
+                            Swal.fire({
+                                title: 'DISKUALIFIKASI!',
+                                text: 'Anda telah melanggar aturan ujian lebih dari ' + maxCheat + ' kali. Ujian dihentikan otomatis.',
+                                icon: 'error',
+                                allowOutsideClick: false,
+                                confirmButtonText: 'Keluar'
+                            }).then(() => forceFinishExam());
+                            return;
+                        }
+
+                        Swal.fire({
+                            title: 'PELANGGARAN KECURANGAN!',
+                            html: `Dilarang meninggalkan halaman ujian!<br><br>` +
+                                `<div class="p-3 bg-red-100 text-red-700 rounded-lg">` +
+                                `Catatan Pelanggaran: <b>${cheatCount}</b> / ${maxCheat}<br>` +
+                                `Status: <b>Terdeteksi Keluar Halaman</b>` +
+                                `</div><br>` +
+                                `<span class="text-sm text-gray-500">Jika mencapai ${maxCheat} pelanggaran, ujian dihentikan otomatis.</span>`,
+                            icon: 'error',
+                            confirmButtonText: 'Saya Mengerti, Lanjutkan Ujian',
+                            allowOutsideClick: false,
+                            backdrop: `rgba(239, 68, 68, 0.4)`
+                        });
+                    }
+                })
+                .catch(err => console.error('Reporting error:', err));
             }
 
             document.addEventListener("visibilitychange", function () {
@@ -854,13 +1049,12 @@
             window.addEventListener("blur", function () {
                 setTimeout(() => {
                     if (!document.hasFocus()) reportCheat('blur');
-                }, 500);
+                }, 1000); // Increased debounce to 1 second to avoid false positives
             });
 
+            // Only block right-click context menu, do NOT block copy/cut/paste
+            // (blocking copy causes false-positive violations when students copy URL)
             document.addEventListener("contextmenu", e => e.preventDefault());
-            document.addEventListener("copy", e => e.preventDefault());
-            document.addEventListener("cut", e => e.preventDefault());
-            document.addEventListener("paste", e => e.preventDefault());
         });
     </script>
 @endpush
