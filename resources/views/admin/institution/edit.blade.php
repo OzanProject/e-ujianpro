@@ -89,6 +89,11 @@
                                 <input type="text" class="form-control" id="nip_head_master" name="nip_head_master" value="{{ old('nip_head_master', $institution->nip_head_master) }}">
                             </div>
                             <div class="form-group">
+                                <label for="academic_year">Tahun Pelajaran Aktif</label>
+                                <input type="text" class="form-control" id="academic_year" name="academic_year" value="{{ old('academic_year', $institution->academic_year) }}" placeholder="Contoh: 2026/2027">
+                                <small class="text-muted">Digunakan sebagai default di kop surat cetak & berita acara.</small>
+                            </div>
+                            <div class="form-group">
                                 <label for="logo">Logo Lembaga</label>
                                 <div class="input-group">
                                     <div class="custom-file">

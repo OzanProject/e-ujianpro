@@ -42,7 +42,7 @@
     <div class="doc-title" style="margin-bottom: 5px; text-decoration: none;">BERITA ACARA</div>
     <div class="doc-title" style="text-decoration: none; margin-bottom: 20px;">
         PENYELENGGARAAN {{ strtoupper($session->examType->name ?? 'UJIAN') }}<br>
-        TAHUN PELAJARAN {{ date('Y') }}/{{ date('Y') + 1 }}
+        TAHUN PELAJARAN {{ $institution->academic_year ?? (date('Y') . '/' . (date('Y') + 1)) }}
     </div>
 
     <p style="text-align: justify; line-height: 1.8;">

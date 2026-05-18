@@ -46,7 +46,7 @@
     <div class="doc-title">BUKU CATATAN HARIAN / KEJADIAN PENTING</div>
     <div class="doc-title" style="font-size: 11pt; margin-bottom: 15px; text-decoration: none;">
         PELAKSANAAN {{ strtoupper($session->examType->name ?? 'UJIAN') }}<br>
-        TAHUN PELAJARAN {{ date('Y') }}/{{ date('Y') + 1 }}
+        TAHUN PELAJARAN {{ $institution->academic_year ?? (date('Y') . '/' . (date('Y') + 1)) }}
     </div>
 
     <table class="info-table">

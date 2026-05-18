@@ -38,6 +38,7 @@ class InstitutionController extends Controller
             'city' => 'nullable|string|max:100',
             'head_master' => 'nullable|string|max:255',
             'nip_head_master' => 'nullable|string|max:50',
+            'academic_year' => 'nullable|string|max:50',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'logo_kiri' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'logo_kanan' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',

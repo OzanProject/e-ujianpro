@@ -18,6 +18,7 @@ class Institution extends Model
         'type',
         'head_master',
         'nip_head_master',
+        'academic_year',
         'subdomain',
         'affiliate_code',
         'logo',
