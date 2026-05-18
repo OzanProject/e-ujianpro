@@ -57,6 +57,7 @@ class MonitorController extends Controller
                 'last_activity' => $attempt->updated_at->diffForHumans(),
                 'is_online' => $attempt->updated_at->diffInMinutes(now()) < 5, // Simple online check
                 'cheat_count' => $attempt->cheat_count,
+                'updated_at_ts' => $attempt->updated_at->timestamp,
             ];
         });
 

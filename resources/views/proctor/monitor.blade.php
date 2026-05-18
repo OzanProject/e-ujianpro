@@ -70,11 +70,17 @@
                     </div>
                     <div class="d-flex align-items-center">
                         <label class="mb-0 mr-2 text-sm font-weight-bold text-gray-600">Urutkan:</label>
-                        <select id="filterSort" class="form-control form-control-sm" style="width: 160px;">
-                            <option value="latest">Terbaru</option>
+                        <select id="filterSort" class="form-control form-control-sm" style="width: 180px;">
+                            <option value="latest" selected>Terbaru (Aktivitas)</option>
+                            <option value="oldest">Terlama (Aktivitas)</option>
                             <option value="highest">Nilai Terbesar</option>
                             <option value="lowest">Nilai Terkecil</option>
                             <option value="name_asc">Nama A-Z</option>
+                            <option value="name_desc">Nama Z-A</option>
+                            <option value="start_asc">Waktu Mulai [▲]</option>
+                            <option value="start_desc">Waktu Mulai [▼]</option>
+                            <option value="cheat_desc">Pelanggaran [▲]</option>
+                            <option value="cheat_asc">Pelanggaran [▼]</option>
                         </select>
                     </div>
                     <span id="totalCount" class="badge badge-secondary px-3 py-2 rounded-pill">
@@ -85,14 +91,24 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
-                        <thead class="bg-gray-100 text-gray-600 text-uppercase text-xs font-weight-bold">
+                        <thead class="bg-gray-100 text-gray-600 text-uppercase text-xs font-weight-bold" style="user-select: none;">
                             <tr>
-                                <th class="px-4 py-3 border-0">Nama Peserta</th>
-                                <th class="px-4 py-3 border-0">Waktu Mulai</th>
+                                <th class="px-4 py-3 border-0 sort-header" data-sort-asc="name_asc" data-sort-desc="name_desc" style="cursor: pointer;">
+                                    Nama Peserta <i class="fas fa-sort ml-1 text-muted" id="sort-icon-name"></i>
+                                </th>
+                                <th class="px-4 py-3 border-0 sort-header" data-sort-asc="start_asc" data-sort-desc="start_desc" style="cursor: pointer;">
+                                    Waktu Mulai <i class="fas fa-sort ml-1 text-muted" id="sort-icon-start"></i>
+                                </th>
                                 <th class="px-4 py-3 border-0">Status</th>
-                                <th class="px-4 py-3 border-0">Nilai Sementara</th>
-                                <th class="px-4 py-3 border-0">Aktivitas Terakhir</th>
-                                <th class="px-4 py-3 border-0 text-center">Pelanggaran</th>
+                                <th class="px-4 py-3 border-0 sort-header" data-sort-asc="lowest" data-sort-desc="highest" style="cursor: pointer;">
+                                    Nilai Sementara <i class="fas fa-sort ml-1 text-muted" id="sort-icon-score"></i>
+                                </th>
+                                <th class="px-4 py-3 border-0 sort-header" data-sort-asc="oldest" data-sort-desc="latest" style="cursor: pointer;">
+                                    Aktivitas Terakhir <i class="fas fa-sort ml-1 text-muted" id="sort-icon-activity"></i>
+                                </th>
+                                <th class="px-4 py-3 border-0 text-center sort-header" data-sort-asc="cheat_asc" data-sort-desc="cheat_desc" style="cursor: pointer;">
+                                    Pelanggaran <i class="fas fa-sort ml-1 text-muted" id="sort-icon-cheat"></i>
+                                </th>
                                 <th class="px-4 py-3 border-0 text-center" style="width: 200px;">Aksi</th>
                             </tr>
                         </thead>
@@ -145,14 +161,64 @@
 
         let sorted = [...allData];
 
-        if (sort === 'highest') {
-            sorted.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+        // Reset all sort icons
+        document.querySelectorAll('.sort-header i').forEach(icon => {
+            icon.className = 'fas fa-sort ml-1 text-muted';
+        });
+
+        // Set active sort icon
+        if (sort === 'name_asc') {
+            document.getElementById('sort-icon-name').className = 'fas fa-sort-up ml-1 text-primary';
+        } else if (sort === 'name_desc') {
+            document.getElementById('sort-icon-name').className = 'fas fa-sort-down ml-1 text-primary';
+        } else if (sort === 'start_asc') {
+            document.getElementById('sort-icon-start').className = 'fas fa-sort-up ml-1 text-primary';
+        } else if (sort === 'start_desc') {
+            document.getElementById('sort-icon-start').className = 'fas fa-sort-down ml-1 text-primary';
+        } else if (sort === 'highest') {
+            document.getElementById('sort-icon-score').className = 'fas fa-sort-down ml-1 text-primary';
         } else if (sort === 'lowest') {
-            sorted.sort((a, b) => parseFloat(a.score) - parseFloat(b.score));
+            document.getElementById('sort-icon-score').className = 'fas fa-sort-up ml-1 text-primary';
+        } else if (sort === 'latest') {
+            document.getElementById('sort-icon-activity').className = 'fas fa-sort-down ml-1 text-primary';
+        } else if (sort === 'oldest') {
+            document.getElementById('sort-icon-activity').className = 'fas fa-sort-up ml-1 text-primary';
+        } else if (sort === 'cheat_desc') {
+            document.getElementById('sort-icon-cheat').className = 'fas fa-sort-down ml-1 text-primary';
+        } else if (sort === 'cheat_asc') {
+            document.getElementById('sort-icon-cheat').className = 'fas fa-sort-up ml-1 text-primary';
+        }
+
+        // Apply sorting
+        if (sort === 'highest') {
+            sorted.sort((a, b) => {
+                const scoreA = parseFloat(a.score) || 0;
+                const scoreB = parseFloat(b.score) || 0;
+                return scoreB - scoreA;
+            });
+        } else if (sort === 'lowest') {
+            sorted.sort((a, b) => {
+                const scoreA = parseFloat(a.score) || 0;
+                const scoreB = parseFloat(b.score) || 0;
+                return scoreA - scoreB;
+            });
         } else if (sort === 'name_asc') {
             sorted.sort((a, b) => a.student_name.localeCompare(b.student_name));
+        } else if (sort === 'name_desc') {
+            sorted.sort((a, b) => b.student_name.localeCompare(a.student_name));
+        } else if (sort === 'start_asc') {
+            sorted.sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''));
+        } else if (sort === 'start_desc') {
+            sorted.sort((a, b) => (b.start_time || '').localeCompare(a.start_time || ''));
+        } else if (sort === 'latest') {
+            sorted.sort((a, b) => (b.updated_at_ts || 0) - (a.updated_at_ts || 0));
+        } else if (sort === 'oldest') {
+            sorted.sort((a, b) => (a.updated_at_ts || 0) - (b.updated_at_ts || 0));
+        } else if (sort === 'cheat_desc') {
+            sorted.sort((a, b) => (parseInt(b.cheat_count) || 0) - (parseInt(a.cheat_count) || 0));
+        } else if (sort === 'cheat_asc') {
+            sorted.sort((a, b) => (parseInt(a.cheat_count) || 0) - (parseInt(b.cheat_count) || 0));
         }
-        // default 'latest': keep server order
 
         const sliced = limit === 0 ? sorted : sorted.slice(0, limit);
 
@@ -226,6 +292,23 @@
     // Re-render when filter/sort changes
     document.getElementById('filterLimit').addEventListener('change', applyFilterAndRender);
     document.getElementById('filterSort').addEventListener('change', applyFilterAndRender);
+
+    // Handle click on column headers to sort
+    document.querySelectorAll('.sort-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const ascSort = this.getAttribute('data-sort-asc');
+            const descSort = this.getAttribute('data-sort-desc');
+            const currentSort = document.getElementById('filterSort').value;
+
+            let newSort = ascSort;
+            if (currentSort === ascSort) {
+                newSort = descSort;
+            }
+
+            document.getElementById('filterSort').value = newSort;
+            applyFilterAndRender();
+        });
+    });
 
     // Auto Refresh every 5 seconds
     setInterval(loadData, 5000);
