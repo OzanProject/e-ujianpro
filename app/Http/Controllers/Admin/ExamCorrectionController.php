@@ -37,7 +37,7 @@ class ExamCorrectionController extends Controller
         return view('admin.correction.index', compact('sessions', 'baseRoute'));
     }
 
-    public function show($sessionId)
+    public function show(Request $request, $sessionId)
     {
         $user = auth()->user();
         $session = ExamSession::findOrFail($sessionId);
@@ -47,14 +47,25 @@ class ExamCorrectionController extends Controller
             abort(403, 'Akses Ditolak.');
         }
 
-        $attempts = ExamAttempt::where('exam_session_id', $sessionId)
-                                ->where('status', 'completed')
-                                ->with('student')
-                                ->latest()
-                                ->paginate(20);
+        $limit = $request->input('limit', 20);
+        $sort = $request->input('sort', 'latest');
+
+        $query = ExamAttempt::where('exam_session_id', $sessionId)
+                            ->where('status', 'completed')
+                            ->with('student');
+
+        if ($sort === 'highest') {
+            $query->orderBy('score', 'desc');
+        } elseif ($sort === 'lowest') {
+            $query->orderBy('score', 'asc');
+        } else {
+            $query->latest();
+        }
+
+        $attempts = $query->paginate($limit)->withQueryString();
 
         $baseRoute = $this->getBaseRoute();
-        return view('admin.correction.show', compact('session', 'attempts', 'baseRoute'));
+        return view('admin.correction.show', compact('session', 'attempts', 'baseRoute', 'limit', 'sort'));
     }
 
     public function edit($attemptId)

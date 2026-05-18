@@ -18,6 +18,27 @@
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
                 
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <form action="{{ route($baseRoute . '.show', $session->id) }}" method="GET" class="form-inline">
+                            <label class="mr-2">Tampilkan:</label>
+                            <select name="limit" class="form-control form-control-sm mr-3" onchange="this.form.submit()">
+                                <option value="10" {{ request('limit') == 10 ? 'selected' : '' }}>10</option>
+                                <option value="20" {{ request('limit', 20) == 20 ? 'selected' : '' }}>20</option>
+                                <option value="50" {{ request('limit') == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ request('limit') == 100 ? 'selected' : '' }}>100</option>
+                            </select>
+
+                            <label class="mr-2">Urutkan:</label>
+                            <select name="sort" class="form-control form-control-sm mr-3" onchange="this.form.submit()">
+                                <option value="latest" {{ request('sort', 'latest') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                                <option value="highest" {{ request('sort') == 'highest' ? 'selected' : '' }}>Nilai Terbesar</option>
+                                <option value="lowest" {{ request('sort') == 'lowest' ? 'selected' : '' }}>Nilai Terkecil</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>

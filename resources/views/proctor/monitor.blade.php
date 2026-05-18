@@ -49,13 +49,38 @@
 <div class="row">
     <div class="col-12">
         <div class="card shadow-lg border-0 rounded-lg">
-            <div class="card-header bg-white border-bottom-0 p-4 d-flex justify-content-between align-items-center">
-                <h5 class="font-weight-bold text-gray-800 mb-0">
-                    <i class="fas fa-users mr-2 text-indigo-500"></i> Status Peserta
-                </h5>
-                <span class="badge badge-light border px-3 py-2 rounded-pill" id="lastUpdated">
-                    <i class="fas fa-sync-alt fa-spin mr-1"></i> Syncing...
-                </span>
+            <div class="card-header bg-white border-bottom-0 p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="font-weight-bold text-gray-800 mb-0">
+                        <i class="fas fa-users mr-2 text-indigo-500"></i> Status Peserta
+                    </h5>
+                    <span class="badge badge-light border px-3 py-2 rounded-pill" id="lastUpdated">
+                        <i class="fas fa-sync-alt fa-spin mr-1"></i> Syncing...
+                    </span>
+                </div>
+                <div class="d-flex align-items-center mt-3 flex-wrap" style="gap: 10px;">
+                    <div class="d-flex align-items-center">
+                        <label class="mb-0 mr-2 text-sm font-weight-bold text-gray-600">Tampilkan:</label>
+                        <select id="filterLimit" class="form-control form-control-sm" style="width: 80px;">
+                            <option value="10">10</option>
+                            <option value="20" selected>20</option>
+                            <option value="50">50</option>
+                            <option value="0">Semua</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <label class="mb-0 mr-2 text-sm font-weight-bold text-gray-600">Urutkan:</label>
+                        <select id="filterSort" class="form-control form-control-sm" style="width: 160px;">
+                            <option value="latest">Terbaru</option>
+                            <option value="highest">Nilai Terbesar</option>
+                            <option value="lowest">Nilai Terkecil</option>
+                            <option value="name_asc">Nama A-Z</option>
+                        </select>
+                    </div>
+                    <span id="totalCount" class="badge badge-secondary px-3 py-2 rounded-pill">
+                        <i class="fas fa-user mr-1"></i> <span id="countText">0</span> peserta
+                    </span>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -112,19 +137,36 @@
     const sessionId = {{ $session->id }};
     const monitorUrl = "{{ route('proctor.monitor.data', ['subdomain' => request()->route('subdomain'), 'session' => $session->id]) }}";
     
-    function loadData() {
-        fetch(monitorUrl)
-            .then(response => response.json())
-            .then(data => {
-                const tbody = document.getElementById('monitorTableBody');
-                tbody.innerHTML = ''; // Clear current
-                
-                if (data.length === 0) {
-                     tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada peserta yang memulai ujian.</td></tr>';
-                     return;
-                }
+    let allData = [];
 
-                data.forEach(item => {
+    function applyFilterAndRender() {
+        const limit = parseInt(document.getElementById('filterLimit').value);
+        const sort = document.getElementById('filterSort').value;
+
+        let sorted = [...allData];
+
+        if (sort === 'highest') {
+            sorted.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+        } else if (sort === 'lowest') {
+            sorted.sort((a, b) => parseFloat(a.score) - parseFloat(b.score));
+        } else if (sort === 'name_asc') {
+            sorted.sort((a, b) => a.student_name.localeCompare(b.student_name));
+        }
+        // default 'latest': keep server order
+
+        const sliced = limit === 0 ? sorted : sorted.slice(0, limit);
+
+        document.getElementById('countText').textContent = allData.length;
+
+        const tbody = document.getElementById('monitorTableBody');
+        tbody.innerHTML = '';
+
+        if (sliced.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada peserta yang memulai ujian.</td></tr>';
+            return;
+        }
+
+        sliced.forEach(item => {
                     let statusBadge = '';
                     if (item.status === 'completed') {
                         statusBadge = '<span class="badge badge-primary bg-blue-100 text-blue-800 px-3 py-1 rounded-pill">Selesai</span>';
@@ -167,12 +209,23 @@
                     `;
                     tbody.innerHTML += row;
                 });
-                
+    }
+
+    function loadData() {
+        fetch(monitorUrl)
+            .then(response => response.json())
+            .then(data => {
+                allData = data;
+                applyFilterAndRender();
                 // Update Time
                 document.getElementById('lastUpdated').innerHTML = '<i class="fas fa-check-circle text-success mr-1"></i> Updated ' + new Date().toLocaleTimeString();
             })
             .catch(error => console.error('Error fetching data:', error));
     }
+
+    // Re-render when filter/sort changes
+    document.getElementById('filterLimit').addEventListener('change', applyFilterAndRender);
+    document.getElementById('filterSort').addEventListener('change', applyFilterAndRender);
 
     // Auto Refresh every 5 seconds
     setInterval(loadData, 5000);
