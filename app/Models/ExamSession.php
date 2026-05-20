@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ExamSession extends Model
 {
-    use HasFactory;
+    use HasFactory, Multitenantable;
 
     protected $fillable = [
         'title',
@@ -20,6 +21,7 @@ class ExamSession extends Model
         'show_score', // Added
         'token',
         'exam_type_id',
+        'created_by', // Added for tenant isolation
     ];
 
     protected $casts = [

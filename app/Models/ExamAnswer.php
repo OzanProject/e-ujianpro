@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Model;
 
 class ExamAnswer extends Model
 {
+    use Multitenantable;
+
     protected $fillable = [
         'exam_attempt_id',
         'question_id',
@@ -14,6 +17,7 @@ class ExamAnswer extends Model
         'score',
         'is_correct',
         'is_doubtful',
+        'created_by', // Added for tenant isolation
     ];
 
     protected $casts = [

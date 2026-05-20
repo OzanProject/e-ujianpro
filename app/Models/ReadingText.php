@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Model;
 
 class ReadingText extends Model
 {
-    protected $fillable = ['subject_id', 'code', 'title', 'content'];
+    use Multitenantable;
+
+    protected $fillable = ['subject_id', 'code', 'title', 'content', 'created_by'];
 
     public function subject()
     {

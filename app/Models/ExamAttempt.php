@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Multitenantable;
 use Illuminate\Database\Eloquent\Model;
 
 class ExamAttempt extends Model
 {
+    use Multitenantable;
+
     protected $fillable = [
         'exam_session_id',
         'student_id',
@@ -14,6 +17,7 @@ class ExamAttempt extends Model
         'score',
         'status',
         'cheat_count',
+        'created_by', // Added for tenant isolation
     ];
 
     protected $casts = [
