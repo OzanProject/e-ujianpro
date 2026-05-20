@@ -46,33 +46,32 @@ class DashboardController extends Controller
         // Determine Institution ID (Parent Admin)
         $institutionId = ($user->role == 'admin_lembaga') ? $userId : $user->created_by;
 
-        // 1. Data Peserta (Siswa) - Scoped to Institution (Created By)
-        // Note: 'user_id' in students table usually refers to the student's own user account.
-        // We should use 'created_by' (which stores the Admin's ID) or filter by relation if needed.
-        // Assuming 'created_by' was added for this exact purpose in Module 300.
-        $pesertaCount = \App\Models\Student::where('created_by', $institutionId)->count();
+        // 1. Data Peserta (Siswa) - Scoped to Institution
+        $pesertaCount = \App\Models\Student::count();
 
-        // 2. Data Pengajar (Guru) - Scoped automatically via Multitenantable
+        // 2. Data Pengajar (Guru) - Filter by institution
         $guruCount = \App\Models\User::where('role', 'pengajar')
+                                     ->where(function($q) use ($institutionId) {
+                                         $q->where('id', $institutionId)
+                                           ->orWhere('created_by', $institutionId);
+                                     })
                                      ->count();
 
         // 3. Data Paket Soal - Scoped automatically via Multitenantable
         $paketSoalCount = \App\Models\ExamPackage::count();
 
-        // 4. Sesi Ujian Aktif - Scoped via ExamPackage relation
-        $activeExamSessionCount = \App\Models\ExamSession::whereHas('examPackage')
-                                ->where('is_active', true)
+        // 4. Sesi Ujian Aktif - Scoped automatically via Multitenantable
+        $activeExamSessionCount = \App\Models\ExamSession::where('is_active', true)
                                 ->count();
 
         // 5. Total Sesi (Optional)
-        $totalExamSessionCount = \App\Models\ExamSession::whereHas('examPackage')->count();
+        $totalExamSessionCount = \App\Models\ExamSession::count();
 
         // Get Max Students Quota (From Institution Admin)
         $institutionUser = ($user->role == 'admin_lembaga') ? $user : \App\Models\User::find($institutionId);
         $maxStudents = $institutionUser->max_students ?? 0;
 
         // 6. Statistics: Exam Attempts (Last 7 Days)
-        // We filter attempts for students belonging to this institution
         $chartData = [];
         $chartLabels = [];
         
@@ -80,13 +79,8 @@ class DashboardController extends Controller
             $date = now()->subDays($i)->format('Y-m-d');
             $displayDate = now()->subDays($i)->format('d M');
             
-            // Count attempts started on this date by students of this Institution
-            // But usually we want to see attempts on *My Exams*.
-            // Let's filter by Exam Packages created by Me ($userId).
+            // Count attempts for this institution's students
             $count = \App\Models\ExamAttempt::whereDate('start_time', $date)
-                ->whereHas('examSession.examPackage', function($q) use ($userId) {
-                    $q->where('created_by', $userId);
-                })
                 ->count();
                 
             $chartLabels[] = $displayDate;

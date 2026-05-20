@@ -204,6 +204,9 @@ Jika menemukan celah keamanan baru, segera laporkan dengan detail:
 
 Semua model kritis telah dilindungi dengan isolasi tenant yang proper. Data setiap sekolah sekarang benar-benar terpisah dan tidak bisa diakses oleh sekolah lain.
 
+### ⚠️ Hotfix Applied (20 Mei 2026):
+Perbaikan query `whereHas` di DashboardController untuk menghindari error SQL. Detail: `HOTFIX_WHEREHAS_ISSUE.md`
+
 **Prioritas**: 🟢 SELESAI  
 **Keamanan**: 🔒 TERLINDUNGI  
 **Status Produksi**: ✅ SIAP
