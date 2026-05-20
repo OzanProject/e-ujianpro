@@ -23,7 +23,25 @@
             <div class="col-12">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
+                        <i class="icon fas fa-check-circle"></i> {{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="icon fas fa-exclamation-triangle"></i> {{ session('warning') }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="icon fas fa-ban"></i> {{ session('error') }}
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -34,7 +52,10 @@
                     <div class="card-header">
                         <h3 class="card-title">Daftar Guru / Pengajar</h3>
                         <div class="card-tools">
-                            <a href="{{ route('admin.teacher.create') }}" class="btn btn-primary btn-sm">
+                            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#importExcelModal">
+                                <i class="fas fa-file-excel"></i> Import Excel
+                            </button>
+                            <a href="{{ route('admin.teacher.create') }}" class="btn btn-primary btn-sm ml-1">
                                 <i class="fas fa-plus"></i> Tambah Guru
                             </a>
                         </div>
@@ -118,4 +139,39 @@
         </div>
     </div>
 </section>
+
+<!-- Import Excel Modal -->
+<div class="modal fade" id="importExcelModal" tabindex="-1" role="dialog" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importExcelModalLabel">Import Data Guru</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ route('admin.teacher.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> Gunakan template Excel yang disediakan untuk mengimport data guru beserta mata pelajaran yang diampu.
+                        <br>
+                        <a href="{{ route('admin.teacher.template') }}" class="btn btn-sm btn-info mt-2">
+                            <i class="fa fa-download"></i> Download Template Excel
+                        </a>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>File Excel (.xlsx, .xls)</label>
+                        <input type="file" name="file" class="form-control" accept=".xlsx, .xls, .csv" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-upload"></i> Import Sekarang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

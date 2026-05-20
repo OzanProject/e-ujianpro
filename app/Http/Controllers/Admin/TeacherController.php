@@ -7,6 +7,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\TeachersImport;
+use App\Exports\TeacherTemplateExport;
 
 class TeacherController extends Controller
 {
@@ -170,5 +173,43 @@ class TeacherController extends Controller
         
         $teacher->update(['status' => 'active']);
         return redirect()->back()->with('success', 'Akun guru berhasil diaktifkan kembali.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            $importer = new TeachersImport();
+            Excel::import($importer, $request->file('file'));
+            
+            $msg = "Import Selesai. {$importer->importedCount} guru baru berhasil ditambahkan.";
+            
+            // Warnings/Info
+            if (count($importer->skippedErrors) > 0) {
+                $msg .= " WARNING: " . implode('; ', $importer->skippedErrors);
+            }
+
+            if (count($importer->duplicates) > 0) {
+                $duplicateList = implode(', ', array_slice($importer->duplicates, 0, 5));
+                if (count($importer->duplicates) > 5) {
+                    $duplicateList .= ", dan " . (count($importer->duplicates) - 5) . " lainnya";
+                }
+                $msg .= " INFO: " . count($importer->duplicates) . " data diperbarui: " . $duplicateList;
+            }
+
+            $alertType = (count($importer->skippedErrors) > 0) ? 'warning' : 'success';
+
+            return redirect()->back()->with($alertType, $msg);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new TeacherTemplateExport, 'template_guru.xlsx');
     }
 }

@@ -104,6 +104,8 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
         ->names('admin.score-scales');
 
     // Route Resource Teacher (Guru)
+    Route::post('teacher/import', [\App\Http\Controllers\Admin\TeacherController::class, 'import'])->name('admin.teacher.import');
+    Route::get('teacher/template', [\App\Http\Controllers\Admin\TeacherController::class, 'downloadTemplate'])->name('admin.teacher.template');
     Route::post('teacher/{id}/approve', [\App\Http\Controllers\Admin\TeacherController::class, 'approve'])->name('admin.teacher.approve');
     Route::post('teacher/{id}/suspend', [\App\Http\Controllers\Admin\TeacherController::class, 'suspend'])->name('admin.teacher.suspend');
     Route::post('teacher/{id}/activate', [\App\Http\Controllers\Admin\TeacherController::class, 'activate'])->name('admin.teacher.activate');
