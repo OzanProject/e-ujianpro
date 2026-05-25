@@ -80,9 +80,19 @@
             padding: 5px 15px;
             display: inline-block;
             font-weight: bold;
-            position: absolute;
-            left: 20px;
-            top: 240px;
+        }
+
+        .front-layout {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        .center-stage {
+            flex-grow: 1;
+            text-align: center;
         }
 
         @media print {
@@ -102,18 +112,23 @@
     <div class="doc-title">DENAH TEMPAT DUDUK PESERTA UJIAN</div>
     <div class="sub-title">RUANG: {{ strtoupper($room->name) }}</div>
 
-    <div style="position: relative; margin-top: 30px;">
-        <!-- Papan Tulis -->
-        <div class="board">PAPAN TULIS</div>
-        
-        <!-- Pintu (Simulasi) -->
-        <div class="door">PINTU</div>
-
-        <!-- Meja Pengawas -->
-        <div class="pengawas-desk">
-            MEJA PENGAWAS
+    <div class="front-layout">
+        <!-- Kiri: Pintu -->
+        <div style="width: 150px;">
+            <div class="door">PINTU</div>
         </div>
 
+        <!-- Tengah: Papan Tulis & Pengawas -->
+        <div class="center-stage">
+            <div class="board">PAPAN TULIS</div>
+            <div class="pengawas-desk">MEJA PENGAWAS</div>
+        </div>
+        
+        <!-- Kanan: Spacer agar seimbang dengan Pintu -->
+        <div style="width: 150px;"></div>
+    </div>
+
+    <div>
         <!-- Meja Peserta -->
         @php
             $columns = (int) request('columns', 4);

@@ -51,16 +51,20 @@
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Peserta</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pesertaCount }}</div>
                                 <div class="mt-2">
-                                    @if(isset($maxStudents) && $maxStudents > 0)
-                                        <div class="progress progress-sm mr-2 mb-1 bg-gray-200">
-                                            <div class="progress-bar {{ $quotaPercent > 90 ? 'bg-danger' : 'bg-primary' }}"
-                                                role="progressbar" style="width: {{ $quotaPercent }}%"
-                                                aria-valuenow="{{ $quotaPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <small class="text-muted">{{ $pesertaCount }} / {{ $maxStudents }} Kuota</small>
+                                    @if($user->role !== 'pengajar')
+                                        @if(isset($maxStudents) && $maxStudents > 0)
+                                            <div class="progress progress-sm mr-2 mb-1 bg-gray-200">
+                                                <div class="progress-bar {{ $quotaPercent > 90 ? 'bg-danger' : 'bg-primary' }}"
+                                                    role="progressbar" style="width: {{ $quotaPercent }}%"
+                                                    aria-valuenow="{{ $quotaPercent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="text-muted">{{ $pesertaCount }} / {{ $maxStudents }} Kuota</small>
+                                        @else
+                                            <span class="badge badge-success badge-pill"><i class="fas fa-check-circle mr-1"></i>
+                                                Unlimited</span>
+                                        @endif
                                     @else
-                                        <span class="badge badge-success badge-pill"><i class="fas fa-check-circle mr-1"></i>
-                                            Unlimited</span>
+                                        <small class="text-muted">Siswa Terdaftar</small>
                                     @endif
                                 </div>
                             </div>
