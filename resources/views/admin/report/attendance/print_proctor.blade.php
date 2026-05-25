@@ -144,7 +144,13 @@
         <tr>
             <td class="center">{{ $loop->iteration }}</td>
             <td style="font-weight: bold;">{{ $proctor->name }}</td>
-            <td class="center">{{ $proctor->examRoom->name ?? 'Semua Ruangan' }}</td>
+            <td class="center">
+                @if(isset($proctor->pivot) && $proctor->pivot->exam_room_id)
+                    {{ \App\Models\ExamRoom::find($proctor->pivot->exam_room_id)->name ?? 'Semua Ruangan' }}
+                @else
+                    {{ $proctor->examRoom->name ?? 'Semua Ruangan' }}
+                @endif
+            </td>
             <td class="signature-box">
                 @if($loop->iteration % 2 != 0)
                     {{ $loop->iteration }}. 

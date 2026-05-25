@@ -43,7 +43,18 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <small class="text-muted">Pilih jadwal untuk otomatis mengisi Kop Surat (Info Mata Pelajaran & Waktu).</small>
+                                <small class="text-muted">Pilih jadwal untuk otomatis mengisi Kop Surat (Info Mata Pelajaran & Waktu) dan memfilter pengawas yang ditugaskan.</small>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label>Pilih Ruangan Ujian (Opsional)</label>
+                                <select name="exam_room_id" class="form-control select2">
+                                    <option value="all">-- Semua Ruangan / Kosongkan --</option>
+                                    @foreach($rooms as $room)
+                                        <option value="{{ $room->id }}">{{ $room->name }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted">Pilih ruangan jika ingin mencetak daftar hadir khusus pengawas di ruangan tersebut.</small>
                             </div>
                             
                             <div class="alert alert-light border mt-3">

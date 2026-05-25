@@ -217,8 +217,10 @@ class ReportController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
             
+        $rooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+            
         $baseRoute = $this->getBaseRoute();
-        return view('admin.report.attendance_proctor.index', compact('sessions', 'baseRoute'));
+        return view('admin.report.attendance_proctor.index', compact('sessions', 'rooms', 'baseRoute'));
     }
 
     public function printAttendanceProctor(Request $request)
@@ -226,19 +228,33 @@ class ReportController extends Controller
         $user = Auth::user();
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
-        $proctors = \App\Models\User::where('role', 'proctor')
-                    ->where('created_by', $creatorId)
-                    ->with('examRoom')
-                    ->get();
-                    
         $session = null;
         if ($request->has('exam_session_id') && $request->exam_session_id) {
-             $session = ExamSession::with('subject')->find($request->exam_session_id);
+             $session = ExamSession::with('subject', 'proctors')->find($request->exam_session_id);
+        }
+
+        $room = null;
+        if ($request->has('exam_room_id') && $request->exam_room_id != 'all' && $request->exam_room_id != 'null') {
+             $room = \App\Models\ExamRoom::find($request->exam_room_id);
+        }
+
+        if ($session) {
+            $proctorsQuery = $session->proctors();
+            if ($room) {
+                $proctorsQuery->wherePivot('exam_room_id', $room->id);
+            }
+            $proctors = $proctorsQuery->withPivot('exam_room_id')->get();
+        } else {
+            $query = \App\Models\User::where('role', 'proctor')->where('created_by', $creatorId)->with('examRoom');
+            if ($room) {
+                $query->where('exam_room_id', $room->id);
+            }
+            $proctors = $query->get();
         }
         
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.attendance.print_proctor', compact('proctors', 'institution', 'session'));
+        return view('admin.report.attendance.print_proctor', compact('proctors', 'institution', 'session', 'room'));
     }
     // --- BERITA ACARA PELAKSANAAN ---
     public function beritaAcaraIndex()
