@@ -159,13 +159,7 @@
                                     <p>Data Ruangan</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.proctor.index') }}"
-                                    class="nav-link {{ request()->routeIs('admin.proctor.*') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Data Pengawas</p>
-                                </a>
-                            </li>
+                            
                             <li class="nav-item">
                                 <a href="{{ route('admin.student.index') }}"
                                     class="nav-link {{ request()->routeIs('admin.student.*') ? 'active' : '' }}">

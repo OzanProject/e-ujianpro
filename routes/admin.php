@@ -14,9 +14,6 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
 
     // Route Resource Operator
     Route::resource('operator', \App\Http\Controllers\Admin\OperatorController::class)->names('admin.operator');
-
-    // Route Resource Pengawas (Proctor)
-    Route::resource('proctor', \App\Http\Controllers\Admin\ProctorController::class)->names('admin.proctor');
     Route::prefix('exam_room')->name('admin.exam_room.')->group(function () {
         Route::get('fix_data', [\App\Http\Controllers\Admin\ExamRoomController::class, 'fixData'])->name('fix_data');
         Route::get('{id}/assignments', [\App\Http\Controllers\Admin\ExamRoomController::class, 'assignments'])->name('assignments');
@@ -168,6 +165,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
 
     // Nanti akan kita tambahkan route untuk Operator, Lembaga, Materi, dll.
 });
+
 
 
 
