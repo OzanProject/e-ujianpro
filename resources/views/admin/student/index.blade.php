@@ -176,7 +176,7 @@
                                     <th style="width: 60px">Foto</th>
                                     <th>Nama Lengkap</th>
                                     <th style="width: 50px" class="text-center">JK</th>
-                                    <th>NIS / NISN</th>
+                                    <th>NIS/NISN/No.Peserta</th>
                                     <th>Ruangan</th>
                                     <th>Kelompok</th>
                                     <th>Kelas</th>
@@ -201,12 +201,15 @@
                                         </td>
                                         <td class="text-center">{{ $student->gender ?? '-' }}</td>
                                         <td>
-                                            <div class="d-flex flex-column">
-                                                <span class="badge badge-light border mb-1">{{ $student->nis ?? '-' }}</span>
-                                                @if($student->nisn)
-                                                    <small class="text-muted"><i class="fas fa-id-card mr-1"></i> {{ $student->nisn }}</small>
-                                                @endif
-                                            </div>
+                                              <div class="d-flex flex-column">
+                                                  <span class="badge badge-light border mb-1">{{ $student->nis ?? '-' }}</span>
+                                                  @if($student->nisn)
+                                                      <small class="text-muted"><i class="fas fa-id-card mr-1"></i> {{ $student->nisn }}</small>
+                                                  @endif
+                                                  @if($student->participant_number)
+                                                      <small class="text-info"><i class="fas fa-ticket-alt mr-1"></i> {{ $student->participant_number }}</small>
+                                                  @endif
+                                              </div>
                                         </td>
                                         <td>
                                             @if($student->examRoom)

@@ -86,6 +86,7 @@ class StudentsImport implements ToModel, WithHeadingRow
         $student->password_text = $student->password_text ?: $password_text; // Keep cleartext for cards
         $student->kelas = $row['kelas'] ?? $student->kelas;
         $student->jurusan = $row['jurusan'] ?? $student->jurusan;
+        $student->participant_number = isset($row['no_peserta']) ? trim($row['no_peserta']) : $student->participant_number;
         
         // Fix: Claim orphaned data if created_by is missing
         if (is_null($student->created_by)) {

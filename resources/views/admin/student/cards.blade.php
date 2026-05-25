@@ -221,6 +221,13 @@
                         <td class="separator">:</td>
                         <td style="font-weight: 600;">{{ $student->nis ?? '-' }} @if($student->nisn) / {{ $student->nisn }} @endif</td>
                     </tr>
+                    @if($student->participant_number)
+                    <tr>
+                        <td class="label">No. Peserta</td>
+                        <td class="separator">:</td>
+                        <td style="font-weight: 800; font-size: 12px; color: #c0392b;">{{ $student->participant_number }}</td>
+                    </tr>
+                    @endif
                     <tr>
                         <td class="label">L/P</td>
                         <td class="separator">:</td>

@@ -114,6 +114,7 @@ class StudentController extends Controller
                 })
             ], // Scoped Unique
             'nisn' => 'nullable|string',
+            'participant_number' => 'nullable|string|max:50',
             'password' => 'required|string|min:6',
             'kelas' => 'nullable|string',
             'jurusan' => 'nullable|string',
@@ -131,6 +132,7 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'nis' => $request->nis,
             'nisn' => $request->nisn,
+            'participant_number' => $request->participant_number,
             'password' => Hash::make($request->password),
             'password_text' => $request->password,
             'kelas' => $request->kelas,
@@ -188,6 +190,7 @@ class StudentController extends Controller
                 })->ignore($student->id)
             ],
             'nisn' => 'nullable|string',
+            'participant_number' => 'nullable|string|max:50',
             'password' => 'nullable|string|min:6',
             'kelas' => 'nullable|string',
             'jurusan' => 'nullable|string',
@@ -200,6 +203,7 @@ class StudentController extends Controller
             'gender' => $request->gender,
             'nis' => $request->nis,
             'nisn' => $request->nisn,
+            'participant_number' => $request->participant_number,
             'kelas' => $request->kelas,
             'jurusan' => $request->jurusan,
             'student_group_id' => $request->student_group_id,

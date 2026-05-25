@@ -56,6 +56,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Nomor Peserta Ujian</label>
+                        <input type="text" name="participant_number" class="form-control" value="{{ old('participant_number', $student->participant_number) }}">
+                    </div>
+
+                    <div class="form-group">
                         <label>Password (Isi jika ingin mengganti)</label>
                         <input type="password" name="password" class="form-control" placeholder="Biarkan kosong jika tetap">
                     </div>

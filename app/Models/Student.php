@@ -22,6 +22,7 @@ class Student extends Authenticatable
         'password_text',
         'kelas',
         'jurusan',
+        'participant_number',
         'student_group_id',
         'exam_room_id',
         'photo',

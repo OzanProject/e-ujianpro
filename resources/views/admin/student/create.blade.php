@@ -45,6 +45,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Nomor Peserta Ujian</label>
+                        <input type="text" name="participant_number" class="form-control" value="{{ old('participant_number') }}" placeholder="Contoh: 02-15-0159-001-9 (Opsional)">
+                    </div>
+
+                    <div class="form-group">
                         <label>Password</label>
                         <input type="password" name="password" class="form-control" required placeholder="Password Login">
                     </div>

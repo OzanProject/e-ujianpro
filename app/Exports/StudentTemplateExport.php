@@ -14,8 +14,8 @@ class StudentTemplateExport implements FromCollection, WithHeadings
     public function collection()
     {
         return new Collection([
-            ['Budi Santoso', '12345', '0012345678', 'L', 'X-IPA', 'IPA', 'password123', 'Kelompok 1', 'Ruang Ujian 1'],
-            ['Siti Aminah', '12346', '', 'P', 'X-IPA', 'IPA', '', '', '']
+            ['Budi Santoso', '12345', '0012345678', 'L', 'X-IPA', 'IPA', 'password123', 'Kelompok 1', 'Ruang Ujian 1', '02-15-0159-001-9'],
+            ['Siti Aminah', '12346', '', 'P', 'X-IPA', 'IPA', '', '', '', '02-15-0159-002-8']
         ]);
     }
 
@@ -30,7 +30,8 @@ class StudentTemplateExport implements FromCollection, WithHeadings
             'Jurusan',
             'Password (Opsional)',
             'Kelompok (Opsional)',
-            'Ruangan (Opsional)'
+            'Ruangan (Opsional)',
+            'NO PESERTA'
         ];
     }
 }
