@@ -50,7 +50,7 @@
                     @csrf
                 </form>
 
-                <a href="{{ route('admin.student.cards') }}" target="_blank" class="btn btn-default btn-outline-secondary">Kartu Peserta</a> 
+                <a href="{{ route('admin.student.cards') }}" target="_blank" class="btn btn-default btn-outline-secondary btn-print-with-date">Kartu Peserta</a> 
                 <a href="{{ route('admin.student.upload_photo') }}" class="btn btn-default btn-outline-secondary">Upload Foto</a>							
         </div>
     </div>

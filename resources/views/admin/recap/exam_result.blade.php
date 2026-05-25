@@ -54,7 +54,7 @@
                         <i class="fas fa-calculator mr-2"></i> Hitung Ulang Nilai
                     </button>
                 </form>
-                <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success">
+                <a href="{{ route($baseRoute . '.print_exam_result', ['exam_session_id' => $selectedSession->id]) }}" target="_blank" class="btn btn-outline-success btn-print-with-date">
                     <i class="fas fa-print mr-2"></i> Cetak Laporan
                 </a>
             </div>

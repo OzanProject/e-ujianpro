@@ -22,7 +22,7 @@
                             </select>
                         </div>
                         <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary btn-block">
+                            <button type="submit" class="btn btn-primary btn-block btn-print-with-date">
                                 <i class="fas fa-print mr-1"></i> Buka Mode Cetak
                             </button>
                         </div>

@@ -97,7 +97,7 @@
                     <td></td>
                     <td></td>
                     <td>
-                        <p>{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                        <p>{{ $institution->city ?? 'Kota' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->translatedFormat('d F Y') }}</p>
                         <p style="margin-bottom: 45px;">Kepala Sekolah,</p>
                         
                         <div style="position: relative; height: 75px; width: 100%; margin-top: -40px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center;">

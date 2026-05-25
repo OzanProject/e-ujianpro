@@ -36,7 +36,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold m-0 text-dark">Ringkasan Rentang Waktu Ini</h4>
             @if($sessions->count() > 0)
-            <a href="{{ route($baseRoute . '.print_exam_schedule', ['start_date' => $startDate, 'end_date' => $endDate]) }}" target="_blank" class="btn btn-outline-success">
+            <a href="{{ route($baseRoute . '.print_exam_schedule', ['start_date' => $startDate, 'end_date' => $endDate]) }}" target="_blank" class="btn btn-outline-success btn-print-with-date">
                 <i class="fas fa-print mr-2"></i> Cetak Jadwal
             </a>
             @endif

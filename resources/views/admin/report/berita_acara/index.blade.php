@@ -32,7 +32,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-primary rounded-pill font-weight-bold shadow-sm px-4">
+                    <button type="submit" class="btn btn-primary rounded-pill font-weight-bold shadow-sm px-4 btn-print-with-date">
                         <i class="fas fa-print mr-1"></i> Cetak Berita Acara
                     </button>
                 </form>

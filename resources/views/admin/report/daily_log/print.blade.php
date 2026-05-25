@@ -107,7 +107,7 @@
                 NIP. ........................................
             </td>
             <td>
-                {{ $institution->city ?? '................' }}, {{ now()->translatedFormat('d F Y') }}<br>
+                {{ $institution->city ?? '................' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->translatedFormat('d F Y') }}<br>
                 Pengawas Ruang
                 <div class="signature-space"></div>
                 <strong>( ............................................ )</strong><br>

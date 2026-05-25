@@ -91,7 +91,7 @@
 
     <div class="signature-section">
         <div class="signature-table">
-            <p style="margin: 0;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+            <p style="margin: 0;">{{ $institution->city ?? 'Kota' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->translatedFormat('d F Y') }}</p>
             <p style="margin: 0;">Kepala Sekolah,</p>
             
             <div style="margin-top: 10px; display: flex; justify-content: center; align-items: center; min-height: 80px;">

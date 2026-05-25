@@ -150,7 +150,7 @@
 
 <div class="footer">
     <div style="float: right; width: 220px; text-align: center; position: relative;">
-        <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
+        <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->locale('id')->isoFormat('D MMMM Y') }}</p>
         <p style="margin-bottom: 40px;">Mengetahui,<br>Kepala Sekolah</p>
         
         <div style="position: relative; height: 80px; width: 100%; margin-top: -30px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center;">

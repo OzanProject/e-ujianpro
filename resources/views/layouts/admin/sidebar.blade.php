@@ -369,14 +369,14 @@
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route($baseRoute . '.report.tata_tertib_peserta.print') }}" target="_blank"
-                                        class="nav-link">
+                                        class="nav-link btn-print-with-date">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Tata Tertib Peserta</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route($baseRoute . '.report.tata_tertib_pengawas.print') }}" target="_blank"
-                                        class="nav-link">
+                                        class="nav-link btn-print-with-date">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Tata Tertib Pengawas</p>
                                     </a>

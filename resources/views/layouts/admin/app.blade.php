@@ -120,6 +120,54 @@
                     customClass: { popup: 'rounded-2xl shadow-xl' }
                 });
             @endif
+
+            // Script untuk Popup Titi Mangsa (Tanggal Cetak)
+            $(document).on('click', '.btn-print-with-date', function(e) {
+                e.preventDefault();
+                var href = $(this).attr('href');
+                
+                // Jika tombol ini berada dalam form (bukan link)
+                if (!href) {
+                    var form = $(this).closest('form');
+                    if (form.length) {
+                        Swal.fire({
+                            title: 'Titi Mangsa (Tanggal Cetak)',
+                            text: 'Pilih tanggal yang akan tertera pada dokumen:',
+                            input: 'date',
+                            inputValue: new Date().toISOString().split('T')[0],
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fas fa-print"></i> Lanjutkan Cetak',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                                $('<input>').attr({
+                                    type: 'hidden',
+                                    name: 'print_date',
+                                    value: result.value
+                                }).appendTo(form);
+                                form.submit();
+                            }
+                        });
+                        return;
+                    }
+                }
+
+                // Jika tombol adalah link anchor biasa
+                Swal.fire({
+                    title: 'Titi Mangsa (Tanggal Cetak)',
+                    text: 'Pilih tanggal yang akan tertera pada dokumen:',
+                    input: 'date',
+                    inputValue: new Date().toISOString().split('T')[0],
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-print"></i> Lanjutkan Cetak',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        var separator = href.indexOf('?') !== -1 ? '&' : '?';
+                        window.open(href + separator + 'print_date=' + result.value, '_blank');
+                    }
+                });
+            });
         });
     </script>
 

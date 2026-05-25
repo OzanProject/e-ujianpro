@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-print"></i> Cetak Kartu Meja</button>
+                            <button type="submit" class="btn btn-primary btn-print-with-date"><i class="fas fa-print"></i> Cetak Kartu Meja</button>
                         </div>
                     </form>
                 </div>
