@@ -266,6 +266,15 @@
                                     <p>Jadwal Ujian</p>
                                 </a>
                             </li>
+                            @if($user->role === 'pengajar')
+                            <li class="nav-item">
+                                <a href="{{ route('proctor.dashboard', ['subdomain' => request()->route('subdomain') ?? ($globalInstitution->subdomain ?? 'portal')]) }}"
+                                    class="nav-link {{ request()->routeIs('proctor.dashboard') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon text-warning"></i>
+                                    <p>Jadwal Mengawas</p>
+                                </a>
+                            </li>
+                            @endif
                             <li class="nav-item">
                                 <a href="{{ in_array($user->role, ['admin_lembaga', 'operator', 'pengajar']) ? route($baseRoute . '.monitoring.index') : route('proctor.dashboard', ['subdomain' => request()->route('subdomain') ?? ($globalInstitution->subdomain ?? 'default')]) }}"
                                     class="nav-link {{ request()->routeIs('proctor.dashboard') || request()->routeIs($baseRoute . '.monitoring.index') ? 'active' : '' }}">

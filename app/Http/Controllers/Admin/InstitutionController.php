@@ -26,7 +26,7 @@ class InstitutionController extends Controller
 
     public function update(Request $request)
     {
-        $institution = Institution::where('user_id', auth()->id())->firstOrFail();
+        $institution = Institution::where('user_id', auth()->user()->getInstitutionId())->firstOrFail();
 
         $rules = [
             'name' => 'required|string|max:255',
@@ -71,7 +71,7 @@ class InstitutionController extends Controller
     }
     public function deleteAsset($type)
     {
-        $institution = Institution::where('user_id', auth()->id())->firstOrFail();
+        $institution = Institution::where('user_id', auth()->user()->getInstitutionId())->firstOrFail();
         $allowedTypes = ['logo', 'logo_kiri', 'logo_kanan', 'signature', 'stamp'];
 
         if (in_array($type, $allowedTypes)) {

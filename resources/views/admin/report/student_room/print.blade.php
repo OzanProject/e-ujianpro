@@ -73,7 +73,7 @@
                 <thead>
                     <tr>
                         <th width="40">NO</th>
-                        <th width="150">NOMOR PESERTA (NIS)</th>
+                        <th width="150">NO. PESERTA / NIS</th>
                         <th>NAMA LENGKAP</th>
                         <th width="120">NISN</th>
                         <th width="150">KELAS / JURUSAN</th>
@@ -83,7 +83,7 @@
                     @foreach($room->students as $student)
                     <tr>
                         <td class="text-center">{{ $loop->iteration }}</td>
-                        <td class="text-center" style="font-family: monospace;">{{ $student->nis }}</td>
+                        <td class="text-center" style="font-family: monospace;">{{ $student->participant_number ? $student->participant_number : $student->nis }}</td>
                         <td>{{ strtoupper($student->name) }}</td>
                         <td class="text-center">{{ $student->nisn ?? '-' }}</td>
                         <td class="text-center">{{ $student->kelas }} {{ $student->jurusan }}</td>

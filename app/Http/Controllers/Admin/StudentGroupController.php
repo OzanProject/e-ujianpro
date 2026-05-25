@@ -13,7 +13,7 @@ class StudentGroupController extends Controller
      */
     public function index()
     {
-        $groups = StudentGroup::where('created_by', auth()->id())
+        $groups = StudentGroup::where('created_by', auth()->user()->getInstitutionId())
             ->withCount('students')
             ->get();
 
@@ -34,7 +34,7 @@ class StudentGroupController extends Controller
 
         StudentGroup::create([
             'name' => $request->name,
-            'created_by' => auth()->id(),
+            'created_by' => auth()->user()->getInstitutionId(),
         ]);
 
         return redirect()->back()->with('success', 'Kelompok peserta berhasil ditambahkan.');

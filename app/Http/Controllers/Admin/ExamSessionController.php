@@ -264,4 +264,35 @@ class ExamSessionController extends Controller
 
         return redirect()->route($this->getBaseRoute() . '.index')->with('success', "$count token ujian berhasil diperbarui masal.");
     }
+    public function assignProctors(ExamSession $examSession)
+    {
+        $baseRoute = $this->getBaseRoute();
+        $institutionId = auth()->user()->getInstitutionId();
+        $teachers = \App\Models\User::where('role', 'pengajar')->where('created_by', $institutionId)->get();
+        $rooms = \App\Models\ExamRoom::where('created_by', $institutionId)->get();
+        $assignments = $examSession->proctors()->get();
+
+        return view('admin.exam_session.assign_proctors', compact('examSession', 'baseRoute', 'teachers', 'rooms', 'assignments'));
+    }
+
+    public function storeProctors(Request $request, ExamSession $examSession)
+    {
+        $request->validate([
+            'assignments' => 'array',
+            'assignments.*.user_id' => 'required|exists:users,id',
+            'assignments.*.exam_room_id' => 'required|exists:exam_rooms,id',
+        ]);
+
+        $examSession->proctors()->detach();
+
+        if ($request->has('assignments') && is_array($request->assignments)) {
+            foreach ($request->assignments as $assignment) {
+                $examSession->proctors()->attach($assignment['user_id'], ['exam_room_id' => $assignment['exam_room_id']]);
+            }
+        }
+
+        $baseRoute = $this->getBaseRoute();
+        return redirect()->route($baseRoute . '.index')->with('success', 'Pengawas berhasil ditugaskan.');
+    }
 }
+

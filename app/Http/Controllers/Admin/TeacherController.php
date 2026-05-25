@@ -20,7 +20,7 @@ class TeacherController extends Controller
     {
         // Ambil user dengan role 'pengajar' yang dibuat oleh user yang login
         $teachers = User::where('role', 'pengajar')
-                        ->where('created_by', auth()->id())
+                        ->where('created_by', auth()->user()->getInstitutionId())
                         ->latest()
                         ->get();
         return view('admin.teacher.index', compact('teachers'));
@@ -55,7 +55,7 @@ class TeacherController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'pengajar',
-            'created_by' => auth()->id(), // Save Creator ID
+            'created_by' => auth()->user()->getInstitutionId(), // Save Creator ID
         ]);
 
         // Simpan relasi mata pelajaran
@@ -78,7 +78,7 @@ class TeacherController extends Controller
     public function edit(string $id)
     {
         $teacher = User::where('role', 'pengajar')
-                       ->where('created_by', auth()->id())
+                       ->where('created_by', auth()->user()->getInstitutionId())
                        ->findOrFail($id);
         
         // Pastikan yang diedit adalah pengajar
@@ -96,7 +96,7 @@ class TeacherController extends Controller
     public function update(Request $request, string $id)
     {
         $teacher = User::where('role', 'pengajar')
-                       ->where('created_by', auth()->id())
+                       ->where('created_by', auth()->user()->getInstitutionId())
                        ->findOrFail($id);
 
         if ($teacher->role !== 'pengajar') {
@@ -136,7 +136,7 @@ class TeacherController extends Controller
     public function destroy(string $id)
     {
         $teacher = User::where('role', 'pengajar')
-                       ->where('created_by', auth()->id())
+                       ->where('created_by', auth()->user()->getInstitutionId())
                        ->findOrFail($id);
         
         if ($teacher->role !== 'pengajar') {
@@ -150,7 +150,7 @@ class TeacherController extends Controller
 
     public function approve(string $id)
     {
-        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->id())->findOrFail($id);
+        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
         if ($teacher->role !== 'pengajar') abort(403);
         
         $teacher->update(['status' => 'active']);
@@ -159,7 +159,7 @@ class TeacherController extends Controller
 
     public function suspend(string $id)
     {
-        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->id())->findOrFail($id);
+        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
         if ($teacher->role !== 'pengajar') abort(403);
         
         $teacher->update(['status' => 'suspended']);
@@ -168,7 +168,7 @@ class TeacherController extends Controller
 
     public function activate(string $id)
     {
-        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->id())->findOrFail($id);
+        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
         if ($teacher->role !== 'pengajar') abort(403);
         
         $teacher->update(['status' => 'active']);

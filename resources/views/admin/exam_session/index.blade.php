@@ -114,6 +114,9 @@
                                                 <a href="{{ route('proctor.monitor.show', ['subdomain' => request()->route('subdomain') ?? ($globalInstitution->subdomain ?? 'portal'), 'session' => $session->id]) }}" class="btn btn-sm btn-outline-primary rounded-circle mr-2 shadow-sm" title="Monitor Ujian" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-desktop text-xs"></i>
                                                 </a>
+                                                <a href="{{ route($baseRoute . '.proctors', $session->id) }}" class="btn btn-sm btn-outline-secondary rounded-circle mr-2" title="Atur Pengawas" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                                    <i class="fas fa-user-shield text-xs"></i>
+                                                </a>
                                                 <a href="{{ route($baseRoute . '.edit', $session->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit Jadwal" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-pencil-alt text-xs"></i>
                                                 </a>

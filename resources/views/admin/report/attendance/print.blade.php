@@ -148,7 +148,7 @@
                     @foreach($students as $index => $student)
                     <tr>
                         <td class="center">{{ $loop->iteration }}</td>
-                        <td class="center">{{ $student->nis }}</td>
+                        <td class="center">{{ $student->participant_number ? $student->participant_number : $student->nis }}</td>
                         <td>{{ strtoupper($student->name) }}</td>
                         <td class="signature-box">
                             @if($loop->iteration % 2 != 0)

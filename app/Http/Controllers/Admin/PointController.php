@@ -86,7 +86,7 @@ class PointController extends Controller
 
     public function payment($id)
     {
-        $transaction = PointTransaction::where('user_id', auth()->id())->findOrFail($id);
+        $transaction = PointTransaction::where('user_id', auth()->user()->getInstitutionId())->findOrFail($id);
         
         // If already approved or has proof, maybe redirect?
         // Let's allow re-upload if pending.
@@ -99,7 +99,7 @@ class PointController extends Controller
 
     public function storePayment(Request $request, $id)
     {
-        $transaction = PointTransaction::where('user_id', auth()->id())->findOrFail($id);
+        $transaction = PointTransaction::where('user_id', auth()->user()->getInstitutionId())->findOrFail($id);
 
         $request->validate([
             'proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',

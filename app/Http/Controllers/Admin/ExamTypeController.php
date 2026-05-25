@@ -13,7 +13,7 @@ class ExamTypeController extends Controller
      */
     public function index()
     {
-        $examTypes = ExamType::where('created_by', auth()->id())
+        $examTypes = ExamType::where('created_by', auth()->user()->getInstitutionId())
             ->latest()
             ->paginate(10);
             
@@ -43,7 +43,7 @@ class ExamTypeController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'is_active' => $request->has('is_active'),
-            'created_by' => auth()->id(),
+            'created_by' => auth()->user()->getInstitutionId(),
         ]);
 
         return redirect()->route('admin.exam_type.index')
@@ -55,7 +55,7 @@ class ExamTypeController extends Controller
      */
     public function edit(ExamType $examType)
     {
-        if ($examType->created_by != auth()->id()) {
+        if ($examType->created_by != auth()->user()->getInstitutionId()) {
             abort(403);
         }
         return view('admin.exam_type.edit', compact('examType'));
@@ -66,7 +66,7 @@ class ExamTypeController extends Controller
      */
     public function update(Request $request, ExamType $examType)
     {
-        if ($examType->created_by != auth()->id()) {
+        if ($examType->created_by != auth()->user()->getInstitutionId()) {
             abort(403);
         }
 
@@ -91,7 +91,7 @@ class ExamTypeController extends Controller
      */
     public function destroy(ExamType $examType)
     {
-        if ($examType->created_by != auth()->id()) {
+        if ($examType->created_by != auth()->user()->getInstitutionId()) {
             abort(403);
         }
 

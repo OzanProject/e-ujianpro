@@ -39,7 +39,7 @@ class ExamRoomController extends Controller
 
         ExamRoom::create([
             'name' => $request->name,
-            'created_by' => auth()->id(),
+            'created_by' => auth()->user()->getInstitutionId(),
         ]);
 
         return redirect()

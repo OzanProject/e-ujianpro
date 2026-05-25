@@ -21,7 +21,7 @@ class QuestionController extends Controller
             $subjects = $user->subjects;
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         } else {
-            $subjects = Subject::where('created_by', auth()->id())->get();
+            $subjects = Subject::where('created_by', auth()->user()->getInstitutionId())->get();
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         }
 
@@ -85,7 +85,7 @@ class QuestionController extends Controller
             $readingTexts = \App\Models\ReadingText::whereIn('subject_id', $subjects->pluck('id'))->get();
             $questionGroups = \App\Models\QuestionGroup::whereIn('subject_id', $subjects->pluck('id'))->get();
         } else {
-            $subjects = Subject::where('created_by', auth()->id())->get();
+            $subjects = Subject::where('created_by', auth()->user()->getInstitutionId())->get();
             $readingTexts = \App\Models\ReadingText::whereIn('subject_id', $subjects->pluck('id'))->get();
             $questionGroups = \App\Models\QuestionGroup::whereIn('subject_id', $subjects->pluck('id'))->get();
         }
@@ -134,7 +134,7 @@ class QuestionController extends Controller
                 'content' => $request->input('content'),
                 'type' => $request->type,
                 'difficulty' => $request->difficulty,
-                'created_by' => auth()->id(),
+                'created_by' => auth()->user()->getInstitutionId(),
             ]);
 
             if ($request->type === 'multiple_choice') {
@@ -210,7 +210,7 @@ class QuestionController extends Controller
             $readingTexts = \App\Models\ReadingText::whereIn('subject_id', $subjects->pluck('id'))->get();
             $questionGroups = \App\Models\QuestionGroup::whereIn('subject_id', $subjects->pluck('id'))->get();
         } else {
-            $subjects = Subject::where('created_by', auth()->id())->get();
+            $subjects = Subject::where('created_by', auth()->user()->getInstitutionId())->get();
             $readingTexts = \App\Models\ReadingText::whereIn('subject_id', $subjects->pluck('id'))->get();
             $questionGroups = \App\Models\QuestionGroup::whereIn('subject_id', $subjects->pluck('id'))->get();
         }
@@ -474,7 +474,7 @@ class QuestionController extends Controller
     public function destroy(Question $question)
     {
         try {
-            if (auth()->user()->role === 'pengajar' && $question->created_by !== auth()->id()) {
+            if (auth()->user()->role === 'pengajar' && $question->created_by !== auth()->user()->getInstitutionId()) {
                 return back()->with('error', 'Anda tidak memiliki akses untuk menghapus soal ini.');
             }
 
@@ -785,7 +785,7 @@ class QuestionController extends Controller
                     $q->where('created_by', $user->id)->orWhereNull('created_by');
                 });
         } else {
-            $subjects = Subject::where('created_by', auth()->id())->get();
+            $subjects = Subject::where('created_by', auth()->user()->getInstitutionId())->get();
             $query->whereIn('subject_id', $subjects->pluck('id'));
         }
 

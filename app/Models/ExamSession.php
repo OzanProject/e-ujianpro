@@ -51,4 +51,11 @@ class ExamSession extends Model
     {
         return $this->hasMany(ExamAttempt::class);
     }
+
+    public function proctors()
+    {
+        return $this->belongsToMany(User::class, 'exam_session_proctors', 'exam_session_id', 'user_id')
+                    ->withPivot('exam_room_id')
+                    ->withTimestamps();
+    }
 }

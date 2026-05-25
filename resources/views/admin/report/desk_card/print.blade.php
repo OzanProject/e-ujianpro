@@ -212,6 +212,12 @@
                         <div class="field-label">NIS / USERNAME</div>
                         <div class="field-value">{{ $student->nis }}</div>
                     </div>
+                    @if($student->participant_number)
+                     <div class="field">
+                        <div class="field-label">NO. PESERTA</div>
+                        <div class="field-value" style="color: #c0392b;">{{ $student->participant_number }}</div>
+                    </div>
+                    @endif
                      <div class="field">
                         <div class="field-label">PASSWORD LOGIN</div>
                         <div class="field-value">******</div> 

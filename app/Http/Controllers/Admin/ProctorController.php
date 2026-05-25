@@ -16,7 +16,7 @@ class ProctorController extends Controller
     public function index()
     {
         $proctors = User::where('role', 'proctor')
-            ->where('created_by', auth()->id())
+            ->where('created_by', auth()->user()->getInstitutionId())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -29,7 +29,7 @@ class ProctorController extends Controller
     public function create()
     {
         // Typically handled by modal in index, but if separate page needed:
-        $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
+        $rooms = \App\Models\ExamRoom::where('created_by', auth()->user()->getInstitutionId())->get();
         return view('admin.proctor.create', compact('rooms'));
     }
 
@@ -50,7 +50,7 @@ class ProctorController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'proctor',
             'status' => 'active',
-            'created_by' => auth()->id(),
+            'created_by' => auth()->user()->getInstitutionId(),
             'exam_room_id' => $request->exam_room_id,
         ]);
 
@@ -70,8 +70,8 @@ class ProctorController extends Controller
      */
     public function edit(string $id)
     {
-        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
-        $rooms = \App\Models\ExamRoom::where('created_by', auth()->id())->get();
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
+        $rooms = \App\Models\ExamRoom::where('created_by', auth()->user()->getInstitutionId())->get();
         return view('admin.proctor.edit', compact('proctor', 'rooms'));
     }
 
@@ -80,7 +80,7 @@ class ProctorController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -110,10 +110,10 @@ class ProctorController extends Controller
      */
     public function destroy(string $id)
     {
-        $proctor = User::where('role', 'proctor')->where('created_by', auth()->id())->findOrFail($id);
+        $proctor = User::where('role', 'proctor')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
         
         // Prevent deleting self (not applicable here) or protected users
-        if ($proctor->id == auth()->id()) {
+        if ($proctor->id == auth()->user()->getInstitutionId()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
         }
 

@@ -51,7 +51,7 @@ class ExamPackageController extends Controller
         }
 
         $data = $request->all();
-        $data['created_by'] = auth()->id();
+        $data['created_by'] = auth()->user()->getInstitutionId();
         $package = ExamPackage::create($data);
 
         return redirect()->route($this->getBaseRoute() . '.show', $package->id)

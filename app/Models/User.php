@@ -87,6 +87,13 @@ class User extends Authenticatable
         return $this->belongsTo(ExamRoom::class);
     }
 
+    public function proctorAssignments()
+    {
+        return $this->belongsToMany(ExamSession::class, 'exam_session_proctors', 'user_id', 'exam_session_id')
+                    ->withPivot('exam_room_id')
+                    ->withTimestamps();
+    }
+
     /**
      * Check if user can add more students based on quota.
      * 
@@ -103,5 +110,26 @@ class User extends Authenticatable
         $currentCount = $this->students()->count();
 
         return ($currentCount + $count) <= $this->max_students;
+    }
+
+    /**
+     * Get the Institution ID for multi-tenant scoping.
+     * Admin Lembaga uses their own ID. Sub-users (Operator, Teacher, Proctor) use their creator's ID.
+     */
+    public function getInstitutionId()
+    {
+        if ($this->role === 'super_admin') {
+            return $this->id;
+        }
+
+        if ($this->role === 'admin_lembaga') {
+            return $this->id;
+        }
+
+        if (in_array($this->role, ['operator', 'pengajar', 'proctor'])) {
+            return $this->created_by;
+        }
+
+        return $this->id;
     }
 }

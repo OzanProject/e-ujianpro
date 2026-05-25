@@ -110,7 +110,7 @@ class StudentController extends Controller
                 'required', 
                 'string', 
                 Rule::unique('students')->where(function ($query) {
-                    return $query->where('created_by', auth()->id());
+                    return $query->where('created_by', auth()->user()->getInstitutionId());
                 })
             ], // Scoped Unique
             'nisn' => 'nullable|string',
@@ -139,7 +139,7 @@ class StudentController extends Controller
             'jurusan' => $request->jurusan,
             'student_group_id' => $request->student_group_id,
             'exam_room_id' => $request->exam_room_id,
-            'created_by' => auth()->id(), // Set Creator
+            'created_by' => auth()->user()->getInstitutionId(), // Set Creator
         ];
 
         if ($request->hasFile('photo')) {
@@ -186,7 +186,7 @@ class StudentController extends Controller
                 'required', 
                 'string', 
                 Rule::unique('students')->where(function ($query) {
-                    return $query->where('created_by', auth()->id());
+                    return $query->where('created_by', auth()->user()->getInstitutionId());
                 })->ignore($student->id)
             ],
             'nisn' => 'nullable|string',
@@ -273,7 +273,7 @@ class StudentController extends Controller
     public function printCards()
     {
         $students = Student::with(['group', 'examRoom'])->get(); 
-        $institution = \App\Models\Institution::where('user_id', (auth()->user()->role == 'admin_lembaga' ? auth()->id() : auth()->user()->created_by))->first();
+        $institution = \App\Models\Institution::where('user_id', (auth()->user()->role == 'admin_lembaga' ? auth()->user()->getInstitutionId() : auth()->user()->created_by))->first();
         return view('admin.student.cards', compact('students', 'institution'));
     }
 

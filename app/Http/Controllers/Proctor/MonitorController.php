@@ -17,7 +17,16 @@ class MonitorController extends Controller
         $query = ExamAttempt::where('exam_session_id', $id)
                     ->with('student');
 
-        if ($proctor->exam_room_id) {
+        $assignedRooms = \DB::table('exam_session_proctors')
+            ->where('exam_session_id', $id)
+            ->where('user_id', $proctor->id)
+            ->pluck('exam_room_id')->toArray();
+
+        if (count($assignedRooms) > 0) {
+            $query->whereHas('student', function($q) use ($assignedRooms) {
+                $q->whereIn('exam_room_id', $assignedRooms);
+            });
+        } elseif ($proctor->exam_room_id) {
             $query->whereHas('student', function($q) use ($proctor) {
                 $q->where('exam_room_id', $proctor->exam_room_id);
             });
@@ -37,7 +46,16 @@ class MonitorController extends Controller
                     ->with('student');
 
         // Filter by Room if Proctor is assigned to one
-        if ($proctor->exam_room_id) {
+        $assignedRooms = \DB::table('exam_session_proctors')
+            ->where('exam_session_id', $id)
+            ->where('user_id', $proctor->id)
+            ->pluck('exam_room_id')->toArray();
+
+        if (count($assignedRooms) > 0) {
+            $query->whereHas('student', function($q) use ($assignedRooms) {
+                $q->whereIn('exam_room_id', $assignedRooms);
+            });
+        } elseif ($proctor->exam_room_id) {
             $query->whereHas('student', function($q) use ($proctor) {
                 $q->where('exam_room_id', $proctor->exam_room_id);
             });

@@ -14,7 +14,7 @@ class SubjectController extends Controller
     public function index()
     {
         // Scope to created_by
-        $subjects = Subject::where('created_by', auth()->id())->latest()->get();
+        $subjects = Subject::latest()->get();
         return view('admin.subject.index', compact('subjects'));
     }
 
@@ -37,7 +37,7 @@ class SubjectController extends Controller
                 'string',
                 'max:10',
                 \Illuminate\Validation\Rule::unique('subjects')->where(function ($query) {
-                    return $query->where('created_by', auth()->id());
+                    return $query->where('created_by', auth()->user()->getInstitutionId());
                 }),
             ],
             'name' => 'required|string|max:255',
@@ -46,7 +46,7 @@ class SubjectController extends Controller
         Subject::create([
             'code' => $request->code,
             'name' => $request->name,
-            'created_by' => auth()->id(),
+            
         ]);
 
         return redirect()->route('admin.subject.index')->with('success', 'Mata Pelajaran berhasil ditambahkan.');
@@ -79,7 +79,7 @@ class SubjectController extends Controller
                 'string',
                 'max:10',
                 \Illuminate\Validation\Rule::unique('subjects')->where(function ($query) {
-                    return $query->where('created_by', auth()->id());
+                    return $query->where('created_by', auth()->user()->getInstitutionId());
                 })->ignore($subject->id),
             ],
             'name' => 'required|string|max:255',
@@ -99,3 +99,4 @@ class SubjectController extends Controller
         return redirect()->route('admin.subject.index')->with('success', 'Mata Pelajaran berhasil dihapus.');
     }
 }
+
