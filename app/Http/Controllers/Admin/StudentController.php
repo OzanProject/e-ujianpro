@@ -378,35 +378,52 @@ class StudentController extends Controller
     }
     public function import(Request $request)
     {
+        // Mencegah timeout di shared hosting (300 detik atau unlimited)
+        set_time_limit(0);
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
-            'student_group_id' => 'nullable|exists:student_groups,id'
+            'student_group_id' => 'nullable|exists:student_groups,id',
+            'use_queue' => 'nullable|boolean'
         ]);
 
         try {
-            $importer = new \App\Imports\StudentsImport($request->student_group_id);
-            Excel::import($importer, $request->file('file'));
+            // Cek apakah menggunakan queue (untuk file besar)
+            $useQueue = $request->boolean('use_queue', false);
             
-            $msg = "Import Selesai. {$importer->importedCount} peserta baru berhasil ditambahkan.";
-            
-            // Warning for Quota Skip
-            if ($importer->skippedCount > 0) {
-                $msg .= " WARNING: {$importer->skippedCount} data DILEWATI karena kuota penuh.";
-            }
-
-            // Info for Duplicates
-            if (count($importer->duplicates) > 0) {
-                $duplicateList = implode(', ', array_slice($importer->duplicates, 0, 5)); // Show first 5
-                if (count($importer->duplicates) > 5) {
-                    $duplicateList .= ", dan " . (count($importer->duplicates) - 5) . " lainnya";
+            if ($useQueue) {
+                // Import dengan Queue (untuk file besar, tidak timeout)
+                $importer = new \App\Imports\StudentsImportQueued($request->student_group_id);
+                Excel::queueImport($importer, $request->file('file'));
+                
+                return redirect()->back()->with('success', 
+                    'Import sedang diproses di background. Data akan muncul dalam beberapa menit. Refresh halaman untuk melihat hasilnya.');
+            } else {
+                // Import Synchronous (untuk file kecil < 50 siswa)
+                $importer = new \App\Imports\StudentsImport($request->student_group_id);
+                Excel::import($importer, $request->file('file'));
+                
+                $msg = "Import Selesai. {$importer->importedCount} peserta baru berhasil ditambahkan.";
+                
+                // Warning for Quota Skip
+                if ($importer->skippedCount > 0) {
+                    $msg .= " WARNING: {$importer->skippedCount} data DILEWATI karena kuota penuh.";
                 }
-                $msg .= " INFO: " . count($importer->duplicates) . " data memiliki NIS sama (Data diperbarui): " . $duplicateList;
+
+                // Info for Duplicates
+                if (count($importer->duplicates) > 0) {
+                    $duplicateList = implode(', ', array_slice($importer->duplicates, 0, 5)); // Show first 5
+                    if (count($importer->duplicates) > 5) {
+                        $duplicateList .= ", dan " . (count($importer->duplicates) - 5) . " lainnya";
+                    }
+                    $msg .= " INFO: " . count($importer->duplicates) . " data memiliki NIS sama (Data diperbarui): " . $duplicateList;
+                }
+
+                // Determine Alert Type based on results
+                $alertType = ($importer->skippedCount > 0) ? 'warning' : 'success';
+
+                return redirect()->back()->with($alertType, $msg);
             }
-
-            // Determine Alert Type based on results
-            $alertType = ($importer->skippedCount > 0) ? 'warning' : 'success';
-
-            return redirect()->back()->with($alertType, $msg);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
         }

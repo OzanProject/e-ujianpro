@@ -385,6 +385,21 @@
                             <label>File Excel (.xlsx)</label>
                             <input type="file" name="file" class="form-control" required>
                         </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="use_queue" name="use_queue" value="1">
+                                <label class="custom-control-label" for="use_queue">
+                                    <strong>Gunakan Queue (Background Processing)</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        ✅ Centang ini jika import <strong>lebih dari 50 siswa</strong> untuk menghindari timeout.
+                                        <br>
+                                        Import akan diproses di background, refresh halaman setelah beberapa menit.
+                                    </small>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>

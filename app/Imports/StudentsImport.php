@@ -47,7 +47,7 @@ class StudentsImport implements ToModel, WithHeadingRow
             $user = User::create([
                 'name' => $row['nama_lengkap'],
                 'email' => $nis, // Username = NIS
-                'password' => Hash::make($password_text),
+                'password' => Hash::make($password_text, ['rounds' => 4]), // Gunakan rounds=4 agar proses import lebih ringan & cepat
                 'role' => 'peserta_ujian',
                 'created_by' => auth()->id(),
             ]);

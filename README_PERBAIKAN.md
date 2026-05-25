@@ -1,4 +1,34 @@
-# 🔒 Perbaikan Kebocoran Data Antar Sekolah - SELESAI
+# � Changelog & Perbaikan Sistem
+
+## 🚀 Update Terbaru: 25 Mei 2026
+
+### ⚡ Fix: Timeout Import Siswa di Hosting
+**Status**: ✅ **SELESAI**
+
+**Masalah**: Import >50 siswa timeout 30 detik karena bcrypt hashing lambat
+
+**Solusi**:
+- ✅ Turunkan bcrypt rounds dari 12 ke 10 (4x lebih cepat)
+- ✅ Implementasi Queue Job untuk background processing
+- ✅ Chunking import (50 siswa per batch)
+- ✅ Dual mode: Sync (file kecil) & Queue (file besar)
+
+**Files**:
+- `config/hashing.php` - Config bcrypt rounds
+- `app/Jobs/ImportStudentsJob.php` - Background job
+- `app/Imports/StudentsImportQueued.php` - Queue import
+- `app/Http/Controllers/Admin/StudentController.php` - Dual mode controller
+- `resources/views/admin/student/index.blade.php` - UI checkbox queue
+
+**Dokumentasi**: 
+- `QUICK_FIX_TIMEOUT.md` - Quick setup guide
+- `SOLUSI_TIMEOUT_IMPORT.md` - Full documentation
+- `setup-queue-hosting.sh` - Auto setup script (Linux)
+- `test-queue-local.bat` - Test script (Windows)
+
+---
+
+## �🔒 Perbaikan Kebocoran Data Antar Sekolah - SELESAI
 
 **Tanggal**: 20 Mei 2026  
 **Status**: ✅ **IMPLEMENTASI SELESAI**
