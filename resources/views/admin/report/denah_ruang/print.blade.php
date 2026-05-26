@@ -22,27 +22,29 @@
             padding: 15px;
             text-align: center;
             font-weight: bold;
-            width: 50%;
+            width: 60%;
             margin: 0 auto 30px auto;
-            border-radius: 5px;
+            border-radius: 6px;
         }
 
         .student-grid {
             display: grid;
             grid-template-columns: repeat({{ request('columns', 4) }}, 1fr);
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .student-desk {
             border: 2px solid #2c3e50;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             height: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 8px;
+            page-break-inside: avoid;
+            min-width: 0; /* Mencegah kolom melebar jika teks panjang */
         }
 
         .student-name {
@@ -57,6 +59,9 @@
         .student-nis {
             font-size: 9pt;
             color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .empty-desk {
@@ -69,29 +74,35 @@
             border: 4px solid #8e44ad;
             background-color: #fdfbfd;
             text-align: center;
-            padding: 5px;
+            padding: 8px;
             font-weight: bold;
-            width: 40%;
+            width: 50%;
             margin: 0 auto 20px auto;
+            border-radius: 4px;
         }
         
         .door {
             border: 2px solid #e67e22;
-            padding: 5px 15px;
+            padding: 8px 15px;
             display: inline-block;
             font-weight: bold;
+            border-radius: 4px;
+            background-color: #fdfbfd;
         }
 
         .front-layout {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 30px;
-            margin-top: 20px;
+            margin: 20px 0 20px 0;
         }
         
+        .side-stage {
+            flex: 1;
+        }
+
         .center-stage {
-            flex-grow: 1;
+            flex: 2;
             text-align: center;
         }
 
@@ -114,7 +125,7 @@
 
     <div class="front-layout">
         <!-- Kiri: Pintu -->
-        <div style="width: 150px;">
+        <div class="side-stage">
             <div class="door">PINTU</div>
         </div>
 
@@ -125,7 +136,7 @@
         </div>
         
         <!-- Kanan: Spacer agar seimbang dengan Pintu -->
-        <div style="width: 150px;"></div>
+        <div class="side-stage"></div>
     </div>
 
     <div>
@@ -153,8 +164,14 @@
         </div>
     </div>
 
-    <div style="margin-top: 50px; text-align: right; padding-right: 30px;">
-        Panitia Ujian
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end; page-break-inside: avoid;">
+        <div style="width: 250px; text-align: center;">
+            <p style="margin-bottom: 50px; font-size: 11pt;">Panitia Ujian,</p>
+            <p style="font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 0;">
+                (............................................)
+            </p>
+            <p style="margin-top: 5px; font-size: 10pt;">NIP. .............................</p>
+        </div>
     </div>
 
 </body>
