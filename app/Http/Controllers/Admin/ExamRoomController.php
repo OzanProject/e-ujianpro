@@ -15,13 +15,7 @@ class ExamRoomController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
-        $allIds = array_merge([$creatorId], \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray());
-
-        $rooms = ExamRoom::whereIn('created_by', $allIds)
-            ->orderBy('name')
-            ->paginate(10);
+        $rooms = ExamRoom::orderBy('name')->paginate(10);
 
         return view('admin.exam_room.index', compact('rooms'));
     }
@@ -39,7 +33,6 @@ class ExamRoomController extends Controller
 
         ExamRoom::create([
             'name' => $request->name,
-            'created_by' => auth()->user()->getInstitutionId(),
         ]);
 
         return redirect()
@@ -54,14 +47,14 @@ class ExamRoomController extends Controller
 
     public function edit(string $id)
     {
-        $room = $this->findOwnedRoom($id);
+        $room = ExamRoom::findOrFail($id);
 
         return view('admin.exam_room.edit', compact('room'));
     }
 
     public function update(Request $request, string $id)
     {
-        $room = $this->findOwnedRoom($id);
+        $room = ExamRoom::findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -78,7 +71,7 @@ class ExamRoomController extends Controller
 
     public function destroy(string $id)
     {
-        $room = $this->findOwnedRoom($id);
+        $room = ExamRoom::findOrFail($id);
 
         Student::where('exam_room_id', $room->id)
             ->update(['exam_room_id' => null]);
@@ -92,7 +85,7 @@ class ExamRoomController extends Controller
 
     public function assignments(Request $request, string $id)
     {
-        $room = $this->findOwnedRoom($id);
+        $room = ExamRoom::findOrFail($id);
 
         $perPage = (int) $request->input('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 50, 100]) ? $perPage : 10;
@@ -132,7 +125,7 @@ class ExamRoomController extends Controller
      */
     public function assignRandom(Request $request, string $id)
     {
-        $room = $this->findOwnedRoom($id);
+        $room = ExamRoom::findOrFail($id);
 
         $request->validate([
             'count' => 'required|integer|min:1',
@@ -329,12 +322,11 @@ class ExamRoomController extends Controller
     }
 
     /**
-     * Ambil ruangan milik admin login.
+     * Ambil ruangan milik admin login (Sudah tercakup Multitenantable).
      */
     private function findOwnedRoom(string $id): ExamRoom
     {
-        return ExamRoom::where('id', $id)
-            ->firstOrFail();
+        return ExamRoom::findOrFail($id);
     }
 
     /**
@@ -342,16 +334,7 @@ class ExamRoomController extends Controller
      */
     private function availableStudentsQuery()
     {
-        $user = auth()->user();
-        $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
-        
-        $ownerIds = [$creatorId];
-        $subUserIds = \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray();
-        $allIds = array_merge($ownerIds, $subUserIds);
-
-        return Student::query()
-            ->whereIn('created_by', $allIds)
-            ->whereNull('exam_room_id');
+        return Student::query()->whereNull('exam_room_id');
     }
 
     /**
