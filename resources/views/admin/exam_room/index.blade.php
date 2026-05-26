@@ -60,11 +60,23 @@
                                                         @csrf
                                                         <div class="modal-body text-left">
                                                             <div class="form-group">
-                                                                <label>Target Kapasitas Ruangan <span class="text-danger">*</span></label>
-                                                                <input type="number" name="count" class="form-control" placeholder="Contoh: 20" required min="1">
+                                                                <div class="alert alert-info py-2 px-3 mb-3 border-0 shadow-sm" style="background-color: #e3f2fd; color: #0c5460; border-radius: 8px;">
+                                                                    <div class="d-flex align-items-center justify-content-between">
+                                                                        <div class="font-weight-bold">
+                                                                            <i class="fas fa-users mr-2 text-primary"></i> Siswa Belum Masuk Ruangan
+                                                                        </div>
+                                                                        <div class="h5 mb-0 font-weight-bold text-primary">{{ $totalAvailable }}</div>
+                                                                    </div>
+                                                                    <div class="mt-2 text-sm d-flex justify-content-between">
+                                                                        <span><i class="fas fa-male text-blue-500 mr-1"></i> L: <strong>{{ $maleAvailable }}</strong></span>
+                                                                        <span><i class="fas fa-female text-pink-500 mr-1"></i> P: <strong>{{ $femaleAvailable }}</strong></span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <label class="font-weight-bold">Target Kapasitas Ruangan <span class="text-danger">*</span></label>
+                                                                <input type="number" name="count" class="form-control form-control-lg" placeholder="Contoh: 20" required min="1" max="{{ $totalAvailable > 0 ? $totalAvailable : 1 }}">
                                                                 <small class="form-text text-muted mt-2">
-                                                                    Sistem akan memasukkan siswa secara acak namun tetap memprioritaskan <strong>pembagian rata antara Laki-laki dan Perempuan (50/50)</strong>.<br>
-                                                                    Jika gender tidak seimbang (misal stok P habis), sisa kuota akan otomatis diisi oleh L agar target ruangan tetap terpenuhi.
+                                                                    Sistem akan memasukkan siswa secara acak namun memprioritaskan <strong>pembagian rata (50/50) Laki-laki & Perempuan</strong>.<br>
                                                                 </small>
                                                             </div>
                                                         </div>

@@ -17,7 +17,17 @@ class ExamRoomController extends Controller
     {
         $rooms = ExamRoom::orderBy('name')->paginate(10);
 
-        return view('admin.exam_room.index', compact('rooms'));
+        $availableStudents = Student::whereNull('exam_room_id')->get();
+        $totalAvailable = $availableStudents->count();
+        $maleAvailable = $availableStudents->whereIn('gender', $this->maleGenderValues())->count();
+        $femaleAvailable = $availableStudents->whereIn('gender', $this->femaleGenderValues())->count();
+
+        return view('admin.exam_room.index', compact(
+            'rooms', 
+            'totalAvailable', 
+            'maleAvailable', 
+            'femaleAvailable'
+        ));
     }
 
     public function create()
