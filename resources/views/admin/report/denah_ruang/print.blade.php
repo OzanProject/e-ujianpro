@@ -12,33 +12,33 @@
         .text-center { text-align: center; }
         .font-bold { font-weight: bold; }
         .school-name { font-size: 14pt; font-weight: bold; text-transform: uppercase; }
-        .doc-title { text-align: center; font-size: 13pt; font-weight: bold; text-decoration: underline; margin-bottom: 10px; }
-        .sub-title { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 25px; }
+        .doc-title { text-align: center; font-size: 13pt; font-weight: bold; text-decoration: underline; margin-bottom: 5px; }
+        .sub-title { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 10px; }
         
         /* Denah Grid */
         .pengawas-desk {
             border: 2px solid #333;
             background-color: #f0f0f0;
-            padding: 15px;
+            padding: 10px;
             text-align: center;
             font-weight: bold;
             width: 60%;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 15px auto;
             border-radius: 6px;
         }
 
         .student-grid {
             display: grid;
             grid-template-columns: repeat({{ request('columns', 4) }}, 1fr);
-            gap: 15px;
-            margin-top: 15px;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .student-desk {
             border: 2px solid #2c3e50;
-            padding: 8px;
+            padding: 5px;
             text-align: center;
-            height: 60px;
+            height: 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -50,7 +50,7 @@
         .student-name {
             font-weight: bold;
             font-size: 10pt;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -74,10 +74,10 @@
             border: 4px solid #8e44ad;
             background-color: #fdfbfd;
             text-align: center;
-            padding: 8px;
+            padding: 5px;
             font-weight: bold;
             width: 50%;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 10px auto;
             border-radius: 4px;
         }
         
@@ -94,7 +94,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin: 20px 0 20px 0;
+            margin: 10px 0 10px 0;
         }
         
         .side-stage {
