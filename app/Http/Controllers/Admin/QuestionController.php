@@ -768,6 +768,53 @@ class QuestionController extends Controller
 
         return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
+    // Method untuk fitur Cetak Kartu Soal
+    public function printCard(Request $request)
+    {
+        $user = auth()->user();
+        $query = Question::query();
+
+        if ($user->role === 'pengajar') {
+            $subjects = $user->subjects;
+            $query->whereIn('subject_id', $subjects->pluck('id'))
+                ->where(function ($q) use ($user) {
+                    $q->where('created_by', $user->id)->orWhereNull('created_by');
+                });
+        } else {
+            $subjects = Subject::where('created_by', $user->getInstitutionId())->get();
+            $query->whereIn('subject_id', $subjects->pluck('id'));
+        }
+
+        if ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('difficulty')) {
+            $query->where('difficulty', $request->difficulty);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('content', 'like', '%' . $request->search . '%')
+                    ->orWhereHas('readingText', function ($rt) use ($request) {
+                        $rt->where('content', 'like', '%' . $request->search . '%');
+                    })
+                    ->orWhereHas('options', function ($opt) use ($request) {
+                        $opt->where('content', 'like', '%' . $request->search . '%');
+                    });
+            });
+        }
+
+        $questions = $query->with(['subject', 'options', 'readingText', 'tags', 'creator'])->orderBy('id', 'asc')->get();
+        $institution = $user->institution;
+
+        return view('admin.question.print_card', compact('questions', 'institution'));
+    }
+
 
     public function exportWord(Request $request)
     {

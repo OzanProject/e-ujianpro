@@ -184,6 +184,7 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('question/template', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplate'])->name('question.template');
     Route::get('question/template-word', [\App\Http\Controllers\Admin\QuestionController::class, 'downloadTemplateWord'])->name('question.template.word');
     Route::get('question/export-word', [\App\Http\Controllers\Admin\QuestionController::class, 'exportWord'])->name('question.export.word');
+    Route::get('question/print-card', [\App\Http\Controllers\Admin\QuestionController::class, 'printCard'])->name('question.print_card');
     Route::resource('question', \App\Http\Controllers\Admin\QuestionController::class);
 
     // Additional Teaching Resources

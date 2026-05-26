@@ -9,7 +9,7 @@
 @section('content')
 {{-- Stats Overview --}}
 <div class="row mb-4">
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(255,255,255,0.2);">
@@ -17,12 +17,12 @@
                 </div>
                 <div>
                     <h5 class="font-weight-bold mb-0 text-white">{{ number_format($stats['total']) }}</h5>
-                    <p class="text-uppercase text-xs mb-0" style="color:rgba(255,255,255,0.8)">Total</p>
+                    <p class="text-uppercase text-xs mb-0" style="color:rgba(255,255,255,0.8)">Total Soal</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(78,115,223,0.1);">
@@ -35,7 +35,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(54,185,204,0.1);">
@@ -48,7 +48,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(246,194,62,0.15);">
@@ -61,7 +61,20 @@
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(133,135,150,0.1);">
+                    <i class="fas fa-pen-fancy fa-lg text-secondary"></i>
+                </div>
+                <div>
+                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['essay']) }}</h5>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Esai/Uraian</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(40,167,69,0.1);">
@@ -69,12 +82,25 @@
                 </div>
                 <div>
                     <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['easy']) }}</h5>
-                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Mudah</p>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Tingkat Mudah</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
+            <div class="card-body p-3 d-flex align-items-center">
+                <div class="rounded-circle p-2 mr-3" style="background: rgba(253,126,20,0.1);">
+                    <i class="fas fa-meh fa-lg text-orange" style="color: #fd7e14;"></i>
+                </div>
+                <div>
+                    <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['medium']) }}</h5>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Tingkat Sedang</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-4 col-sm-6 mb-3">
         <div class="card border-0 shadow-sm rounded-lg overflow-hidden h-100">
             <div class="card-body p-3 d-flex align-items-center">
                 <div class="rounded-circle p-2 mr-3" style="background: rgba(220,53,69,0.1);">
@@ -82,7 +108,7 @@
                 </div>
                 <div>
                     <h5 class="font-weight-bold mb-0 text-dark">{{ number_format($stats['hard']) }}</h5>
-                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Sulit</p>
+                    <p class="text-muted text-xs font-weight-bold text-uppercase mb-0">Tingkat Sulit</p>
                 </div>
             </div>
         </div>
@@ -101,6 +127,9 @@
                 </div>
                 
                 <div class="card-tools d-flex align-items-center">
+                    <a href="{{ route($baseRoute . '.print_card', request()->all()) }}" target="_blank" class="btn btn-info btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2">
+                        <i class="fas fa-print mr-1"></i> Cetak Kartu Soal
+                    </a>
                     <a href="{{ route($baseRoute . '.export.word', request()->all()) }}" class="btn btn-dark btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2">
                         <i class="fas fa-file-word mr-1"></i> Export Word
                     </a>
