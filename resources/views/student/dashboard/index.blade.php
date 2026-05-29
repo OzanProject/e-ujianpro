@@ -62,30 +62,30 @@
                                 \Carbon\Carbon::setLocale('id'); // Ensure Indonesian Locale
                             @endphp
                             @foreach($upcomingSessions as $session)
-                            <div class="d-flex align-items-center p-3 mb-3 bg-white rounded shadow-sm" style="border-left: 4px solid #4f46e5; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'">
+                            <div class="row align-items-center p-3 mb-3 bg-white rounded shadow-sm mx-0" style="border-left: 4px solid #4f46e5; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'">
                                 
                                 <!-- Date Block -->
-                                <div class="text-center mr-4 pr-4 border-right" style="min-width: 80px;">
+                                <div class="col-4 col-md-2 text-center" style="border-right: 1px solid #e2e8f0;">
                                     <div class="text-xs font-weight-bold" style="color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;">{{ $session->start_time->translatedFormat('M') }}</div>
                                     <div class="h3 font-weight-bolder mb-0 text-dark">{{ $session->start_time->format('d') }}</div>
                                     <div class="text-xs text-muted font-weight-bold">{{ $session->start_time->translatedFormat('D') }}</div>
                                 </div>
                         
                                 <!-- Details -->
-                                <div class="flex-grow-1">
+                                <div class="col-8 col-md-6 mb-2 mb-md-0 pl-4">
                                     <h6 class="font-weight-bold mb-1 text-gray-800" style="font-size: 1.05rem;">{{ $session->subject->name ?? '-' }}</h6>
                                     <p class="text-sm text-muted mb-0"><i class="fas fa-file-alt mr-1 text-gray-400"></i> {{ $session->examPackage->title ?? 'Paket Ujian' }}</p>
                                 </div>
                         
                                 <!-- Meta Info -->
-                                <div class="text-right ml-3 d-flex flex-column align-items-end">
-                                    <div class="mb-2">
+                                <div class="col-12 col-md-4 mt-3 mt-md-0 d-flex flex-row flex-md-column justify-content-start justify-content-md-end align-items-center align-items-md-end pl-4 pl-md-0">
+                                    <div class="mr-2 mr-md-0 mb-md-2">
                                         <span class="badge px-2 py-1 shadow-sm" style="background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.8rem;">
                                             <i class="far fa-clock mr-1"></i> {{ $session->start_time->format('H:i') }}
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="text-xs font-weight-bold text-muted bg-light px-2 py-1 rounded">
+                                        <span class="text-xs font-weight-bold text-muted bg-light px-2 py-1 rounded border">
                                             <i class="fas fa-hourglass-half mr-1 text-gray-400"></i> {{ $session->duration }} Menit
                                         </span>
                                     </div>
