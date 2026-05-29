@@ -57,42 +57,41 @@
                 </div>
                 <div class="card-body px-4 pb-4">
                     @if(isset($upcomingSessions) && $upcomingSessions->isNotEmpty())
-                        <div class="table-responsive">
-                            <table class="table table-hover table-borderless text-gray-700 mb-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="rounded-left py-3">Hari & Tanggal</th>
-                                        <th class="py-3">Jam</th>
-                                        <th class="py-3">Mata Pelajaran</th>
-                                        <th class="rounded-right py-3">Durasi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        \Carbon\Carbon::setLocale('id'); // Ensure Indonesian Locale
-                                    @endphp
-                                    @foreach($upcomingSessions as $session)
-                                    <tr class="border-bottom">
-                                        <td class="font-weight-bold">
-                                            <div class="d-flex flex-column">
-                                                <span class="text-primary text-lg">{{ $session->start_time->translatedFormat('l') }}</span>
-                                                <span class="text-xs text-muted">{{ $session->start_time->translatedFormat('d F Y') }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="align-middle font-weight-bold">
-                                            {{ $session->start_time->format('H:i') }}
-                                        </td>
-                                        <td class="align-middle">
-                                            <span class="font-weight-bold text-dark">{{ $session->subject->name ?? '-' }}</span>
-                                            <div class="text-xs text-muted">{{ $session->examPackage->title ?? '' }}</div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <span class="badge badge-light border">{{ $session->duration }} Menit</span>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <div class="upcoming-exams-list">
+                            @php
+                                \Carbon\Carbon::setLocale('id'); // Ensure Indonesian Locale
+                            @endphp
+                            @foreach($upcomingSessions as $session)
+                            <div class="d-flex align-items-center p-3 mb-3 bg-white rounded shadow-sm" style="border-left: 4px solid #4f46e5; border-radius: 0.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'">
+                                
+                                <!-- Date Block -->
+                                <div class="text-center mr-4 pr-4 border-right" style="min-width: 80px;">
+                                    <div class="text-xs font-weight-bold" style="color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;">{{ $session->start_time->translatedFormat('M') }}</div>
+                                    <div class="h3 font-weight-bolder mb-0 text-dark">{{ $session->start_time->format('d') }}</div>
+                                    <div class="text-xs text-muted font-weight-bold">{{ $session->start_time->translatedFormat('D') }}</div>
+                                </div>
+                        
+                                <!-- Details -->
+                                <div class="flex-grow-1">
+                                    <h6 class="font-weight-bold mb-1 text-gray-800" style="font-size: 1.05rem;">{{ $session->subject->name ?? '-' }}</h6>
+                                    <p class="text-sm text-muted mb-0"><i class="fas fa-file-alt mr-1 text-gray-400"></i> {{ $session->examPackage->title ?? 'Paket Ujian' }}</p>
+                                </div>
+                        
+                                <!-- Meta Info -->
+                                <div class="text-right ml-3 d-flex flex-column align-items-end">
+                                    <div class="mb-2">
+                                        <span class="badge px-2 py-1 shadow-sm" style="background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 0.8rem;">
+                                            <i class="far fa-clock mr-1"></i> {{ $session->start_time->format('H:i') }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-weight-bold text-muted bg-light px-2 py-1 rounded">
+                                            <i class="fas fa-hourglass-half mr-1 text-gray-400"></i> {{ $session->duration }} Menit
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
                         </div>
                     @else
                         <div class="text-center py-5 bg-light rounded">
