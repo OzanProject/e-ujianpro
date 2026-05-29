@@ -32,6 +32,9 @@ class DashboardController extends Controller
                                 ->pluck('id');
         } // Closing the else block
 
+        // Fetch Institution Info for the student's school
+        $institution = \App\Models\Institution::where('user_id', $adminId)->first();
+
         // Fetch valid exam sessions
         // 1. Is Active
         // 2. Start Time <= Now
@@ -77,6 +80,6 @@ class DashboardController extends Controller
              return $session;
         });
 
-        return view('student.dashboard.index', compact('examSessions', 'upcomingSessions'));
+        return view('student.dashboard.index', compact('examSessions', 'upcomingSessions', 'institution'));
     }
 }

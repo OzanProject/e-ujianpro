@@ -34,9 +34,12 @@
                                 </span>
                             @endif
                         </div>
-                         <div class="mt-3">
-                            <span class="badge badge-light px-3 py-2 rounded-pill font-weight-normal text-primary">
-                                <i class="fas fa-school mr-1"></i> {{ $globalInstitution->name ?? 'E-Ujian' }}
+                         <div class="mt-3 d-flex align-items-center justify-content-center justify-content-md-start">
+                             @if(isset($institution) && ($institution->logo_kiri || $institution->logo))
+                                <img src="{{ asset('storage/' . ($institution->logo_kiri ?? $institution->logo)) }}" alt="Logo" class="mr-2" style="height: 30px; border-radius: 50%; background: #fff; padding: 2px;">
+                             @endif
+                            <span class="badge badge-light px-3 py-2 rounded-pill font-weight-normal text-primary" style="font-size: 0.9rem;">
+                                <i class="fas fa-school mr-1"></i> {{ $institution->name ?? 'E-Ujian' }}
                             </span>
                         </div>
                     </div>
