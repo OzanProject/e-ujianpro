@@ -81,8 +81,8 @@
         
         /* Master Table for Margins */
         .page-container { width: 100%; border: none; border-collapse: collapse; }
-        .page-header-space { height: 15mm; border: none; padding: 0; }
-        .page-footer-space { height: 15mm; border: none; padding: 0; }
+        .page-header-space { height: 10mm; border: none; padding: 0; }
+        .page-footer-space { height: 10mm; border: none; padding: 0; }
         .page-content-cell { padding: 0 15mm; border: none; }
         
         @media print {
@@ -170,23 +170,35 @@
                     </tr>
                     @endforeach
                     
-                    @if($chunkIndex == $totalChunks - 1)
-                    {{-- Add empty rows if needed --}} 
-                    @for($i = 0; $i < 3; $i++)
-                     <tr>
-                        <td class="center"></td>
-                        <td class="center"></td>
-                        <td></td>
-                        <td class="signature-box"></td>
-                        <td></td>
-                    </tr>
-                    @endfor
+                    {{-- Pad the remaining rows dynamically so every page has exactly 14 rows --}}
+                    @php
+                        $emptyRowsNeeded = 14 - $chunk->count();
+                    @endphp
+                    @if($emptyRowsNeeded > 0)
+                        @for($i = 0; $i < $emptyRowsNeeded; $i++)
+                        @php
+                            $emptyGlobalIndex = ($chunkIndex * 14) + $chunk->count() + $i + 1;
+                        @endphp
+                         <tr>
+                            <td class="center">{{ $emptyGlobalIndex }}</td>
+                            <td class="center"></td>
+                            <td></td>
+                            <td class="signature-box">
+                                @if($emptyGlobalIndex % 2 != 0)
+                                    {{ $emptyGlobalIndex }}. 
+                                @else
+                                    <div style="text-align: center; padding-left: 50px;">{{ $emptyGlobalIndex }}.</div>
+                                @endif
+                            </td>
+                            <td></td>
+                        </tr>
+                        @endfor
                     @endif
                 </tbody>
             </table>
             
             @if($chunkIndex == $totalChunks - 1)
-            <div class="footer">
+            <div class="footer" style="margin-top: 15px;">
                 <div style="float: right; width: 220px; text-align: center; position: relative;">
                     <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->locale('id')->isoFormat('D MMMM Y') }}</p>
                     <p style="margin-bottom: 40px;">Pengawas Ruang,</p>
