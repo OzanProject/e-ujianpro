@@ -198,6 +198,7 @@
         
         <!-- Content -->
         <div class="content" style="position: relative; z-index: 1;">
+            @if(request('show_photo', 1) == 1)
             <div class="photo-area">
                 <div class="photo-box">
                     @if($student->photo && file_exists(public_path('storage/' . $student->photo)))
@@ -208,6 +209,7 @@
                     @endif
                 </div>
             </div>
+            @endif
             
             <div class="data-area">
                 <table class="data-table">

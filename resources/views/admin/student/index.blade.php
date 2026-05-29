@@ -50,7 +50,7 @@
                     @csrf
                 </form>
 
-                <a href="{{ route('admin.student.cards') }}" target="_blank" class="btn btn-default btn-outline-secondary btn-print-with-date">Kartu Peserta</a> 
+                <button type="button" class="btn btn-default btn-outline-secondary" data-toggle="modal" data-target="#printCardsModal">Kartu Peserta</button> 
                 <a href="{{ route('admin.student.upload_photo') }}" class="btn btn-default btn-outline-secondary">Upload Foto</a>							
         </div>
     </div>
@@ -323,6 +323,35 @@
       </div>
 
 
+
+    <!-- Print Cards Modal -->
+    <div class="modal fade" id="printCardsModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cetak Kartu Peserta</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route('admin.student.cards') }}" method="GET" target="_blank">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Opsi Cetak Foto</label>
+                            <select name="show_photo" class="form-control">
+                                <option value="1">Tampilkan Foto Siswa</option>
+                                <option value="0">Sembunyikan Foto Siswa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-success btn-print-with-date" onclick="$('#printCardsModal').modal('hide')"><i class="fas fa-print"></i> Cetak Sekarang</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Broadcast Whatsapp Modal -->
     <div class="modal fade" id="broadcastWhatsappModal" tabindex="-1" role="dialog" aria-hidden="true">
