@@ -64,6 +64,24 @@
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">NISN</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{ $student->nisn ?? '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">No. Peserta</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{ $student->participant_number ?? '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Jenis Kelamin</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">{{ $student->gender == 'L' ? 'Laki-laki' : ($student->gender == 'P' ? 'Perempuan' : '-') }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Kelompok</label>
                         <div class="col-sm-9">
                             <p class="form-control-static">{{ $student->group->name ?? '-' }}</p>
@@ -91,6 +109,14 @@
                         <label class="col-sm-3 col-form-label">Bergabung Sejak</label>
                         <div class="col-sm-9">
                             <p class="form-control-static">@tgl_jam($student->created_at)</p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Password Login</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-static">
+                                <code>{{ $student->password_text ?? 'Sama dengan NIS' }}</code>
+                            </p>
                         </div>
                     </div>
                 </form>
