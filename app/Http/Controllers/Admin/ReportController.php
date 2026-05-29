@@ -245,7 +245,7 @@ class ReportController extends Controller
             }
             $proctors = $proctorsQuery->withPivot('exam_room_id')->get();
         } else {
-            $query = \App\Models\User::where('role', 'proctor')->where('created_by', $creatorId)->with('examRoom');
+            $query = \App\Models\User::whereIn('role', ['pengajar', 'proctor'])->where('created_by', $creatorId)->with('examRoom');
             if ($room) {
                 $query->where('exam_room_id', $room->id);
             }

@@ -19,6 +19,6 @@ class ExamRoom extends Model
 
     public function proctors()
     {
-        return $this->hasMany(User::class)->where('role', 'proctor');
+        return $this->hasMany(User::class)->whereIn('role', ['pengajar', 'proctor']);
     }
 }
