@@ -101,7 +101,13 @@
     <a href="{{ route('admin.report.attendance.index') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
-<table class="page-container">
+@php
+    $chunks = $students->chunk(14);
+    $totalChunks = $chunks->count();
+@endphp
+
+@foreach($chunks as $chunkIndex => $chunk)
+<table class="page-container" style="{{ $chunkIndex < $totalChunks - 1 ? 'page-break-after: always;' : '' }}">
     <thead>
         <tr><td class="page-header-space"></td></tr>
     </thead>
@@ -145,21 +151,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($students as $index => $student)
+                    @foreach($chunk as $index => $student)
+                    @php
+                        $globalIndex = ($chunkIndex * 14) + $loop->iteration;
+                    @endphp
                     <tr>
-                        <td class="center">{{ $loop->iteration }}</td>
+                        <td class="center">{{ $globalIndex }}</td>
                         <td class="center">{{ $student->participant_number ? $student->participant_number : $student->nis }}</td>
                         <td>{{ strtoupper($student->name) }}</td>
                         <td class="signature-box">
-                            @if($loop->iteration % 2 != 0)
-                                {{ $loop->iteration }}. 
+                            @if($globalIndex % 2 != 0)
+                                {{ $globalIndex }}. 
                             @else
-                                <div style="text-align: center; padding-left: 50px;">{{ $loop->iteration }}.</div>
+                                <div style="text-align: center; padding-left: 50px;">{{ $globalIndex }}.</div>
                             @endif
                         </td>
                         <td></td>
                     </tr>
                     @endforeach
+                    
+                    @if($chunkIndex == $totalChunks - 1)
                     {{-- Add empty rows if needed --}} 
                     @for($i = 0; $i < 3; $i++)
                      <tr>
@@ -170,9 +181,11 @@
                         <td></td>
                     </tr>
                     @endfor
+                    @endif
                 </tbody>
             </table>
             
+            @if($chunkIndex == $totalChunks - 1)
             <div class="footer">
                 <div style="float: right; width: 220px; text-align: center; position: relative;">
                     <p style="margin-bottom: 5px;">{{ $institution->city ?? 'Kota' }}, {{ (request('print_date') ? \Carbon\Carbon::parse(request('print_date')) : \Carbon\Carbon::now())->locale('id')->isoFormat('D MMMM Y') }}</p>
@@ -188,6 +201,7 @@
                     <p style="margin: 2px 0;">NIP. ........................................</p>
                 </div>
             </div>
+            @endif
 
         </td></tr>
     </tbody>
@@ -195,6 +209,7 @@
         <tr><td class="page-footer-space"></td></tr>
     </tfoot>
 </table>
+@endforeach
 
 </body>
 </html>

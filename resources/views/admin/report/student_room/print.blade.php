@@ -55,7 +55,13 @@
     <button onclick="window.print()" style="margin-left: 20px; cursor: pointer;">Cetak Sekarang</button>
 </div>
 
-<table class="page-container">
+@php
+    $chunks = $room->students->chunk(14);
+    $totalChunks = $chunks->count();
+@endphp
+
+@foreach($chunks as $chunkIndex => $chunk)
+<table class="page-container" style="{{ $chunkIndex < $totalChunks - 1 ? 'page-break-after: always;' : '' }}">
     <thead>
         <tr><td class="page-header-space"></td></tr>
     </thead>
@@ -80,9 +86,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($room->students as $student)
+                    @foreach($chunk as $student)
+                    @php
+                        $globalIndex = ($chunkIndex * 14) + $loop->iteration;
+                    @endphp
                     <tr>
-                        <td class="text-center">{{ $loop->iteration }}</td>
+                        <td class="text-center">{{ $globalIndex }}</td>
                         <td class="text-center" style="font-family: monospace;">{{ $student->participant_number ? $student->participant_number : $student->nis }}</td>
                         <td>{{ strtoupper($student->name) }}</td>
                         <td class="text-center">{{ $student->nisn ?? '-' }}</td>
@@ -92,6 +101,7 @@
                 </tbody>
             </table>
 
+            @if($chunkIndex == $totalChunks - 1)
             <table class="footer-sign">
                 <tr>
                     <td></td>
@@ -113,6 +123,7 @@
                     </td>
                 </tr>
             </table>
+            @endif
 
         </td></tr>
     </tbody>
@@ -120,6 +131,7 @@
         <tr><td class="page-footer-space"></td></tr>
     </tfoot>
 </table>
+@endforeach
 
 </body>
 </html>
