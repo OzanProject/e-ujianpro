@@ -99,7 +99,19 @@
     <a href="{{ route('admin.report.attendance.index') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
-<table class="page-container">
+@php
+    // Kelompokkan pengawas berdasarkan ruangan
+    $groupedProctors = $proctors->groupBy(function($proctor) {
+        return isset($proctor->pivot) ? $proctor->pivot->exam_room_id : $proctor->exam_room_id;
+    });
+@endphp
+
+@forelse($groupedProctors as $roomId => $roomProctors)
+    @php
+       $roomName = \App\Models\ExamRoom::find($roomId)->name ?? 'Semua Ruangan';
+    @endphp
+
+<table class="page-container" style="{{ !$loop->last ? 'page-break-after: always; margin-bottom: 30px;' : '' }}">
     <thead>
         <tr><td class="page-header-space"></td></tr>
     </thead>
@@ -127,6 +139,11 @@
         <td>:</td>
         <td>{{ $session ? $session->subject->name : '..................................................' }}</td>
     </tr>
+    <tr>
+        <td>Ruangan</td>
+        <td>:</td>
+        <td>{{ $roomName }}</td>
+    </tr>
 </table>
 
 <table class="main-table">
@@ -134,23 +151,15 @@
         <tr>
             <th width="30">NO</th>
             <th>NAMA PENGAWAS</th>
-            <th width="150">RUANG</th>
             <th width="180">TANDA TANGAN</th>
             <th width="100">KET</th>
         </tr>
     </thead>
     <tbody>
-        @foreach($proctors as $index => $proctor)
+        @foreach($roomProctors as $index => $proctor)
         <tr>
             <td class="center">{{ $loop->iteration }}</td>
             <td style="font-weight: bold;">{{ $proctor->name }}</td>
-            <td class="center">
-                @if(isset($proctor->pivot) && $proctor->pivot->exam_room_id)
-                    {{ \App\Models\ExamRoom::find($proctor->pivot->exam_room_id)->name ?? 'Semua Ruangan' }}
-                @else
-                    {{ $proctor->examRoom->name ?? 'Semua Ruangan' }}
-                @endif
-            </td>
             <td class="signature-box">
                 @if($loop->iteration % 2 != 0)
                     {{ $loop->iteration }}. 
@@ -166,7 +175,6 @@
         @for($i = 0; $i < 3; $i++)
          <tr>
             <td class="center"></td>
-            <td></td>
             <td></td>
             <td class="signature-box"></td>
             <td></td>
@@ -199,6 +207,11 @@
         <tr><td class="page-footer-space"></td></tr>
     </tfoot>
 </table>
+@empty
+    <div style="text-align: center; margin-top: 50px;">
+        <h3>Tidak ada data pengawas untuk jadwal/ruangan ini.</h3>
+    </div>
+@endforelse
 
 </body>
 </html>
