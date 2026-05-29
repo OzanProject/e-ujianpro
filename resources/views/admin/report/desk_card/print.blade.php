@@ -195,6 +195,7 @@
             <div class="card-title" style="text-align: center; font-size: 10px; font-weight: bold; margin: 5px 0; letter-spacing: 1px; color: #004d40;">KARTU MEJA PESERTA</div>
             
             <div class="content" style="position: relative; z-index: 1;">
+                @if(request('show_photo', 1) == 1)
                 <div class="photo-box" style="border: 2px solid #ccc; box-shadow: 2px 2px 4px rgba(0,0,0,0.1); background: #fff;">
                     @if($student->photo && file_exists(public_path('storage/' . $student->photo)))
                         <img src="{{ asset('storage/' . $student->photo) }}">
@@ -202,6 +203,7 @@
                         FOTO
                     @endif
                 </div>
+                @endif
                 
                 <div class="details">
                     <div class="field">

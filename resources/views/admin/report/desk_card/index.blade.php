@@ -40,7 +40,14 @@
                                     <option value="null">-- Belum Ada Ruangan --</option>
                                 </select>
                             </div>
-                            <div class="alert alert-info">
+                            <div class="form-group mt-3">
+                                <label>Opsi Cetak Foto</label>
+                                <select name="show_photo" class="form-control">
+                                    <option value="1">Tampilkan Foto Siswa</option>
+                                    <option value="0">Sembunyikan Foto Siswa</option>
+                                </select>
+                            </div>
+                            <div class="alert alert-info mt-3">
                                 <i class="icon fas fa-info"></i> Kartu Meja akan dicetak dengan ukuran A4 (2 Kartu per halaman atau 4 Kartu per halaman tergantung setting printer).
                             </div>
                         </div>
