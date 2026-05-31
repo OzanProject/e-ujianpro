@@ -81,6 +81,21 @@ class WordQuestionImporter
                 continue;
             }
 
+            // Deteksi baris tabel markdown kunci jawaban di teks biasa: "| 1 | A | B, C | L2/Sedang |"
+            if (!$hasImage && preg_match('/^\|\s*(\d+)\s*\|\s*([A-Za-z\s,]+(?:,[A-Za-z\s,]+)*)\s*\|/iu', $cleanLine, $tableMatches)) {
+                $number = (int) $tableMatches[1];
+                $answerText = trim($tableMatches[2]);
+                
+                // Cegah match pada header tabel "| No | Kunci |"
+                if ($number > 0 && strtoupper($answerText) !== 'KUNCI') {
+                    $this->answerMap[$number] = [
+                        'answer' => $this->normalizeAnswer($answerText),
+                        'difficulty' => 'easy', // default
+                    ];
+                    continue;
+                }
+            }
+
             if (!$hasImage && $this->shouldSkipLine($cleanLine)) {
                 continue;
             }
@@ -157,8 +172,9 @@ class WordQuestionImporter
              * A) Jawaban
              * [ ] A. Jawaban
              * A. OneB. TwoC. ThreeD. Four
+             * Spasi setelah huruf diizinkan: A . Jawaban
              */
-            if ($currentQuestion && preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
+            if ($currentQuestion && preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])\s*[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
                 $inlineOptions = $this->extractInlineOptions($line);
 
                 if (count($inlineOptions) >= 2) {
@@ -171,7 +187,7 @@ class WordQuestionImporter
 
                 $letter = strtoupper($optionMatches[1] ?: $optionMatches[2]);
                 $optionIndex = $this->letterToIndex($letter);
-                $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):]?)\s*/iu', '', $line);
+                $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e]\s*[\.\):]?)\s*/iu', '', $line);
 
                 $currentQuestion['options'][$optionIndex] = [
                     'content' => $optionContent,
@@ -215,11 +231,19 @@ class WordQuestionImporter
             }
 
             /*
-             * Gambar di tengah soal jangan langsung memutus soal.
-             * Ini penting untuk nomor 12 Bahasa Inggris.
+             * Perbaikan Penempatan Gambar dan Teks Stimulus Baru:
+             * Jika gambar ditemukan SAAT opsi sudah mulai dibaca, maka itu pasti 
+             * bagian dari stimulus untuk soal berikutnya. Jika opsi belum ada, 
+             * gambar adalah pelengkap bacaan/soal saat ini.
              */
             if ($hasImage) {
-                $currentQuestion['reading'] = $this->appendHtml($currentQuestion['reading'], $line);
+                if (empty($currentQuestion['options'])) {
+                    $currentQuestion['reading'] = $this->appendHtml($currentQuestion['reading'], $line);
+                } else {
+                    $questions[] = $currentQuestion;
+                    $currentQuestion = null;
+                    $pendingReading = $this->appendHtml('', $line);
+                }
                 continue;
             }
 
@@ -397,7 +421,7 @@ class WordQuestionImporter
          * - akhir string
          */
         preg_match_all(
-            '/(?:^|<br>|\s|(?<=[?!.:]))(?:\(([A-Ea-e])\)|([A-Ea-e])[\.\):])\s*(.*?)(?=(?:<br>|\s|(?<=[?!.:]))?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):])\s*|(?:<br>|\s)?(?:\(\d{1,3}\)|\d{1,3}[\.\)])\s*|$)/uis',
+            '/(?:^|<br>|\s|(?<=[?!.:]))(?:\(([A-Ea-e])\)|([A-Ea-e])\s*[\.\):])\s*(.*?)(?=(?:<br>|\s|(?<=[?!.:]))?(?:\([A-Ea-e]\)|[A-Ea-e]\s*[\.\):])\s*|(?:<br>|\s)?(?:\(\d{1,3}\)|\d{1,3}[\.\)])\s*|$)/uis',
             $html,
             $matches,
             PREG_SET_ORDER
@@ -493,7 +517,7 @@ class WordQuestionImporter
             /*
              * Ambil opsi A-E yang mungkin muncul sebelum/sesudah gambar.
              */
-            if (preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
+            if (preg_match('/^(?:\[\s*\]\s*)?(?:\(\s*([A-Ea-e])\s*\)|([A-Ea-e])\s*[\.\):]?)\s*(.*)/iu', $cleanLine, $optionMatches)) {
                 $inlineOptions = $this->extractInlineOptions($line);
 
                 if (count($inlineOptions) >= 2) {
@@ -503,7 +527,7 @@ class WordQuestionImporter
                 } else {
                     $letter = strtoupper($optionMatches[1] ?: $optionMatches[2]);
                     $optionIndex = $this->letterToIndex($letter);
-                    $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e][\.\):]?)\s*/iu', '', $line);
+                    $optionContent = preg_replace('/^(\s*<[^>]*>\s*)*(?:\[\s*\]\s*)?(?:\([A-Ea-e]\)|[A-Ea-e]\s*[\.\):]?)\s*/iu', '', $line);
 
                     $options[$optionIndex] = [
                         'content' => $optionContent,
@@ -558,8 +582,21 @@ class WordQuestionImporter
 
     private function isStartOfNextStimulus(string $htmlLine, string $cleanLine, bool $hasImage, ?string $nextCleanLine = null): bool
     {
+        $upper = strtoupper(trim($cleanLine));
+
+        // 1. Deteksi Kata Kunci Pemisah/Stimulus
+        if ($cleanLine !== '') {
+            $keywords = ['STIMULUS', 'PERHATIKAN GAMBAR', 'BACALAH TEKS', '---', '==='];
+            foreach ($keywords as $keyword) {
+                if (str_starts_with($upper, $keyword)) {
+                    return true;
+                }
+            }
+        }
+
         /*
          * Gambar tidak langsung dianggap stimulus soal berikutnya.
+         * Kecuali sudah ditangani secara khusus di loop utama.
          */
         if ($hasImage) {
             return $nextCleanLine && $this->isNumberedQuestionLine($nextCleanLine, $this->getCurrentQuestionNumberFromHtml($htmlLine));
@@ -568,8 +605,6 @@ class WordQuestionImporter
         if ($cleanLine === '') {
             return false;
         }
-
-        $upper = strtoupper(trim($cleanLine));
 
         foreach (['KUNCI:', 'JAWABAN:', 'ANSWER:', 'KEY:', 'TINGKAT:', 'KESULITAN:', 'LEVEL:', 'DIFFICULTY:'] as $prefix) {
             if (str_starts_with($upper, $prefix)) {

@@ -7,6 +7,8 @@ use App\Models\Question;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreQuestionRequest;
+use App\Http\Requests\UpdateQuestionRequest;
 
 class QuestionController extends Controller
 {
@@ -25,15 +27,26 @@ class QuestionController extends Controller
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         }
 
+        $statsData = (clone $query)->withoutEagerLoads()->selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN type = 'multiple_choice' THEN 1 ELSE 0 END) as mc,
+            SUM(CASE WHEN type = 'multiple_choice_complex' THEN 1 ELSE 0 END) as mc_complex,
+            SUM(CASE WHEN type = 'boolean_grid' THEN 1 ELSE 0 END) as boolean,
+            SUM(CASE WHEN type = 'essay' THEN 1 ELSE 0 END) as essay,
+            SUM(CASE WHEN difficulty = 'easy' THEN 1 ELSE 0 END) as easy,
+            SUM(CASE WHEN difficulty = 'medium' THEN 1 ELSE 0 END) as medium,
+            SUM(CASE WHEN difficulty = 'hard' THEN 1 ELSE 0 END) as hard
+        ")->first();
+
         $stats = [
-            'total' => (clone $query)->count(),
-            'mc' => (clone $query)->where('type', 'multiple_choice')->count(),
-            'mc_complex' => (clone $query)->where('type', 'multiple_choice_complex')->count(),
-            'boolean' => (clone $query)->where('type', 'boolean_grid')->count(),
-            'essay' => (clone $query)->where('type', 'essay')->count(),
-            'easy' => (clone $query)->where('difficulty', 'easy')->count(),
-            'medium' => (clone $query)->where('difficulty', 'medium')->count(),
-            'hard' => (clone $query)->where('difficulty', 'hard')->count(),
+            'total' => $statsData->total ?? 0,
+            'mc' => $statsData->mc ?? 0,
+            'mc_complex' => $statsData->mc_complex ?? 0,
+            'boolean' => $statsData->boolean ?? 0,
+            'essay' => $statsData->essay ?? 0,
+            'easy' => $statsData->easy ?? 0,
+            'medium' => $statsData->medium ?? 0,
+            'hard' => $statsData->hard ?? 0,
         ];
 
         if ($request->filled('subject_id')) {
@@ -96,21 +109,8 @@ class QuestionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreQuestionRequest $request)
     {
-        $request->validate([
-            'subject_id' => 'required|exists:subjects,id',
-            'reading_text_id' => 'nullable|exists:reading_texts,id',
-            'question_group_id' => 'nullable|exists:question_groups,id',
-            'content' => 'required',
-            'type' => 'required|in:multiple_choice,multiple_choice_complex,boolean_grid,essay',
-            'difficulty' => 'required|in:easy,medium,hard',
-            'options_single' => 'required_if:type,multiple_choice|array',
-            'options_complex' => 'required_if:type,multiple_choice_complex|array',
-            'options_grid' => 'required_if:type,boolean_grid|array',
-            'tags' => 'nullable|string',
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -224,18 +224,8 @@ class QuestionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Question $question)
+    public function update(UpdateQuestionRequest $request, Question $question)
     {
-        $request->validate([
-            'subject_id' => 'required|exists:subjects,id',
-            'reading_text_id' => 'nullable|exists:reading_texts,id',
-            'question_group_id' => 'nullable|exists:question_groups,id',
-            'content' => 'required',
-            'type' => 'required|in:multiple_choice,multiple_choice_complex,boolean_grid,essay',
-            'difficulty' => 'required|in:easy,medium,hard',
-            'tags' => 'nullable|string',
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -357,90 +347,7 @@ class QuestionController extends Controller
     {
         $question->load(['options', 'subject', 'readingText']);
 
-        $html = '<div class="question-preview-container p-2">';
-
-        $diffColor = $question->difficulty === 'easy' ? 'success' : ($question->difficulty === 'medium' ? 'warning' : 'danger');
-        $diffText = strtoupper($question->difficulty === 'easy' ? 'Mudah' : ($question->difficulty === 'medium' ? 'Sedang' : 'Sulit'));
-
-        $html .= '<div class="d-flex align-items-center mb-4 mt-2 border-bottom pb-3">';
-        $html .= '<span class="badge badge-pill badge-light-' . $diffColor . ' text-' . $diffColor . ' px-3 py-1 mr-2 border border-' . $diffColor . '"><i class="fas fa-layer-group mr-1"></i> ' . $diffText . '</span>';
-        $html .= '<span class="badge bg-light text-secondary border px-3 py-1"><i class="fas fa-book mr-1"></i> ' . e($question->subject->name ?? 'Mata Pelajaran') . '</span>';
-        $html .= '</div>';
-
-        if ($question->readingText) {
-            $html .= '<div class="alert alert-info border-left-info shadow-none bg-blue-50 mb-4 p-3 rounded-lg">';
-            $html .= '<h6 class="alert-heading font-weight-bold text-info mb-2 text-sm text-uppercase"><i class="fas fa-info-circle mr-1"></i> Petunjuk / Bacaan</h6>';
-            $html .= '<div class="text-dark bg-white p-3 border rounded shadow-sm question-preview-html" style="font-size: 0.95rem;">' . $question->readingText->content . '</div>';
-            $html .= '</div>';
-        }
-
-        $html .= '<div class="mb-4 text-dark font-weight-bold question-preview-html" style="font-size: 1.05rem; line-height: 1.8; font-family: Inter, sans-serif;">' . $question->content . '</div>';
-
-        if ($question->type === 'multiple_choice' || $question->type === 'multiple_choice_complex') {
-            $html .= '<div class="options-list mt-4">';
-            $alphabet = range('A', 'Z');
-
-            foreach ($question->options as $index => $option) {
-                if ($index >= count($alphabet)) {
-                    break;
-                }
-
-                $isCorrect = (bool) $option->is_correct;
-
-                $html .= '<div class="d-flex align-items-start p-3 mb-3 rounded-lg border ' . ($isCorrect ? 'bg-success-fade border-success shadow-sm' : 'bg-white border-light shadow-xs') . '" style="transition: all 0.2s; ' . ($isCorrect ? 'border-width: 2px !important;' : '') . '">';
-                $html .= '<span class="badge ' . ($isCorrect ? 'badge-success shadow-sm' : 'badge-light border') . ' mr-3 mt-1 py-2" style="width: 32px; font-size: 14px;">' . $alphabet[$index] . '</span>';
-                $html .= '<div class="w-100 flex-grow-1 question-preview-html" style="font-size: 0.95rem; line-height: 1.6;">' . $option->content . '</div>';
-
-                if ($isCorrect) {
-                    $html .= '<div class="ml-3"><i class="fas fa-check-circle text-success fa-lg mt-2"></i></div>';
-                }
-
-                $html .= '</div>';
-            }
-
-            $html .= '</div>';
-        } elseif ($question->type === 'boolean_grid') {
-            $html .= '<div class="mt-4">';
-            $html .= '<table class="table table-bordered bg-white shadow-sm">';
-            $html .= '<thead class="bg-light-gray"><tr><th>Pernyataan</th><th class="text-center" width="100">Kunci Jawaban</th></tr></thead><tbody>';
-
-            foreach ($question->options as $option) {
-                $answer = $option->is_correct
-                    ? '<span class="badge badge-success px-3 py-2">BENAR</span>'
-                    : '<span class="badge badge-danger px-3 py-2">SALAH</span>';
-
-                $html .= '<tr><td class="align-middle question-preview-html">' . $option->content . '</td><td class="text-center align-middle">' . $answer . '</td></tr>';
-            }
-
-            $html .= '</tbody></table></div>';
-        } else {
-            $html .= '<div class="p-5 bg-light-gray rounded-lg border text-muted text-center mt-4" style="border-style: dashed !important; border-width: 2px !important; border-color: #cbd5e1 !important;">';
-            $html .= '<div class="bg-white rounded-circle p-3 d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width:60px; height:60px;"><i class="fas fa-pen-nib fa-lg text-primary opacity-75"></i></div>';
-            $html .= '<h6 class="font-weight-bold text-dark mb-1">Soal Uraian / Esai</h6>';
-            $html .= '<p class="text-sm mb-0">Siswa akan diberikan area teks panjang untuk menjawab soal ini pada saat ujian.</p>';
-            $html .= '</div>';
-        }
-
-        $html .= '</div>';
-
-        $html .= '<style>
-            .bg-success-fade { background-color: #f0fdf4 !important; }
-            .bg-light-gray { background-color: #f8f9fc !important; }
-            .badge-light-success { background-color: rgba(40,167,69,0.1); border-color: rgba(40,167,69,0.2) !important; }
-            .badge-light-warning { background-color: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.2) !important; }
-            .badge-light-danger { background-color: rgba(220,53,69,0.1); border-color: rgba(220,53,69,0.2) !important; }
-            .shadow-xs { box-shadow: 0 .125rem .25rem rgba(0,0,0,.04); }
-            .question-preview-html img {
-                max-width: 100% !important;
-                height: auto !important;
-                object-fit: contain;
-                border-radius: 6px;
-                border: 1px solid #e3e6f0;
-                margin: 8px 0;
-            }
-        </style>';
-
-        return response($html);
+        return view('admin.question.preview', compact('question'));
     }
 
     /**
