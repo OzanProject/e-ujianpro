@@ -34,6 +34,7 @@
                                 <label>Pilih Ruangan Ujian <span class="text-danger">*</span></label>
                                 <select name="exam_room_id" class="form-control select2" required>
                                     <option value="" disabled selected>-- Pilih Ruangan --</option>
+                                    <option value="all">-- Semua Ruangan --</option>
                                     @foreach($rooms as $room)
                                         <option value="{{ $room->id }}">{{ $room->name }}</option>
                                     @endforeach

@@ -41,6 +41,9 @@
         <p style="margin-top: 8px; color: #6c757d; font-size: 12px; margin-bottom: 0;">Jika masih 2 halaman, pastikan setting <strong>Margins</strong> di browser adalah <strong>None</strong>.</p>
     </div>
 
+    @foreach($targetRooms as $index => $room)
+    <div style="{{ $index < $targetRooms->count() - 1 ? 'page-break-after: always;' : '' }}">
+
     @include('layouts.print_header', ['institution' => $institution])
 
     <div class="doc-title">BUKU CATATAN HARIAN / KEJADIAN PENTING</div>
@@ -61,7 +64,7 @@
         <tr>
             <td class="label">Ruang Ujian</td>
             <td class="colon">:</td>
-            <td class="font-bold">{{ $roomName }}</td>
+            <td class="font-bold">{{ $room->name }}</td>
             <td class="label" style="padding-left: 30px;">Waktu / Sesi</td>
             <td class="colon">:</td>
             <td>{{ \Carbon\Carbon::parse($session->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($session->end_time)->format('H:i') }} WIB</td>
@@ -115,6 +118,8 @@
             </td>
         </tr>
     </table>
+    </div>
+    @endforeach
 
 </body>
 </html>

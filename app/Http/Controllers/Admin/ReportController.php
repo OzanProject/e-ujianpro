@@ -295,20 +295,17 @@ class ReportController extends Controller
             ->whereIn('subject_id', $subjectIds)
             ->findOrFail($request->exam_session_id);
         
-        $roomName = 'Semua Ruangan';
-        $students = collect();
-        
-        $query = \App\Models\Student::where('created_by', $creatorId);
-        if ($request->exam_room_id != 'all') {
+        $targetRooms = collect();
+        if ($request->exam_room_id == 'all') {
+             $targetRooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+        } else {
              $room = \App\Models\ExamRoom::where('created_by', $creatorId)->findOrFail($request->exam_room_id);
-             $roomName = $room->name;
-             $query->where('exam_room_id', $room->id);
+             $targetRooms->push($room);
         }
-        $students = $query->get();
         
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.berita_acara.print', compact('session', 'roomName', 'students', 'institution'));
+        return view('admin.report.berita_acara.print', compact('session', 'targetRooms', 'institution'));
     }
 
     // --- TATA TERTIB ---
@@ -429,14 +426,16 @@ class ReportController extends Controller
 
         $session = ExamSession::with('subject')->findOrFail($request->exam_session_id);
         
-        $roomName = 'Semua Ruangan';
-        if ($request->exam_room_id != 'all') {
-             $room = \App\Models\ExamRoom::findOrFail($request->exam_room_id);
-             $roomName = $room->name;
+        $targetRooms = collect();
+        if ($request->exam_room_id == 'all') {
+             $targetRooms = \App\Models\ExamRoom::where('created_by', $creatorId)->get();
+        } else {
+             $room = \App\Models\ExamRoom::where('created_by', $creatorId)->findOrFail($request->exam_room_id);
+             $targetRooms->push($room);
         }
         
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.daily_log.print', compact('session', 'roomName', 'institution'));
+        return view('admin.report.daily_log.print', compact('session', 'targetRooms', 'institution'));
     }
 }

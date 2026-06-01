@@ -37,6 +37,9 @@
         <button onclick="window.print()" style="padding: 8px 15px; background: #007bff; color: #fff; border: none; cursor: pointer; border-radius: 4px;">Cetak Dokumen</button>
     </div>
 
+    @foreach($targetRooms as $index => $room)
+    <div style="{{ $index < $targetRooms->count() - 1 ? 'page-break-after: always;' : '' }}">
+
     @include('layouts.print_header', ['institution' => $institution])
 
     <div class="doc-title" style="margin-bottom: 5px; text-decoration: none;">BERITA ACARA</div>
@@ -64,7 +67,7 @@
                 <tr>
                     <td class="label" style="width: 250px;">Ruang / Kelas</td>
                     <td class="colon">:</td>
-                    <td><strong>{{ $roomName }}</strong></td>
+                    <td><strong>{{ $room->name }}</strong></td>
                 </tr>
                 <tr>
                     <td class="label">Jumlah peserta seharusnya</td>
@@ -158,6 +161,8 @@
             </td>
         </tr>
     </table>
+    </div>
+    @endforeach
 
 </body>
 </html>

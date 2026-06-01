@@ -132,7 +132,7 @@
                 <tr>
                     <td>Kelas / Ruang</td>
                     <td>:</td>
-                    <td>{{ $room ? $room->name : '....................' }}</td>
+                    <td>{{ $room ? $room->name : (request('exam_room_id') == 'all' ? 'Semua Ruangan' : '....................') }}</td>
                     
                     <td>Waktu</td>
                     <td>:</td>
