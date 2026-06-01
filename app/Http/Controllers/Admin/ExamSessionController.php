@@ -36,9 +36,15 @@ class ExamSessionController extends Controller
             ? (int) request('per_page', 10)
             : 10;
 
-        $examSessions = ExamSession::whereIn('subject_id', $subjectIds)
-            ->with(['subject', 'examPackage'])
-            ->latest()
+        $query = ExamSession::whereIn('subject_id', $subjectIds)
+            ->with(['subject', 'examPackage']);
+
+        if (request()->has('target_kelas') && request('target_kelas') !== '') {
+            $query->where('target_kelas', request('target_kelas'));
+        }
+
+        // Change from latest() to sorting by start_time so it is ordered sequentially (berurutan)
+        $examSessions = $query->orderBy('start_time', 'asc')
             ->paginate($perPage)
             ->withQueryString();
 

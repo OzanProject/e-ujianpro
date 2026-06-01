@@ -14,6 +14,24 @@
                 </div>
                 <div class="d-flex align-items-center">
                     <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mr-3 d-flex align-items-center">
+                        
+                        <label class="text-xs font-weight-bold text-muted mb-0 mr-2">KELAS:</label>
+                        <select name="target_kelas" class="form-control form-control-sm rounded-pill border-gray-300 mr-3" onchange="this.form.submit()" style="width: 130px;">
+                            <option value="">Semua Kelas</option>
+                            <option value="1" {{ request('target_kelas') == '1' ? 'selected' : '' }}>Kelas 1 / I</option>
+                            <option value="2" {{ request('target_kelas') == '2' ? 'selected' : '' }}>Kelas 2 / II</option>
+                            <option value="3" {{ request('target_kelas') == '3' ? 'selected' : '' }}>Kelas 3 / III</option>
+                            <option value="4" {{ request('target_kelas') == '4' ? 'selected' : '' }}>Kelas 4 / IV</option>
+                            <option value="5" {{ request('target_kelas') == '5' ? 'selected' : '' }}>Kelas 5 / V</option>
+                            <option value="6" {{ request('target_kelas') == '6' ? 'selected' : '' }}>Kelas 6 / VI</option>
+                            <option value="7" {{ request('target_kelas') == '7' ? 'selected' : '' }}>Kelas 7 / VII</option>
+                            <option value="8" {{ request('target_kelas') == '8' ? 'selected' : '' }}>Kelas 8 / VIII</option>
+                            <option value="9" {{ request('target_kelas') == '9' ? 'selected' : '' }}>Kelas 9 / IX</option>
+                            <option value="10" {{ request('target_kelas') == '10' ? 'selected' : '' }}>Kelas 10 / X</option>
+                            <option value="11" {{ request('target_kelas') == '11' ? 'selected' : '' }}>Kelas 11 / XI</option>
+                            <option value="12" {{ request('target_kelas') == '12' ? 'selected' : '' }}>Kelas 12 / XII</option>
+                        </select>
+
                         <label class="text-xs font-weight-bold text-muted mb-0 mr-2">TAMPILKAN:</label>
                         <select name="per_page" class="form-control form-control-sm rounded-pill border-gray-300" onchange="this.form.submit()" style="width: 100px;">
                             <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 data</option>
@@ -78,8 +96,16 @@
                                                 <span class="text-xs font-weight-bold text-dark mb-1">
                                                     <i class="fas fa-book text-primary mr-1"></i> {{ $session->subject->name }}
                                                 </span>
-                                                <span class="text-xs text-secondary">
+                                                <span class="text-xs text-secondary mb-1">
                                                     <i class="fas fa-layer-group text-info mr-1"></i> {{ $session->examPackage->title ?? 'Semua Paket' }}
+                                                </span>
+                                                <span class="text-xs text-secondary">
+                                                    <i class="fas fa-users text-warning mr-1"></i> 
+                                                    @if($session->target_kelas)
+                                                        <span class="badge badge-warning text-dark border">Target: Kelas {{ $session->target_kelas }}</span>
+                                                    @else
+                                                        Target: Semua Kelas
+                                                    @endif
                                                 </span>
                                             </div>
                                         </td>
