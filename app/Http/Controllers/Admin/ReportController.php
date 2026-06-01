@@ -168,19 +168,27 @@ class ReportController extends Controller
              'exam_room_id' => 'required',
         ]);
 
-        $room = null;
-        if ($request->exam_room_id != 'all' && $request->exam_room_id != 'null') {
-             $room = \App\Models\ExamRoom::find($request->exam_room_id);
-        }
-
-        $session = null;
-        if ($request->has('exam_session_id') && $request->exam_session_id) {
-             $session = ExamSession::with('subject')->find($request->exam_session_id);
-        }
-
         $ownerIds = [$creatorId];
         $subUserIds = \App\Models\User::where('created_by', $creatorId)->pluck('id')->toArray();
         $allIds = array_merge($ownerIds, $subUserIds);
+
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::whereIn('created_by', $allIds)->pluck('id');
+
+        $targetSessions = collect();
+        if ($request->filled('exam_date')) {
+            $targetSessions = ExamSession::with('subject')
+                ->whereIn('subject_id', $subjectIds)
+                ->whereDate('start_time', $request->exam_date)
+                ->orderBy('start_time')
+                ->get();
+        } elseif ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject')->find($request->exam_session_id);
+            if ($session) $targetSessions->push($session);
+        } else {
+            $targetSessions->push(null);
+        }
 
         $query = \App\Models\Student::with('examRoom', 'group')
                     ->whereIn('created_by', $allIds);
@@ -197,9 +205,15 @@ class ReportController extends Controller
              return sprintf('%s-%s', $student->group->name ?? 'ZZZ', $student->name);
         });
 
+        if ($request->exam_room_id == 'all') {
+            $studentsByRoom = $students->groupBy('exam_room_id');
+        } else {
+            $studentsByRoom = collect([ $request->exam_room_id == 'null' ? '' : $request->exam_room_id => $students ]);
+        }
+
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.attendance.print', compact('students', 'institution', 'room', 'session'));
+        return view('admin.report.attendance.print', compact('targetSessions', 'studentsByRoom', 'institution'));
     }
 
     public function attendanceProctorIndex()
@@ -283,7 +297,6 @@ class ReportController extends Controller
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
         $request->validate([
-             'exam_session_id' => 'required',
              'exam_room_id' => 'required',
         ]);
 
@@ -291,9 +304,21 @@ class ReportController extends Controller
                         ? $user->subjects->pluck('id')
                         : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
 
-        $session = ExamSession::with('subject')
-            ->whereIn('subject_id', $subjectIds)
-            ->findOrFail($request->exam_session_id);
+        $targetSessions = collect();
+        if ($request->filled('exam_date')) {
+            $targetSessions = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->whereDate('start_time', $request->exam_date)
+                ->orderBy('start_time')
+                ->get();
+        } elseif ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->findOrFail($request->exam_session_id);
+            $targetSessions->push($session);
+        } else {
+            return back()->with('error', 'Pilih Tanggal Ujian atau Jadwal Sesi.');
+        }
         
         $targetRooms = collect();
         if ($request->exam_room_id == 'all') {
@@ -305,7 +330,7 @@ class ReportController extends Controller
         
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.berita_acara.print', compact('session', 'targetRooms', 'institution'));
+        return view('admin.report.berita_acara.print', compact('targetSessions', 'targetRooms', 'institution'));
     }
 
     // --- TATA TERTIB ---
@@ -420,11 +445,28 @@ class ReportController extends Controller
         $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
         
         $request->validate([
-             'exam_session_id' => 'required',
              'exam_room_id' => 'required',
         ]);
 
-        $session = ExamSession::with('subject')->findOrFail($request->exam_session_id);
+        $subjectIds = $user->role === 'pengajar' 
+                        ? $user->subjects->pluck('id')
+                        : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+
+        $targetSessions = collect();
+        if ($request->filled('exam_date')) {
+            $targetSessions = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->whereDate('start_time', $request->exam_date)
+                ->orderBy('start_time')
+                ->get();
+        } elseif ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->findOrFail($request->exam_session_id);
+            $targetSessions->push($session);
+        } else {
+            return back()->with('error', 'Pilih Tanggal Ujian atau Jadwal Sesi.');
+        }
         
         $targetRooms = collect();
         if ($request->exam_room_id == 'all') {
@@ -436,6 +478,6 @@ class ReportController extends Controller
         
         $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
 
-        return view('admin.report.daily_log.print', compact('session', 'targetRooms', 'institution'));
+        return view('admin.report.daily_log.print', compact('targetSessions', 'targetRooms', 'institution'));
     }
 }

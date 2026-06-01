@@ -13,8 +13,14 @@
             <div class="card-body">
                 <form action="{{ route($baseRoute . '.berita_acara.print') }}" method="GET" target="_blank">
                     <div class="form-group">
-                        <label class="font-weight-bold">Jadwal Ujian (Sesi)</label>
-                        <select name="exam_session_id" class="form-control" required>
+                        <label class="font-weight-bold">Tanggal Ujian (Cetak Massal Opsional)</label>
+                        <input type="date" name="exam_date" class="form-control">
+                        <small class="text-muted">Isi tanggal ini jika ingin mencetak untuk <strong>semua sesi</strong> pada tanggal tersebut sekaligus.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="font-weight-bold">ATAU Pilih 1 Jadwal Ujian (Sesi)</label>
+                        <select name="exam_session_id" class="form-control">
                             <option value="">-- Pilih Jadwal --</option>
                             @foreach($sessions as $session)
                                 <option value="{{ $session->id }}">{{ \Carbon\Carbon::parse($session->start_time)->format('d/m/Y H:i') }} - {{ $session->subject->name ?? 'Mata Pelajaran' }}</option>

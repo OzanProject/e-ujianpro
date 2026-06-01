@@ -42,7 +42,12 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Pilih Jadwal Ujian (Opsional)</label>
+                                <label>Pilih Tanggal Ujian (Cetak Massal Opsional)</label>
+                                <input type="date" name="exam_date" class="form-control">
+                                <small class="text-muted">Isi tanggal ini jika ingin mencetak untuk <strong>semua sesi</strong> pada tanggal tersebut sekaligus.</small>
+                            </div>
+                            <div class="form-group">
+                                <label>ATAU Pilih 1 Jadwal Ujian (Sesi)</label>
                                 <select name="exam_session_id" class="form-control select2">
                                     <option value="">-- Kosongkan (Isi Manual Nanti) --</option>
                                     @foreach($sessions as $session)

@@ -37,8 +37,9 @@
         <button onclick="window.print()" style="padding: 8px 15px; background: #007bff; color: #fff; border: none; cursor: pointer; border-radius: 4px;">Cetak Dokumen</button>
     </div>
 
+    @foreach($targetSessions as $sessionIndex => $session)
     @foreach($targetRooms as $index => $room)
-    <div style="{{ $index < $targetRooms->count() - 1 ? 'page-break-after: always;' : '' }}">
+    <div style="{{ !($loop->parent->last && $loop->last) ? 'page-break-after: always;' : '' }}">
 
     @include('layouts.print_header', ['institution' => $institution])
 
@@ -162,6 +163,7 @@
         </tr>
     </table>
     </div>
+    @endforeach
     @endforeach
 
 </body>

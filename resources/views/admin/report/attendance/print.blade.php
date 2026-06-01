@@ -101,13 +101,15 @@
     <a href="{{ route('admin.report.attendance.index') }}" style="color: #fff; margin-left: 10px;">[Kembali]</a>
 </div>
 
+@foreach($targetSessions as $sessionIndex => $session)
+@foreach($studentsByRoom as $roomId => $roomStudents)
 @php
-    $chunks = $students->chunk(14);
+    $chunks = $roomStudents->chunk(14);
     $totalChunks = $chunks->count();
+    $roomName = $roomId === '' ? 'Belum Ada Ruangan' : ($roomStudents->first()->examRoom->name ?? 'Semua Ruangan');
 @endphp
-
 @foreach($chunks as $chunkIndex => $chunk)
-<table class="page-container" style="{{ $chunkIndex < $totalChunks - 1 ? 'page-break-after: always;' : '' }}">
+<table class="page-container" style="{{ !($loop->parent->parent->last && $loop->parent->last && $loop->last) ? 'page-break-after: always;' : '' }}">
     <thead>
         <tr><td class="page-header-space"></td></tr>
     </thead>
@@ -132,7 +134,7 @@
                 <tr>
                     <td>Kelas / Ruang</td>
                     <td>:</td>
-                    <td>{{ $room ? $room->name : (request('exam_room_id') == 'all' ? 'Semua Ruangan' : '....................') }}</td>
+                    <td>{{ $roomName }}</td>
                     
                     <td>Waktu</td>
                     <td>:</td>
@@ -221,6 +223,8 @@
         <tr><td class="page-footer-space"></td></tr>
     </tfoot>
 </table>
+@endforeach
+@endforeach
 @endforeach
 
 </body>

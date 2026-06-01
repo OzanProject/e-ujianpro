@@ -41,8 +41,9 @@
         <p style="margin-top: 8px; color: #6c757d; font-size: 12px; margin-bottom: 0;">Jika masih 2 halaman, pastikan setting <strong>Margins</strong> di browser adalah <strong>None</strong>.</p>
     </div>
 
+    @foreach($targetSessions as $sessionIndex => $session)
     @foreach($targetRooms as $index => $room)
-    <div style="{{ $index < $targetRooms->count() - 1 ? 'page-break-after: always;' : '' }}">
+    <div style="{{ !($loop->parent->last && $loop->last) ? 'page-break-after: always;' : '' }}">
 
     @include('layouts.print_header', ['institution' => $institution])
 
@@ -119,6 +120,7 @@
         </tr>
     </table>
     </div>
+    @endforeach
     @endforeach
 
 </body>
