@@ -379,6 +379,51 @@ class QuestionController extends Controller
     }
 
     /**
+     * Add tags to multiple resources.
+     */
+    public function bulkTag(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:questions,id',
+            'tags' => 'required|string'
+        ]);
+
+        try {
+            $questions = Question::whereIn('id', $request->ids)->get();
+            $tagNames = array_filter(array_map('trim', explode(',', $request->tags)));
+            $tagIds = [];
+
+            foreach ($tagNames as $name) {
+                if ($name === '') {
+                    continue;
+                }
+                $tag = \App\Models\Tag::firstOrCreate(['name' => $name]);
+                $tagIds[] = $tag->id;
+            }
+
+            foreach ($questions as $question) {
+                // Security check for teachers
+                if (auth()->user()->role === 'pengajar' && $question->created_by !== auth()->user()->getInstitutionId()) {
+                    continue;
+                }
+                // Append tags
+                $question->tags()->syncWithoutDetaching($tagIds);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => count($request->ids) . ' soal berhasil ditambahkan tag.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan tag: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Question $question)

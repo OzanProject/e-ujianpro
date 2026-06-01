@@ -178,6 +178,7 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     
     // Bank Soal Khusus Pengajar
     Route::post('question/bulk-destroy', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkDestroy'])->name('question.bulk_destroy');
+    Route::post('question/bulk-tag', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkTag'])->name('question.bulk_tag');
     Route::post('question/upload-image', [\App\Http\Controllers\Admin\QuestionController::class, 'uploadImage'])->name('question.upload_image');
     Route::get('question/{question}/preview', [\App\Http\Controllers\Admin\QuestionController::class, 'preview'])->name('question.preview');
     Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('question.import');

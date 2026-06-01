@@ -121,9 +121,14 @@
             <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center">
                 <div class="d-flex align-items-center mb-2 mb-md-0">
                     <h6 class="font-weight-bold text-dark mb-0 mr-3"><i class="fas fa-filter text-primary mr-2"></i> Kontrol Bank Soal</h6>
-                    <button type="button" id="btnBulkDelete" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm d-none">
-                        <i class="fas fa-trash mr-1"></i> Hapus Terpilih (<span id="selectedCount">0</span>)
-                    </button>
+                    <div id="bulkActionButtons" class="d-none">
+                        <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm mr-2" data-toggle="modal" data-target="#bulkTagModal">
+                            <i class="fas fa-tags mr-1"></i> Tambah Tag (<span class="selectedCount">0</span>)
+                        </button>
+                        <button type="button" id="btnBulkDelete" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="fas fa-trash mr-1"></i> Hapus Terpilih (<span class="selectedCount">0</span>)
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="card-tools d-flex align-items-center">
@@ -397,6 +402,35 @@
     </div>
 </div>
 
+{{-- Bulk Tag Modal --}}
+<div class="modal fade" id="bulkTagModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header bg-gradient-to-r from-blue-700 to-indigo-800 text-white border-bottom-0 py-3">
+                <h5 class="modal-title font-weight-bold">
+                    <i class="fas fa-tags mr-2"></i> Tambah Tag Massal
+                </h5>
+                <button type="button" class="close text-white opacity-75 hover:opacity-100" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="form-group">
+                    <label class="font-weight-bold text-dark">Nama Tag / Label</label>
+                    <input type="text" id="bulkTagInput" class="form-control" placeholder="Contoh: Kelas 7, UTS, PAI" required>
+                    <small class="text-muted mt-2 d-block">Gunakan koma (,) jika ingin menambahkan lebih dari satu tag sekaligus.</small>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-top-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm font-weight-bold" data-dismiss="modal">Batal</button>
+                <button type="button" id="btnSubmitBulkTag" class="btn btn-primary rounded-pill px-4 shadow-sm font-weight-bold">
+                    <i class="fas fa-save mr-1"></i> Simpan Tag
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @include('admin.question._import_modal')
 
 @push('scripts')
@@ -409,20 +443,20 @@
         // Check All Feature
         $('#checkAll').on('change', function() {
             $('.q-checkbox').prop('checked', $(this).prop('checked'));
-            updateBulkDeleteBtn();
+            updateBulkActionBtns();
         });
 
         $('.q-checkbox').on('change', function() {
-            updateBulkDeleteBtn();
+            updateBulkActionBtns();
         });
 
-        function updateBulkDeleteBtn() {
+        function updateBulkActionBtns() {
             var selectedLength = $('.q-checkbox:checked').length;
             if (selectedLength > 0) {
-                $('#btnBulkDelete').removeClass('d-none');
-                $('#selectedCount').text(selectedLength);
+                $('#bulkActionButtons').removeClass('d-none');
+                $('.selectedCount').text(selectedLength);
             } else {
-                $('#btnBulkDelete').addClass('d-none');
+                $('#bulkActionButtons').addClass('d-none');
             }
         }
 
@@ -460,6 +494,42 @@
                             Swal.fire('Oops!', 'Gagal menghapus data massal.', 'error');
                         }
                     });
+                }
+            });
+        });
+
+        // Bulk Tag Process
+        $('#btnSubmitBulkTag').on('click', function() {
+            var selectedIds = [];
+            $('.q-checkbox:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+            var tags = $('#bulkTagInput').val().trim();
+
+            if (!tags) {
+                Swal.fire('Error', 'Nama tag tidak boleh kosong.', 'error');
+                return;
+            }
+
+            var btn = $(this);
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
+
+            $.ajax({
+                url: "{{ $user->role === 'pengajar' ? route('pengajar.question.bulk_tag') : route('admin.question.bulk_tag') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    ids: selectedIds,
+                    tags: tags
+                },
+                success: function(response) {
+                    Swal.fire('Berhasil!', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(err) {
+                    btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Simpan Tag');
+                    Swal.fire('Oops!', 'Gagal menambahkan tag massal.', 'error');
                 }
             });
         });

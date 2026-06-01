@@ -30,6 +30,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
 
     // Route Resource Bank Soal
     Route::post('question/bulk-destroy', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkDestroy'])->name('admin.question.bulk_destroy');
+    Route::post('question/bulk-tag', [\App\Http\Controllers\Admin\QuestionController::class, 'bulkTag'])->name('admin.question.bulk_tag');
     Route::post('question/upload-image', [\App\Http\Controllers\Admin\QuestionController::class, 'uploadImage'])->name('admin.question.upload_image');
     Route::get('question/{question}/preview', [\App\Http\Controllers\Admin\QuestionController::class, 'preview'])->name('admin.question.preview');
     Route::post('question/import', [\App\Http\Controllers\Admin\QuestionController::class, 'import'])->name('admin.question.import');
