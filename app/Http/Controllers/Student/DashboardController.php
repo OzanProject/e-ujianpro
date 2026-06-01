@@ -35,17 +35,40 @@ class DashboardController extends Controller
         // Fetch Institution Info for the student's school
         $institution = \App\Models\Institution::where('user_id', $adminId)->first();
 
+        // Extract Student Level (e.g. "VII-A" -> "7")
+        $parts = explode(' ', str_replace('-', ' ', $student->kelas));
+        $first = strtoupper($parts[0] ?? '');
+        $romans = [
+            'TK' => 0, 'PAUD' => 0,
+            'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6,
+            'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10, 'XI' => 11, 'XII' => 12, 'XIII' => 13
+        ];
+        $studentLevel = null;
+        if (isset($romans[$first])) {
+            $studentLevel = (string)$romans[$first];
+        } elseif (is_numeric($first)) {
+            $studentLevel = (string)intval($first);
+        }
+
         // Fetch valid exam sessions
         // 1. Is Active
         // 2. Start Time <= Now
         // 3. End Time >= Now
         // 4. Scope: Subject created by valid creators (Institution/Admin)
+        // 5. Target Kelas matches or is empty
         $examSessions = ExamSession::with(['subject', 'examPackage'])
                             ->where('is_active', true)
                             ->where('start_time', '<=', $now)
                             ->where('end_time', '>=', $now)
                             ->whereHas('subject', function ($query) use ($validCreatorIds) {
                                 $query->whereIn('created_by', $validCreatorIds);
+                            })
+                            ->where(function ($q) use ($studentLevel) {
+                                $q->whereNull('target_kelas')
+                                  ->orWhere('target_kelas', '');
+                                if ($studentLevel !== null) {
+                                    $q->orWhere('target_kelas', $studentLevel);
+                                }
                             })
                             ->orderBy('start_time', 'asc')
                             ->get();
@@ -68,6 +91,13 @@ class DashboardController extends Controller
                             ->where('start_time', '>', $now)
                             ->whereHas('subject', function ($query) use ($validCreatorIds) {
                                 $query->whereIn('created_by', $validCreatorIds);
+                            })
+                            ->where(function ($q) use ($studentLevel) {
+                                $q->whereNull('target_kelas')
+                                  ->orWhere('target_kelas', '');
+                                if ($studentLevel !== null) {
+                                    $q->orWhere('target_kelas', $studentLevel);
+                                }
                             })
                             ->orderBy('start_time', 'asc')
                             ->take(6) // Limit to next 6 exams

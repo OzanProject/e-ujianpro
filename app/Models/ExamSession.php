@@ -22,6 +22,7 @@ class ExamSession extends Model
         'token',
         'exam_type_id',
         'created_by', // Added for tenant isolation
+        'target_kelas', // Added for class targeting
     ];
 
     protected $casts = [

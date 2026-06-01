@@ -403,6 +403,29 @@ class ExamController extends Controller
             $query->whereIn('created_by', $validCreatorIds);
         });
 
+        // Enforce target_kelas protection
+        $parts = explode(' ', str_replace('-', ' ', $student->kelas));
+        $first = strtoupper($parts[0] ?? '');
+        $romans = [
+            'TK' => 0, 'PAUD' => 0,
+            'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6,
+            'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10, 'XI' => 11, 'XII' => 12, 'XIII' => 13
+        ];
+        $studentLevel = null;
+        if (isset($romans[$first])) {
+            $studentLevel = (string)$romans[$first];
+        } elseif (is_numeric($first)) {
+            $studentLevel = (string)intval($first);
+        }
+
+        $query->where(function ($q) use ($studentLevel) {
+            $q->whereNull('target_kelas')
+              ->orWhere('target_kelas', '');
+            if ($studentLevel !== null) {
+                $q->orWhere('target_kelas', $studentLevel);
+            }
+        });
+
         if (!empty($withRelations)) {
             $query->with($withRelations);
         }

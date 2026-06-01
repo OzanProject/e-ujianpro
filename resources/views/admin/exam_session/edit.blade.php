@@ -103,6 +103,27 @@
                                     <textarea name="description" class="form-control"
                                         rows="4">{{ old('description', $examSession->description) }}</textarea>
                                 </div>
+
+                                <div class="form-group mb-4">
+                                    <label class="font-weight-bold text-dark text-sm">Target Kelas (Filter Dashboard Siswa)</label>
+                                    <select name="target_kelas" class="form-control custom-select">
+                                        <option value="">-- Semua Kelas (Tidak Difilter) --</option>
+                                        <option value="1" {{ old('target_kelas', $examSession->target_kelas) == '1' ? 'selected' : '' }}>Kelas 1 / I</option>
+                                        <option value="2" {{ old('target_kelas', $examSession->target_kelas) == '2' ? 'selected' : '' }}>Kelas 2 / II</option>
+                                        <option value="3" {{ old('target_kelas', $examSession->target_kelas) == '3' ? 'selected' : '' }}>Kelas 3 / III</option>
+                                        <option value="4" {{ old('target_kelas', $examSession->target_kelas) == '4' ? 'selected' : '' }}>Kelas 4 / IV</option>
+                                        <option value="5" {{ old('target_kelas', $examSession->target_kelas) == '5' ? 'selected' : '' }}>Kelas 5 / V</option>
+                                        <option value="6" {{ old('target_kelas', $examSession->target_kelas) == '6' ? 'selected' : '' }}>Kelas 6 / VI</option>
+                                        <option value="7" {{ old('target_kelas', $examSession->target_kelas) == '7' ? 'selected' : '' }}>Kelas 7 / VII</option>
+                                        <option value="8" {{ old('target_kelas', $examSession->target_kelas) == '8' ? 'selected' : '' }}>Kelas 8 / VIII</option>
+                                        <option value="9" {{ old('target_kelas', $examSession->target_kelas) == '9' ? 'selected' : '' }}>Kelas 9 / IX</option>
+                                        <option value="10" {{ old('target_kelas', $examSession->target_kelas) == '10' ? 'selected' : '' }}>Kelas 10 / X</option>
+                                        <option value="11" {{ old('target_kelas', $examSession->target_kelas) == '11' ? 'selected' : '' }}>Kelas 11 / XI</option>
+                                        <option value="12" {{ old('target_kelas', $examSession->target_kelas) == '12' ? 'selected' : '' }}>Kelas 12 / XII</option>
+                                        <option value="13" {{ old('target_kelas', $examSession->target_kelas) == '13' ? 'selected' : '' }}>Kelas 13 / XIII</option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Pilih kelas spesifik agar jadwal ini disembunyikan dari siswa kelas lain.</small>
+                                </div>
                             </div>
 
                             <!-- Right Column: Settings -->

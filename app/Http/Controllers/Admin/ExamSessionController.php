@@ -85,6 +85,7 @@ class ExamSessionController extends Controller
             'end_time' => 'required|date|after:start_time',
             'duration' => 'required|integer|min:1',
             'description' => 'nullable|string',
+            'target_kelas' => 'nullable|string',
         ], [
             'end_time.after' => 'Waktu Selesai harus setelah Waktu Mulai.',
             'start_time.required' => 'Waktu Mulai wajib diisi.',
@@ -178,6 +179,7 @@ class ExamSessionController extends Controller
             'end_time' => 'required|date|after:start_time',
             'duration' => 'required|integer|min:1',
             'description' => 'nullable|string',
+            'target_kelas' => 'nullable|string',
         ], [
             'end_time.after' => 'Waktu Selesai harus setelah Waktu Mulai.',
             'start_time.required' => 'Waktu Mulai wajib diisi.',
@@ -293,6 +295,40 @@ class ExamSessionController extends Controller
 
         $baseRoute = $this->getBaseRoute();
         return redirect()->route($baseRoute . '.index')->with('success', 'Pengawas berhasil ditugaskan.');
+    }
+
+    public function duplicate(string $id)
+    {
+        $examSession = ExamSession::findOrFail($id);
+        $user = auth()->user();
+
+        // Security Check
+        $canEdit = false;
+        if ($user->role === 'pengajar') {
+            $canEdit = $user->subjects->contains($examSession->subject_id);
+        } else {
+            $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
+            $subject = Subject::find($examSession->subject_id);
+            $canEdit = $subject && $subject->created_by == $creatorId;
+        }
+
+        if (!$canEdit) {
+            abort(403, 'Akses Ditolak.');
+        }
+
+        $newSession = $examSession->replicate();
+        $newSession->title = $newSession->title . ' (Copy)';
+        $newSession->token = strtoupper(\Illuminate\Support\Str::random(5));
+        $newSession->save();
+
+        // Copy proctors
+        if ($examSession->proctors()->exists()) {
+            foreach ($examSession->proctors as $proctor) {
+                $newSession->proctors()->attach($proctor->id, ['exam_room_id' => $proctor->pivot->exam_room_id]);
+            }
+        }
+
+        return redirect()->route($this->getBaseRoute() . '.index')->with('success', 'Jadwal ujian berhasil diduplikasi. Silakan edit target kelas atau informasi lainnya pada jadwal baru ini.');
     }
 }
 

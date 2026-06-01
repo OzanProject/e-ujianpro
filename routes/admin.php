@@ -70,6 +70,7 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::post('exam_session/bulk-regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'bulkRegenerateToken'])->name('admin.exam_session.bulk_regenerate_token');
     Route::get('exam_session/{exam_session}/proctors', [\App\Http\Controllers\Admin\ExamSessionController::class, 'assignProctors'])->name('admin.exam_session.proctors');
     Route::post('exam_session/{exam_session}/proctors', [\App\Http\Controllers\Admin\ExamSessionController::class, 'storeProctors'])->name('admin.exam_session.proctors.store');
+    Route::post('exam_session/{exam_session}/duplicate', [\App\Http\Controllers\Admin\ExamSessionController::class, 'duplicate'])->name('admin.exam_session.duplicate');
     Route::resource('exam_session', \App\Http\Controllers\Admin\ExamSessionController::class)->names('admin.exam_session');
 
     // Route Monitoring (Full List for Admin)

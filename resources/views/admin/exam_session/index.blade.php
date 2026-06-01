@@ -120,6 +120,9 @@
                                                 <a href="{{ route($baseRoute . '.edit', $session->id) }}" class="btn btn-sm btn-outline-info rounded-circle mr-2" title="Edit Jadwal" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                                                     <i class="fas fa-pencil-alt text-xs"></i>
                                                 </a>
+                                                <button type="button" class="btn btn-sm btn-outline-success rounded-circle mr-2" title="Copy / Duplikat Jadwal" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" onclick="duplicateSingle({{ $session->id }})">
+                                                    <i class="far fa-copy text-xs"></i>
+                                                </button>
                                                 <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;" onclick="deleteSingle({{ $session->id }})">
                                                     <i class="fas fa-trash text-xs"></i>
                                                 </button>
@@ -160,6 +163,7 @@
 {{-- Hidden forms for single actions --}}
 <form id="singleRefreshForm" method="POST" style="display:none;">@csrf</form>
 <form id="singleDeleteForm" method="POST" style="display:none;">@csrf @method('DELETE')</form>
+<form id="singleDuplicateForm" method="POST" style="display:none;">@csrf</form>
 
 @endsection
 
@@ -191,6 +195,17 @@
             form.action = "{{ url('admin/exam_session') }}/" + id + "/regenerate-token";
             @if($baseRoute === 'pengajar')
                 form.action = "{{ url('admin/pengajar/exam_session') }}/" + id + "/regenerate-token";
+            @endif
+            form.submit();
+        }
+    }
+
+    function duplicateSingle(id) {
+        if (confirm('Apakah Anda yakin ingin menyalin/menduperlikat jadwal ujian ini?')) {
+            const form = document.getElementById('singleDuplicateForm');
+            form.action = "{{ url('admin/exam_session') }}/" + id + "/duplicate";
+            @if($baseRoute === 'pengajar')
+                form.action = "{{ url('admin/pengajar/exam_session') }}/" + id + "/duplicate";
             @endif
             form.submit();
         }

@@ -199,6 +199,7 @@ Route::middleware(['auth', 'role:pengajar'])->prefix('pengajar')->name('pengajar
     Route::get('exam_package/{exam_package}/preview', [\App\Http\Controllers\Admin\ExamPackageController::class, 'preview'])->name('exam_package.preview');
 
     // Exam Sessions & Monitoring
+    Route::post('exam_session/{exam_session}/duplicate', [\App\Http\Controllers\Admin\ExamSessionController::class, 'duplicate'])->name('exam_session.duplicate');
     Route::resource('exam_session', \App\Http\Controllers\Admin\ExamSessionController::class);
     Route::post('exam_session/{exam_session}/regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'regenerateToken'])->name('exam_session.regenerate_token');
     Route::post('exam_session/bulk-regenerate-token', [\App\Http\Controllers\Admin\ExamSessionController::class, 'bulkRegenerateToken'])->name('exam_session.bulk_regenerate_token');
