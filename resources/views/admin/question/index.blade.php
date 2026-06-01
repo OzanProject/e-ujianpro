@@ -151,7 +151,7 @@
                                 <div class="input-group-prepend border-0">
                                     <span class="input-group-text bg-white border-0 text-muted"><i class="fas fa-search"></i></span>
                                 </div>
-                                <input type="search" name="search" value="{{ request('search') }}" class="form-control border-0 bg-white shadow-none" placeholder="Cari isi soal..." aria-label="Search">
+                                <input type="search" name="search" value="{{ request('search') }}" class="form-control border-0 bg-white shadow-none" placeholder="Cari isi soal atau tag (cth: Kelas 7)..." aria-label="Search">
                             </div>
                         </div>
                         <div class="col-md-3 mb-3 mb-md-0">

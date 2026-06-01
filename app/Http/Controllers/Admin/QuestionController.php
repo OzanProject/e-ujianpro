@@ -69,6 +69,9 @@ class QuestionController extends Controller
                     })
                     ->orWhereHas('options', function ($opt) use ($request) {
                         $opt->where('content', 'like', '%' . $request->search . '%');
+                    })
+                    ->orWhereHas('tags', function ($tag) use ($request) {
+                        $tag->where('name', 'like', '%' . $request->search . '%');
                     });
             });
         }
