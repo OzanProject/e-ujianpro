@@ -118,31 +118,33 @@
 <div class="row">
     <div class="col-12">
         <div class="card border-0 shadow-sm rounded-lg">
-            <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center">
-                <div class="d-flex align-items-center mb-2 mb-md-0">
-                    <h6 class="font-weight-bold text-dark mb-0 mr-3"><i class="fas fa-filter text-primary mr-2"></i> Kontrol Bank Soal</h6>
+            <div class="card-header bg-white py-3 border-bottom d-flex flex-column flex-xl-row justify-content-between align-items-xl-center">
+                <div class="d-flex flex-wrap align-items-center mb-3 mb-xl-0">
+                    <h6 class="font-weight-bold text-dark mb-2 mb-sm-0 mr-3"><i class="fas fa-list-ul text-primary mr-2"></i> Daftar Bank Soal</h6>
                     <div id="bulkActionButtons" class="d-none">
-                        <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm mr-2" data-toggle="modal" data-target="#bulkTagModal">
-                            <i class="fas fa-tags mr-1"></i> Tambah Tag (<span class="selectedCount">0</span>)
-                        </button>
-                        <button type="button" id="btnBulkDelete" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">
-                            <i class="fas fa-trash mr-1"></i> Hapus Terpilih (<span class="selectedCount">0</span>)
-                        </button>
+                        <div class="d-flex flex-wrap">
+                            <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 shadow-sm mr-2 mb-2 mb-sm-0" data-toggle="modal" data-target="#bulkTagModal">
+                                <i class="fas fa-tags mr-1"></i> Tambah Tag (<span class="selectedCount">0</span>)
+                            </button>
+                            <button type="button" id="btnBulkDelete" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm mb-2 mb-sm-0">
+                                <i class="fas fa-trash mr-1"></i> Hapus (<span class="selectedCount">0</span>)
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="card-tools d-flex align-items-center">
-                    <a href="{{ route($baseRoute . '.print_card', request()->all()) }}" target="_blank" class="btn btn-info btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2">
-                        <i class="fas fa-print mr-1"></i> Cetak Kartu Soal
+                <div class="card-tools d-flex flex-wrap align-items-center">
+                    <a href="{{ route($baseRoute . '.print_card', request()->all()) }}" target="_blank" class="btn btn-info btn-sm font-weight-bold shadow-sm rounded-pill px-3 mr-2 mb-2">
+                        <i class="fas fa-print mr-1"></i> Cetak Kartu
                     </a>
-                    <a href="{{ route($baseRoute . '.export.word', request()->all()) }}" class="btn btn-dark btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2">
-                        <i class="fas fa-file-word mr-1"></i> Export Word
+                    <a href="{{ route($baseRoute . '.export.word', request()->all()) }}" class="btn btn-dark btn-sm font-weight-bold shadow-sm rounded-pill px-3 mr-2 mb-2">
+                        <i class="fas fa-file-word mr-1"></i> Export
                     </a>
-                    <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm rounded-pill px-4 mr-2" data-toggle="modal" data-target="#importModal">
-                        <i class="fas fa-file-import mr-1"></i> Import Word/Excel
+                    <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm rounded-pill px-3 mr-2 mb-2" data-toggle="modal" data-target="#importModal">
+                        <i class="fas fa-file-import mr-1"></i> Import
                     </button>
-                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary btn-sm font-weight-bold shadow-sm rounded-pill px-4">
-                        <i class="fas fa-plus mr-1"></i> Buat Soal Manual
+                    <a href="{{ route($baseRoute . '.create') }}" class="btn btn-primary btn-sm font-weight-bold shadow-sm rounded-pill px-3 mb-2">
+                        <i class="fas fa-plus mr-1"></i> Buat Soal
                     </a>
                 </div>
             </div>
@@ -151,13 +153,18 @@
                 {{-- Advanced Search & Filter Bar --}}
                 <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mb-4">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-10 mb-3">
                             <div class="input-group shadow-sm rounded-lg border-0 bg-white">
                                 <div class="input-group-prepend border-0">
                                     <span class="input-group-text bg-white border-0 text-muted"><i class="fas fa-search"></i></span>
                                 </div>
-                                <input type="search" name="search" value="{{ request('search') }}" class="form-control border-0 bg-white shadow-none" placeholder="Cari isi soal atau tag (cth: Kelas 7)..." aria-label="Search">
+                                <input type="search" name="search" value="{{ request('search') }}" class="form-control border-0 bg-white shadow-none" placeholder="Cari isi soal atau nama tag (cth: Kelas 7)..." aria-label="Search">
                             </div>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <button type="submit" class="btn btn-dark btn-block rounded-lg shadow-sm font-weight-bold">
+                                Terapkan
+                            </button>
                         </div>
                     </div>
                     <div class="row">
@@ -171,12 +178,23 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="col-md-2 mb-3 mb-md-0">
                             <select name="exam_package_id" class="form-control border-0 shadow-sm rounded-lg font-weight-bold text-dark" onchange="this.form.submit()">
-                                <option value="">-- Semua Paket Soal --</option>
+                                <option value="">-- Semua Paket --</option>
                                 @foreach($packages as $package)
                                     <option value="{{ $package->id }}" {{ request('exam_package_id') == $package->id ? 'selected' : '' }}>
                                         {{ $package->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <select name="tag_id" class="form-control border-0 shadow-sm rounded-lg font-weight-bold text-dark" onchange="this.form.submit()">
+                                <option value="">-- Semua Tag --</option>
+                                <option value="untagged" {{ request('tag_id') === 'untagged' ? 'selected' : '' }} class="text-danger font-weight-bold">❌ Belum Ada Tag</option>
+                                @foreach($tags as $tag)
+                                    <option value="{{ $tag->id }}" {{ request('tag_id') == $tag->id ? 'selected' : '' }}>
+                                        🏷️ {{ $tag->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -197,11 +215,6 @@
                                 <option value="medium" {{ request('difficulty') == 'medium' ? 'selected' : '' }}>SEDANG</option>
                                 <option value="hard" {{ request('difficulty') == 'hard' ? 'selected' : '' }}>SULIT</option>
                             </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-dark btn-block rounded-lg shadow-sm font-weight-bold">
-                                Terapkan
-                            </button>
                         </div>
                     </div>
                 </form>

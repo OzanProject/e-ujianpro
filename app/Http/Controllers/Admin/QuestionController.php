@@ -69,6 +69,16 @@ class QuestionController extends Controller
             });
         }
 
+        if ($request->filled('tag_id')) {
+            if ($request->tag_id === 'untagged') {
+                $query->doesntHave('tags');
+            } else {
+                $query->whereHas('tags', function ($q) use ($request) {
+                    $q->where('tags.id', $request->tag_id);
+                });
+            }
+        }
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('content', 'like', '%' . $request->search . '%')
@@ -94,7 +104,9 @@ class QuestionController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('admin.question.index', compact('questions', 'subjects', 'packages', 'stats'));
+        $tags = \App\Models\Tag::orderBy('name')->get();
+
+        return view('admin.question.index', compact('questions', 'subjects', 'packages', 'stats', 'tags'));
     }
 
     /**
