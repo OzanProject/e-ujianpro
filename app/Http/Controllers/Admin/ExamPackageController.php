@@ -73,15 +73,29 @@ class ExamPackageController extends Controller
 
         $query = Question::where('subject_id', $examPackage->subject_id);
 
-        if ($request->has('q')) {
+        if ($request->filled('q')) {
             $query->where('content', 'like', '%' . $request->q . '%');
+        }
+
+        if ($request->filled('tag_id')) {
+            if ($request->tag_id === 'untagged') {
+                $query->doesntHave('tags');
+            } else {
+                $query->whereHas('tags', function ($q) use ($request) {
+                    $q->where('tags.id', $request->tag_id);
+                });
+            }
         }
 
         // Limit to 200 to prevent crash, let user search specifically
         $questions = $query->latest()->limit(200)->get();
+        
+        // Ambil semua tags untuk filter dropdown
+        $tags = \App\Models\Tag::orderBy('name')->get();
+        
         $baseRoute = $this->getBaseRoute();
 
-        return view('admin.exam_package.show', compact('examPackage', 'questions', 'baseRoute'));
+        return view('admin.exam_package.show', compact('examPackage', 'questions', 'tags', 'baseRoute'));
     }
 
     /**

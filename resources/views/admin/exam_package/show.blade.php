@@ -77,7 +77,16 @@
                     <div class="card-header bg-white border-bottom-0 p-4">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h6 class="m-0 font-weight-bold text-dark"><i class="fas fa-list-ul mr-2 text-primary"></i> Daftar Soal Tersedia</h6>
-                            <form action="{{ route('admin.exam_package.show', $examPackage->id) }}" method="GET" class="mt-2 mt-md-0">
+                            <form action="{{ route('admin.exam_package.show', $examPackage->id) }}" method="GET" class="mt-2 mt-md-0 d-flex flex-wrap align-items-center gap-2">
+                                <select name="tag_id" class="form-control form-control-sm rounded-pill bg-light border-0 px-3 shadow-sm mr-2" style="width: 200px;" onchange="this.form.submit()">
+                                    <option value="">Semua Tag</option>
+                                    <option value="untagged" {{ request('tag_id') === 'untagged' ? 'selected' : '' }}>-- Belum Punya Tag --</option>
+                                    @foreach($tags as $tag)
+                                        <option value="{{ $tag->id }}" {{ request('tag_id') == $tag->id ? 'selected' : '' }}>
+                                            {{ $tag->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 <div class="input-group input-group-sm rounded-pill shadow-sm overflow-hidden" style="width: 250px;">
                                     <input type="text" name="q" class="form-control border-0 bg-light" placeholder="Cari isi soal..." value="{{ request('q') }}">
                                     <div class="input-group-append">
