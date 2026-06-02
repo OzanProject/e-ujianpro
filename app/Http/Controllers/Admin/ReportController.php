@@ -117,6 +117,8 @@ class ReportController extends Controller
             } else {
                 $query->where('exam_room_id', $request->exam_room_id);
             }
+        } else {
+            $query->whereNotNull('exam_room_id');
         }
         
         $students = $query->get()->sortBy(function($student) {
