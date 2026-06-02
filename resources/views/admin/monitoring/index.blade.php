@@ -44,7 +44,18 @@
                                 <tr class="border-bottom">
                                     <td class="px-4 py-3">
                                         <div class="d-flex flex-column">
-                                            <h6 class="mb-0 text-sm font-weight-bold text-dark">{{ $session->title }}</h6>
+                                            <div class="d-flex align-items-center">
+                                                <h6 class="mb-0 text-sm font-weight-bold text-dark">{{ $session->title }}</h6>
+                                                @if($session->target_kelas)
+                                                    <span class="badge badge-info bg-blue-100 text-blue-800 border border-blue-200 px-2 py-1 ml-2 text-xs rounded" style="font-size: 0.65rem;">
+                                                        Kelas {{ $session->target_kelas }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-secondary bg-gray-100 text-gray-700 border border-gray-200 px-2 py-1 ml-2 text-xs rounded" style="font-size: 0.65rem;">
+                                                        Semua Kelas
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <span class="text-xs text-muted mt-1 font-weight-bold">
                                                 <i class="fas fa-key text-xs mr-1"></i> Token: {{ $session->token }}
                                             </span>
