@@ -275,6 +275,18 @@
                         cheatBadge = '<span class="badge badge-danger px-3 py-1 rounded-pill">⛔ Diskualifikasi ('+item.cheat_count+'x)</span>';
                     }
 
+                    let actionButtons = '';
+                    if (item.status !== 'Belum Mulai') {
+                        actionButtons = `
+                            <div class="btn-group shadow-sm rounded-lg">
+                                 <button onclick="resetLogin(${item.id})" class="btn btn-warning btn-sm text-white" title="Reset Login"><i class="fas fa-undo"></i></button>
+                                 <button onclick="stopExam(${item.id})" class="btn btn-danger btn-sm" title="Hentikan Paksa"><i class="fas fa-stop-circle"></i></button>
+                            </div>
+                        `;
+                    } else {
+                        actionButtons = '<span class="text-muted text-xs"><i class="fas fa-minus"></i></span>';
+                    }
+
                     const row = `
                         <tr class="border-bottom hover:bg-gray-50 transition">
                             <td class="px-4 py-3 align-middle font-weight-bold text-gray-700">${item.student_name} <br> <small class="text-muted font-weight-normal">${item.student_number}</small></td>
@@ -284,10 +296,7 @@
                             <td class="px-4 py-3 align-middle text-sm text-gray-500">${item.last_activity}</td>
                             <td class="px-4 py-3 align-middle text-center">${cheatBadge}</td>
                             <td class="px-4 py-3 align-middle text-center">
-                                <div class="btn-group shadow-sm rounded-lg">
-                                     <button onclick="resetLogin(${item.id})" class="btn btn-warning btn-sm text-white" title="Reset Login"><i class="fas fa-undo"></i></button>
-                                     <button onclick="stopExam(${item.id})" class="btn btn-danger btn-sm" title="Hentikan Paksa"><i class="fas fa-stop-circle"></i></button>
-                                </div>
+                                ${actionButtons}
                             </td>
                         </tr>
                     `;

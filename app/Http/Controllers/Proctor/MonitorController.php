@@ -42,8 +42,14 @@ class MonitorController extends Controller
         $session = ExamSession::findOrFail($id);
         $proctor = auth()->user();
         
-        $query = ExamAttempt::where('exam_session_id', $id)
-                    ->with('student');
+        $adminId = $proctor->getInstitutionId();
+
+        $studentsQuery = \App\Models\Student::where(function($q) use ($adminId) {
+            $q->where('created_by', $adminId)
+              ->orWhereHas('user', function($uq) use ($adminId) {
+                  $uq->where('created_by', $adminId);
+              });
+        });
 
         // Filter by Room if Proctor is assigned to one
         $assignedRooms = \DB::table('exam_session_proctors')
@@ -52,32 +58,71 @@ class MonitorController extends Controller
             ->pluck('exam_room_id')->toArray();
 
         if (count($assignedRooms) > 0) {
-            $query->whereHas('student', function($q) use ($assignedRooms) {
-                $q->whereIn('exam_room_id', $assignedRooms);
-            });
+            $studentsQuery->whereIn('exam_room_id', $assignedRooms);
         } elseif ($proctor->exam_room_id) {
-            $query->whereHas('student', function($q) use ($proctor) {
-                $q->where('exam_room_id', $proctor->exam_room_id);
-            });
+            $studentsQuery->where('exam_room_id', $proctor->exam_room_id);
         }
 
-        $attempts = $query->orderBy('updated_at', 'desc')->get();
+        $allStudents = $studentsQuery->get();
+
+        // Filter valid students based on target_kelas (matching Dashboard logic)
+        $validStudents = $allStudents->filter(function($student) use ($session) {
+            if (!$session->target_kelas) return true;
+
+            $parts = explode(' ', str_replace('-', ' ', $student->kelas));
+            $first = strtoupper($parts[0] ?? '');
+            $romans = [
+                'TK' => 0, 'PAUD' => 0,
+                'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6,
+                'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10, 'XI' => 11, 'XII' => 12, 'XIII' => 13
+            ];
+            $studentLevel = null;
+            if (isset($romans[$first])) {
+                $studentLevel = (string)$romans[$first];
+            } elseif (is_numeric($first)) {
+                $studentLevel = (string)intval($first);
+            }
+
+            return (string)$studentLevel === (string)$session->target_kelas;
+        });
+
+        // Get attempts only for these valid students
+        $attempts = ExamAttempt::where('exam_session_id', $id)
+                    ->whereIn('student_id', $validStudents->pluck('id'))
+                    ->get();
         
         // Transform for JSON
-        $data = $attempts->map(function($attempt) {
-            return [
-                'id' => $attempt->id,
-                'student_name' => $attempt->student->name ?? 'Unknown',
-                'student_number' => $attempt->student->nisn ?? '-', // Assuming NISN or similar
-                'start_time' => $attempt->start_time ? $attempt->start_time->format('H:i:s') : '-',
-                'status' => $attempt->status,
-                'score' => is_numeric($attempt->score) ? number_format($attempt->score, 2) : ($attempt->score ?? '-'),
-                'last_activity' => $attempt->updated_at->diffForHumans(),
-                'is_online' => $attempt->updated_at->diffInMinutes(now()) < 5, // Simple online check
-                'cheat_count' => $attempt->cheat_count,
-                'updated_at_ts' => $attempt->updated_at->timestamp,
-            ];
-        });
+        $data = $validStudents->map(function($student) use ($attempts) {
+            $attempt = $attempts->firstWhere('student_id', $student->id);
+            
+            if ($attempt) {
+                return [
+                    'id' => $attempt->id,
+                    'student_name' => $student->name ?? 'Unknown',
+                    'student_number' => $student->nisn ?? '-',
+                    'start_time' => $attempt->start_time ? $attempt->start_time->format('H:i:s') : '-',
+                    'status' => $attempt->status,
+                    'score' => is_numeric($attempt->score) ? number_format($attempt->score, 2) : ($attempt->score ?? '-'),
+                    'last_activity' => $attempt->updated_at->diffForHumans(),
+                    'is_online' => $attempt->updated_at->diffInMinutes(now()) < 5,
+                    'cheat_count' => $attempt->cheat_count,
+                    'updated_at_ts' => $attempt->updated_at->timestamp,
+                ];
+            } else {
+                return [
+                    'id' => 'student_' . $student->id, // Fake ID so it doesn't break JS
+                    'student_name' => $student->name ?? 'Unknown',
+                    'student_number' => $student->nisn ?? '-',
+                    'start_time' => '-',
+                    'status' => 'Belum Mulai',
+                    'score' => '-',
+                    'last_activity' => '-',
+                    'is_online' => false,
+                    'cheat_count' => 0,
+                    'updated_at_ts' => 0,
+                ];
+            }
+        })->values();
 
         return response()->json($data);
     }
