@@ -59,4 +59,19 @@ class ExamSession extends Model
                     ->withPivot('exam_room_id')
                     ->withTimestamps();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($examSession) {
+            // Delete related attempts (which should trigger their own delete events or be cascaded)
+            foreach ($examSession->attempts as $attempt) {
+                $attempt->delete();
+            }
+            
+            // Detach proctors to clean up exam_session_proctors
+            $examSession->proctors()->detach();
+        });
+    }
 }

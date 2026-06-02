@@ -40,4 +40,14 @@ class ExamAttempt extends Model
     {
         return $this->hasMany(ExamAnswer::class);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($attempt) {
+            // Delete related answers
+            $attempt->answers()->delete();
+        });
+    }
 }

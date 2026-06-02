@@ -200,20 +200,29 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
+            // Simpan semua opsi paket sejak awal
+            var $allPackageOptions = $('#exam_package_id option.package-option').clone();
+
             $('#subject_id').change(function () {
                 var subjectId = $(this).val();
-                $('#exam_package_id').val(''); // Reset selection
+                var $packageSelect = $('#exam_package_id');
+                
+                // Hapus semua opsi kecuali opsi default (kosong)
+                $packageSelect.find('option.package-option').remove();
 
                 if (subjectId) {
-                    $('.package-option').hide();
-                    $('.package-option[data-subject="' + subjectId + '"]').show();
-                } else {
-                    $('.package-option').hide();
+                    // Filter opsi yang sesuai dengan mapel dan tambahkan kembali ke select
+                    var $filteredOptions = $allPackageOptions.filter('[data-subject="' + subjectId + '"]');
+                    $packageSelect.append($filteredOptions);
                 }
             });
 
-            // Trigger on load if old value exists
+            // Jalankan saat pertama kali halaman dimuat
+            var oldPackageId = "{{ old('exam_package_id') }}";
             $('#subject_id').trigger('change');
+            if (oldPackageId) {
+                $('#exam_package_id').val(oldPackageId);
+            }
         });
     </script>
 @endpush
