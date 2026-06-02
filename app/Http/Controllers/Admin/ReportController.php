@@ -199,6 +199,10 @@ class ReportController extends Controller
             } else {
                 $query->where('exam_room_id', $request->exam_room_id);
             }
+        } else {
+            // Jika pilih Semua Ruangan, JANGAN cetak siswa yang belum punya ruangan
+            // agar tidak membuang kertas dengan ratusan nama tak beruang.
+            $query->whereNotNull('exam_room_id');
         }
         
         $students = $query->get()->sortBy(function($student) {
