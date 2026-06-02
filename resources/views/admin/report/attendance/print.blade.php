@@ -105,24 +105,6 @@
 @foreach($studentsByRoom as $roomId => $roomStudents)
 @php
     $filteredStudents = $roomStudents;
-    if ($session && $session->target_kelas) {
-        $filteredStudents = $roomStudents->filter(function($student) use ($session) {
-            $parts = explode(' ', str_replace('-', ' ', $student->kelas));
-            $first = strtoupper($parts[0] ?? '');
-            $romans = [
-                'TK' => 0, 'PAUD' => 0,
-                'I' => 1, 'II' => 2, 'III' => 3, 'IV' => 4, 'V' => 5, 'VI' => 6,
-                'VII' => 7, 'VIII' => 8, 'IX' => 9, 'X' => 10, 'XI' => 11, 'XII' => 12, 'XIII' => 13
-            ];
-            $studentLevel = null;
-            if (isset($romans[$first])) {
-                $studentLevel = (string)$romans[$first];
-            } elseif (is_numeric($first)) {
-                $studentLevel = (string)intval($first);
-            }
-            return $studentLevel === $session->target_kelas;
-        });
-    }
 @endphp
 
 @if($filteredStudents->count() > 0)
