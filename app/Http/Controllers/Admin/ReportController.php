@@ -309,17 +309,17 @@ class ReportController extends Controller
                         : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
 
         $targetSessions = collect();
-        if ($request->filled('exam_date')) {
+        if ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->findOrFail($request->exam_session_id);
+            $targetSessions->push($session);
+        } elseif ($request->filled('exam_date')) {
             $targetSessions = ExamSession::with('subject', 'examType')
                 ->whereIn('subject_id', $subjectIds)
                 ->whereDate('start_time', $request->exam_date)
                 ->orderBy('start_time')
                 ->get();
-        } elseif ($request->filled('exam_session_id')) {
-            $session = ExamSession::with('subject', 'examType')
-                ->whereIn('subject_id', $subjectIds)
-                ->findOrFail($request->exam_session_id);
-            $targetSessions->push($session);
         } else {
             return back()->with('error', 'Pilih Tanggal Ujian atau Jadwal Sesi.');
         }
@@ -457,17 +457,17 @@ class ReportController extends Controller
                         : \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
 
         $targetSessions = collect();
-        if ($request->filled('exam_date')) {
+        if ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject', 'examType')
+                ->whereIn('subject_id', $subjectIds)
+                ->findOrFail($request->exam_session_id);
+            $targetSessions->push($session);
+        } elseif ($request->filled('exam_date')) {
             $targetSessions = ExamSession::with('subject', 'examType')
                 ->whereIn('subject_id', $subjectIds)
                 ->whereDate('start_time', $request->exam_date)
                 ->orderBy('start_time')
                 ->get();
-        } elseif ($request->filled('exam_session_id')) {
-            $session = ExamSession::with('subject', 'examType')
-                ->whereIn('subject_id', $subjectIds)
-                ->findOrFail($request->exam_session_id);
-            $targetSessions->push($session);
         } else {
             return back()->with('error', 'Pilih Tanggal Ujian atau Jadwal Sesi.');
         }
