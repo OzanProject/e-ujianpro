@@ -175,6 +175,52 @@ class TeacherController extends Controller
         return redirect()->back()->with('success', 'Akun guru berhasil diaktifkan kembali.');
     }
 
+    public function assignProctor(string $id)
+    {
+        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
+        if ($teacher->role !== 'pengajar') abort(403);
+        
+        $institutionId = auth()->user()->getInstitutionId();
+        
+        // Fetch active exam sessions for this institution
+        $sessions = \App\Models\ExamSession::where('created_by', $institutionId)
+                        ->where('is_active', true)
+                        ->orderBy('start_time', 'asc')
+                        ->get();
+                        
+        // Fetch rooms for this institution
+        $rooms = \App\Models\ExamRoom::where('created_by', $institutionId)->get();
+        
+        // Fetch current assignments for this teacher
+        $assignments = $teacher->proctorAssignments()->get();
+
+        return view('admin.teacher.assign_proctor', compact('teacher', 'sessions', 'rooms', 'assignments'));
+    }
+
+    public function storeProctor(Request $request, string $id)
+    {
+        $teacher = User::where('role', 'pengajar')->where('created_by', auth()->user()->getInstitutionId())->findOrFail($id);
+        if ($teacher->role !== 'pengajar') abort(403);
+
+        $request->validate([
+            'assignments' => 'array',
+            'assignments.*.exam_session_id' => 'required|exists:exam_sessions,id',
+            'assignments.*.exam_room_id' => 'required|exists:exam_rooms,id',
+        ]);
+
+        // First detach all current assignments
+        $teacher->proctorAssignments()->detach();
+
+        // Attach new assignments if any
+        if ($request->has('assignments') && is_array($request->assignments)) {
+            foreach ($request->assignments as $assignment) {
+                $teacher->proctorAssignments()->attach($assignment['exam_session_id'], ['exam_room_id' => $assignment['exam_room_id']]);
+            }
+        }
+
+        return redirect()->route('admin.teacher.index')->with('success', 'Penugasan pengawas berhasil disimpan.');
+    }
+
     public function import(Request $request)
     {
         $request->validate([

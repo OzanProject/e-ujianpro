@@ -113,6 +113,12 @@
                                                     </form>
                                                 @endif
 
+                                                @if($teacher->status == 'active')
+                                                    <a href="{{ route('admin.teacher.assign_proctor', $teacher->id) }}" class="btn btn-primary btn-sm ml-1" title="Atur Penugasan Pengawas">
+                                                        <i class="fas fa-user-shield"></i>
+                                                    </a>
+                                                @endif
+
                                                 <a href="{{ route('admin.teacher.edit', $teacher->id) }}" class="btn btn-info btn-sm ml-1">
                                                     <i class="fas fa-edit"></i>
                                                 </a>

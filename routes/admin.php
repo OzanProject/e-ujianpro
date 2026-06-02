@@ -111,6 +111,11 @@ Route::middleware(['auth', 'role:admin_lembaga,operator,pengajar'])->group(funct
     Route::post('teacher/{id}/approve', [\App\Http\Controllers\Admin\TeacherController::class, 'approve'])->name('admin.teacher.approve');
     Route::post('teacher/{id}/suspend', [\App\Http\Controllers\Admin\TeacherController::class, 'suspend'])->name('admin.teacher.suspend');
     Route::post('teacher/{id}/activate', [\App\Http\Controllers\Admin\TeacherController::class, 'activate'])->name('admin.teacher.activate');
+    
+    // Proctor Assignment for Teacher
+    Route::get('teacher/{teacher}/assign-proctor', [\App\Http\Controllers\Admin\TeacherController::class, 'assignProctor'])->name('admin.teacher.assign_proctor');
+    Route::post('teacher/{teacher}/store-proctor', [\App\Http\Controllers\Admin\TeacherController::class, 'storeProctor'])->name('admin.teacher.store_proctor');
+    
     Route::resource('teacher', \App\Http\Controllers\Admin\TeacherController::class)->names('admin.teacher');
 
     // Route Student Group
