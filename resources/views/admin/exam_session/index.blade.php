@@ -97,7 +97,7 @@
                                                     <i class="fas fa-book text-primary mr-1"></i> {{ $session->subject->name }}
                                                 </span>
                                                 <span class="text-xs text-secondary mb-1">
-                                                    <i class="fas fa-layer-group text-info mr-1"></i> {{ $session->examPackage->title ?? 'Semua Paket' }}
+                                                    <i class="fas fa-layer-group text-info mr-1"></i> {{ optional($session->examPackage)->name ?? 'Semua Paket' }}
                                                 </span>
                                                 <span class="text-xs text-secondary">
                                                     <i class="fas fa-users text-warning mr-1"></i> 
