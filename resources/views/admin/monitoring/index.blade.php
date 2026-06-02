@@ -15,6 +15,53 @@
             </div>
             
             <div class="card-body p-0">
+                <!-- Filter Section -->
+                <div class="bg-light p-4 border-bottom">
+                    <form action="{{ route($baseRoute . '.index') }}" method="GET">
+                        <div class="row">
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <div class="input-group shadow-sm rounded">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                                    </div>
+                                    <input type="text" name="search" class="form-control border-0" placeholder="Cari nama, token, kelas..." value="{{ request('search') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-2 mb-3 mb-md-0">
+                                <select name="subject_id" class="form-control shadow-sm border-0 font-weight-bold text-dark" onchange="this.form.submit()">
+                                    <option value="">Semua Mapel</option>
+                                    @foreach($subjects as $subject)
+                                        <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
+                                            {{ $subject->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-3 mb-md-0">
+                                <select name="status" class="form-control shadow-sm border-0 font-weight-bold text-dark" onchange="this.form.submit()">
+                                    <option value="">Semua Status</option>
+                                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>🟢 Sedang Berjalan</option>
+                                    <option value="upcoming" {{ request('status') === 'upcoming' ? 'selected' : '' }}>⏳ Belum Mulai</option>
+                                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>🔴 Selesai</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3 mb-md-0">
+                                <select name="sort" class="form-control shadow-sm border-0 font-weight-bold text-dark" onchange="this.form.submit()">
+                                    <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Terbaru Dibuat</option>
+                                    <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Terlama Dibuat</option>
+                                    <option value="start_desc" {{ request('sort') === 'start_desc' ? 'selected' : '' }}>Waktu Pelaksanaan (Baru ke Lama)</option>
+                                    <option value="start_asc" {{ request('sort') === 'start_asc' ? 'selected' : '' }}>Waktu Pelaksanaan (Lama ke Baru)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-dark btn-block shadow-sm font-weight-bold rounded">
+                                    Filter
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
