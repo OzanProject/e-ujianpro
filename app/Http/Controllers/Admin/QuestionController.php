@@ -21,9 +21,11 @@ class QuestionController extends Controller
 
         if ($user->role === 'pengajar') {
             $subjects = $user->subjects;
+            $packages = \App\Models\ExamPackage::whereIn('subject_id', $subjects->pluck('id'))->get();
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         } else {
             $subjects = Subject::where('created_by', auth()->user()->getInstitutionId())->get();
+            $packages = \App\Models\ExamPackage::whereIn('subject_id', $subjects->pluck('id'))->get();
             $query = Question::whereIn('subject_id', $subjects->pluck('id'))->with('subject');
         }
 
@@ -61,6 +63,12 @@ class QuestionController extends Controller
             $query->where('difficulty', $request->difficulty);
         }
 
+        if ($request->filled('exam_package_id')) {
+            $query->whereHas('examPackages', function ($q) use ($request) {
+                $q->where('exam_packages.id', $request->exam_package_id);
+            });
+        }
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('content', 'like', '%' . $request->search . '%')
@@ -86,7 +94,7 @@ class QuestionController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return view('admin.question.index', compact('questions', 'subjects', 'stats'));
+        return view('admin.question.index', compact('questions', 'subjects', 'packages', 'stats'));
     }
 
     /**

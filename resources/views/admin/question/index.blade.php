@@ -151,7 +151,7 @@
                 {{-- Advanced Search & Filter Bar --}}
                 <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mb-4">
                     <div class="row">
-                        <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="col-md-12 mb-3">
                             <div class="input-group shadow-sm rounded-lg border-0 bg-white">
                                 <div class="input-group-prepend border-0">
                                     <span class="input-group-text bg-white border-0 text-muted"><i class="fas fa-search"></i></span>
@@ -159,12 +159,24 @@
                                 <input type="search" name="search" value="{{ request('search') }}" class="form-control border-0 bg-white shadow-none" placeholder="Cari isi soal atau tag (cth: Kelas 7)..." aria-label="Search">
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-3 mb-3 mb-md-0">
                             <select name="subject_id" class="form-control border-0 shadow-sm rounded-lg font-weight-bold text-dark" onchange="this.form.submit()">
                                 <option value="">-- Semua Mapel --</option>
                                 @foreach($subjects as $subject)
                                     <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
                                         {{ $subject->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3 mb-md-0">
+                            <select name="exam_package_id" class="form-control border-0 shadow-sm rounded-lg font-weight-bold text-dark" onchange="this.form.submit()">
+                                <option value="">-- Semua Paket Soal --</option>
+                                @foreach($packages as $package)
+                                    <option value="{{ $package->id }}" {{ request('exam_package_id') == $package->id ? 'selected' : '' }}>
+                                        {{ $package->name }}
                                     </option>
                                 @endforeach
                             </select>

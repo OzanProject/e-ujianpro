@@ -49,4 +49,9 @@ class Question extends Model
     {
         return $this->hasMany(QuestionOption::class);
     }
+
+    public function examPackages()
+    {
+        return $this->belongsToMany(ExamPackage::class, 'exam_package_question');
+    }
 }
