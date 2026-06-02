@@ -177,15 +177,15 @@ class ReportController extends Controller
                         : \App\Models\Subject::whereIn('created_by', $allIds)->pluck('id');
 
         $targetSessions = collect();
-        if ($request->filled('exam_date')) {
+        if ($request->filled('exam_session_id')) {
+            $session = ExamSession::with('subject')->find($request->exam_session_id);
+            if ($session) $targetSessions->push($session);
+        } elseif ($request->filled('exam_date')) {
             $targetSessions = ExamSession::with('subject')
                 ->whereIn('subject_id', $subjectIds)
                 ->whereDate('start_time', $request->exam_date)
                 ->orderBy('start_time')
                 ->get();
-        } elseif ($request->filled('exam_session_id')) {
-            $session = ExamSession::with('subject')->find($request->exam_session_id);
-            if ($session) $targetSessions->push($session);
         } else {
             $targetSessions->push(null);
         }
