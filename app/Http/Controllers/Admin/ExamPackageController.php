@@ -208,22 +208,38 @@ class ExamPackageController extends Controller
     /**
      * Sync all questions from the Bank Soal (subject) to this package.
      */
-    public function syncAll(ExamPackage $examPackage)
+    public function syncAll(Request $request, ExamPackage $examPackage)
     {
         $user = auth()->user();
         if ($user->role === 'pengajar' && !$user->subjects->contains($examPackage->subject_id)) {
             abort(403, 'Akses Ditolak.');
         }
 
-        $allQuestions = Question::where('subject_id', $examPackage->subject_id)->pluck('id');
-        
-        if ($allQuestions->isEmpty()) {
-            return back()->with('error', 'Bank Soal untuk mata pelajaran ini masih kosong.');
+        $query = Question::where('subject_id', $examPackage->subject_id);
+
+        if ($request->filled('tag')) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('name', trim($request->tag));
+            });
         }
 
-        $examPackage->questions()->sync($allQuestions);
+        $questionsToSync = $query->pluck('id');
+        
+        if ($questionsToSync->isEmpty()) {
+            return back()->with('error', 'Tidak ada soal yang ditemukan untuk sinkronisasi.');
+        }
 
-        return back()->with('success', 'Berhasil mensinkronkan semua soal dari Bank Soal ke paket ini.');
+        if ($request->filled('tag')) {
+            // Jika berdasarkan tag, kita tambahkan saja (append) agar soal dengan tag lain tidak hilang
+            $examPackage->questions()->syncWithoutDetaching($questionsToSync);
+            $msg = 'Berhasil menarik soal dengan tag "' . $request->tag . '" ke paket ini.';
+        } else {
+            // Jika tarik semua, timpa (sync)
+            $examPackage->questions()->sync($questionsToSync);
+            $msg = 'Berhasil mensinkronkan semua soal dari Bank Soal ke paket ini.';
+        }
+
+        return back()->with('success', $msg);
     }
 
     public function preview($id)

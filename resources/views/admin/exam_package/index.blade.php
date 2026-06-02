@@ -42,12 +42,43 @@
                                     <strong>{{ $package->questions_count }}</strong> / {{ $package->available_questions_count }} Soal
                                     @if($package->questions_count < $package->available_questions_count)
                                         <div class="mt-1">
-                                            <form action="{{ route('admin.exam_package.sync_all', $package->id) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="btn btn-xs btn-outline-success" title="Sinkronkan semua soal dari Bank Soal">
-                                                    <i class="fas fa-sync-alt"></i> Sync All
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-xs btn-outline-success" data-toggle="modal" data-target="#syncModal{{ $package->id }}" title="Sinkronkan soal dari Bank Soal">
+                                                <i class="fas fa-sync-alt"></i> Tarik Soal
+                                            </button>
+
+                                            <!-- Modal Sync By Tag -->
+                                            <div class="modal fade" id="syncModal{{ $package->id }}" tabindex="-1" role="dialog" aria-labelledby="syncModalLabel{{ $package->id }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                                    <div class="modal-content">
+                                                        <form action="{{ route('admin.exam_package.sync_all', $package->id) }}" method="POST">
+                                                            @csrf
+                                                            <div class="modal-header bg-success text-white">
+                                                                <h5 class="modal-title" id="syncModalLabel{{ $package->id }}">
+                                                                    <i class="fas fa-cloud-download-alt mr-2"></i> Tarik Soal ke Paket
+                                                                </h5>
+                                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body text-left">
+                                                                <p>Tarik soal dari Bank Soal untuk mata pelajaran <strong>{{ $package->subject->name }}</strong>.</p>
+                                                                <div class="form-group">
+                                                                    <label for="tag{{ $package->id }}" class="font-weight-bold">Berdasarkan Tag / Label (Opsional)</label>
+                                                                    <input type="text" name="tag" id="tag{{ $package->id }}" class="form-control" placeholder="Contoh: Kelas 7">
+                                                                    <small class="text-muted mt-1 d-block">
+                                                                        Ketikan nama tag jika hanya ingin menarik soal tertentu.<br>
+                                                                        <strong>Biarkan KOSONG</strong> jika ingin menarik <strong>SEMUA</strong> soal ke paket ini.
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer bg-light">
+                                                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Batal</button>
+                                                                <button type="submit" class="btn btn-success rounded-pill px-4"><i class="fas fa-sync-alt mr-1"></i> Mulai Tarik Soal</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     @endif
                                 </td>
