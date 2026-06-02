@@ -47,6 +47,7 @@
                             </div>
                             <div class="col-md-3 mb-3 mb-md-0">
                                 <select name="sort" class="form-control shadow-sm border-0 font-weight-bold text-dark" onchange="this.form.submit()">
+                                    <option value="default" {{ request('sort') === 'default' || !request('sort') ? 'selected' : '' }}>Rekomendasi (Selesai -> Berjalan)</option>
                                     <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Terbaru Dibuat</option>
                                     <option value="oldest" {{ request('sort') === 'oldest' ? 'selected' : '' }}>Terlama Dibuat</option>
                                     <option value="start_desc" {{ request('sort') === 'start_desc' ? 'selected' : '' }}>Waktu Pelaksanaan (Baru ke Lama)</option>

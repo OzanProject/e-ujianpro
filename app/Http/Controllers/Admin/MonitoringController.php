@@ -57,8 +57,17 @@ class MonitoringController extends Controller
         }
 
         // Sorting
-        $sort = $request->get('sort', 'latest');
-        if ($sort === 'latest') {
+        $sort = $request->get('sort', 'default');
+        if ($sort === 'default') {
+            $now = now()->toDateTimeString();
+            $query->orderByRaw("
+                CASE 
+                    WHEN end_time < '{$now}' THEN 1
+                    WHEN start_time <= '{$now}' AND end_time >= '{$now}' THEN 2
+                    ELSE 3
+                END ASC
+            ")->orderBy('end_time', 'desc');
+        } elseif ($sort === 'latest') {
             $query->latest();
         } elseif ($sort === 'oldest') {
             $query->oldest();
