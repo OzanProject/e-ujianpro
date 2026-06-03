@@ -54,7 +54,10 @@
                         @forelse($attempts as $attempt)
                             <tr>
                                 <td>{{ $loop->iteration + $attempts->firstItem() - 1 }}</td>
-                                <td>{{ $attempt->student->name }}</td>
+                                <td>
+                                    {{ $attempt->student->name }}
+                                    <br><small class="text-muted">{{ $attempt->student->kelas ?? '-' }}</small>
+                                </td>
                                 <td>
                                     @if($attempt->status == 'completed')
                                         <span class="badge badge-success">Selesai</span>
