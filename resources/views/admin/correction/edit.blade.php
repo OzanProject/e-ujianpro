@@ -6,7 +6,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
-            <form action="{{ route('admin.correction.update', $attempt->id) }}" method="POST">
+            <form action="{{ route($baseRoute . '.update', $attempt->id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -68,7 +68,7 @@
                 <div class="card">
                     <div class="card-footer">
                         <button type="submit" class="btn btn-primary btn-lg btn-block">Simpan Hasil Koreksi</button>
-                        <a href="{{ route('admin.correction.show', $attempt->exam_session_id) }}"
+                        <a href="{{ route($baseRoute . '.show', $attempt->exam_session_id) }}"
                             class="btn btn-default btn-block">Batal</a>
                     </div>
                 </div>

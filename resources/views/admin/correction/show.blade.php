@@ -10,7 +10,7 @@
             <div class="card-header">
                 <h3 class="card-title">Daftar Hasil Peserta</h3>
                 <div class="card-tools">
-                    <a href="{{ route('admin.correction.index') }}" class="btn btn-default btn-sm">Kembali</a>
+                    <a href="{{ route($baseRoute . '.index') }}" class="btn btn-default btn-sm">Kembali</a>
                 </div>
             </div>
             <div class="card-body">
@@ -59,7 +59,7 @@
                                 </td>
                                 <td>{{ $attempt->updated_at->format('d M Y H:i') }}</td>
                                 <td>
-                                    <a href="{{ route('admin.correction.edit', $attempt->id) }}" class="btn btn-warning btn-sm">
+                                    <a href="{{ route($baseRoute . '.edit', $attempt->id) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Koreksi
                                     </a>
                                 </td>

@@ -19,7 +19,7 @@ class ExamCorrectionController extends Controller
         $user = auth()->user();
         
         // Filter sessions by teacher subjects or admin creator
-        $query = ExamSession::withCount(['attempts' => function($query) {
+        $query = ExamSession::with(['subject'])->withCount(['attempts' => function($query) {
             $query->where('status', 'completed');
         }]);
 
@@ -71,7 +71,12 @@ class ExamCorrectionController extends Controller
     public function edit($attemptId)
     {
         $user = auth()->user();
-        $attempt = ExamAttempt::with(['student', 'examSession.subject', 'answers.question'])->findOrFail($attemptId);
+        $attempt = ExamAttempt::with([
+            'student', 
+            'examSession.subject', 
+            'answers.question.options', 
+            'answers.option'
+        ])->findOrFail($attemptId);
         
         // Security Check
         if ($user->role === 'pengajar' && !$user->subjects->contains($attempt->examSession->subject_id)) {
@@ -84,7 +89,7 @@ class ExamCorrectionController extends Controller
 
     public function update(Request $request, $attemptId)
     {
-        $attempt = ExamAttempt::load(['examSession'])->findOrFail($attemptId);
+        $attempt = ExamAttempt::with(['examSession'])->findOrFail($attemptId);
         $user = auth()->user();
 
         // Security Check
