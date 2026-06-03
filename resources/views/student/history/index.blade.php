@@ -144,7 +144,7 @@
                                 <tr>
                                     <th class="pl-4" width="70">No</th>
                                     <th>Mata Pelajaran</th>
-                                    <th>Paket Soal</th>
+                                    <th>Sesi & Paket Ujian</th>
                                     <th>Tanggal Ujian</th>
                                     <th>Durasi</th>
                                     <th>Nilai</th>
@@ -178,8 +178,11 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge badge-light border px-3 py-2 text-secondary">
-                                                {{ $package->title ?? 'Paket Soal Acak / Semua Soal' }}
+                                            <div class="font-weight-bold text-dark mb-1" style="font-size: 0.95rem;">
+                                                {{ $session->title ?? '-' }}
+                                            </div>
+                                            <span class="badge badge-light border px-2 py-1 text-secondary" style="font-size: 0.75rem;">
+                                                <i class="fas fa-file-alt mr-1"></i> {{ $package->title ?? 'Paket Soal Acak' }}
                                             </span>
                                         </td>
                                         <td>
