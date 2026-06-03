@@ -17,7 +17,7 @@
                                 <option value="">-- Pilih Sesi Ujian --</option>
                                 @foreach($examSessions as $session)
                                     <option value="{{ $session->id }}" {{ request('exam_session_id') == $session->id ? 'selected' : '' }}>
-                                        {{ $session->subject->name ?? 'Unknown Subject' }} - {{ $session->title }} 
+                                        {{ $session->subject->name ?? 'Unknown Subject' }} (Kelas: {{ $session->target_kelas ?? 'Semua' }}) - {{ $session->title }} 
                                         (@tgl_jam(\Carbon\Carbon::parse($session->start_time)))
                                     </option>
                                 @endforeach
