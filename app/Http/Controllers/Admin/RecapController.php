@@ -275,7 +275,7 @@ class RecapController extends Controller
             $sessionCheck = $examSessions->where('id', $request->exam_session_id)->first();
             
             if ($sessionCheck) {
-                $selectedSession = ExamSession::with(['examPackage.questions'])->find($request->exam_session_id);
+                $selectedSession = ExamSession::with(['examPackage.questions.options'])->find($request->exam_session_id);
                 $questions = $selectedSession->examPackage->questions;
                 
                 $attempts = $selectedSession->attempts()
@@ -300,7 +300,7 @@ class RecapController extends Controller
     public function printItemAnalysis(Request $request)
     {
         $user = Auth::user();
-        $selectedSession = ExamSession::with(['examPackage.questions', 'examPackage.subject.creator'])->find($request->exam_session_id);
+        $selectedSession = ExamSession::with(['examPackage.questions.options', 'examPackage.subject.creator'])->find($request->exam_session_id);
 
         if (!$selectedSession) {
             abort(404);

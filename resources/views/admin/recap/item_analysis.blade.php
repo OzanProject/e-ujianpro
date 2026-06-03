@@ -90,7 +90,9 @@
                                 <th class="col-fixed" style="width: 50px;">No</th>
                                 <th class="col-fixed-2 text-left" style="min-width: 250px;">Nama Peserta</th>
                                 @foreach($questions as $index => $question)
-                                    <th title="Soal No {{ $index + 1 }}">{{ $index + 1 }}</th>
+                                    <th style="cursor: pointer;" data-toggle="modal" data-target="#modalQuestion{{ $question->id }}" title="Lihat Soal No {{ $index + 1 }}">
+                                        <div class="text-primary text-decoration-underline">{{ $index + 1 }}</div>
+                                    </th>
                                 @endforeach
                                 <th style="min-width: 80px;">Benar</th>
                                 <th style="min-width: 80px;">Salah</th>
@@ -208,6 +210,59 @@
     </div>
     @endif
 </div>
+
+<!-- Modals for Question Preview -->
+@if($selectedSession && isset($questions))
+    @foreach($questions as $index => $question)
+        <div class="modal fade" id="modalQuestion{{ $question->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                    <div class="modal-header bg-light border-bottom-0" style="border-radius: 12px 12px 0 0;">
+                        <h5 class="modal-title font-weight-bold text-dark">
+                            <i class="fas fa-search-plus text-primary mr-2"></i> Preview Soal No {{ $index + 1 }}
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-4 text-left">
+                        <div class="mb-4 text-dark" style="font-size: 1.1rem; line-height: 1.6;">
+                            {!! $question->content !!}
+                        </div>
+                        
+                        @if($question->type != 'essay')
+                            <h6 class="font-weight-bold text-muted mb-3 text-uppercase" style="font-size: 0.85rem; letter-spacing: 1px;">Pilihan Jawaban</h6>
+                            <ul class="list-group">
+                                @foreach($question->options as $option)
+                                    <li class="list-group-item border-0 mb-2 rounded {{ $option->is_correct ? 'bg-soft-success border-success' : 'bg-light' }}" style="{{ $option->is_correct ? 'border-left: 4px solid #10b981 !important;' : 'border-left: 4px solid #cbd5e1 !important;' }}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="mr-3 mt-1">
+                                                @if($option->is_correct)
+                                                    <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
+                                                @else
+                                                    <i class="far fa-circle text-muted" style="font-size: 1.2rem;"></i>
+                                                @endif
+                                            </div>
+                                            <div class="text-dark" style="font-size: 1.05rem;">{!! $option->content !!}</div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="alert alert-info border-0 rounded-lg">
+                                <i class="fas fa-info-circle mr-2"></i> Ini adalah tipe soal Esai/Uraian.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer border-top-0 bg-light" style="border-radius: 0 0 12px 12px;">
+                        <button type="button" class="btn btn-secondary px-4 rounded-pill" data-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
+
 @endsection
 
 @push('scripts')
