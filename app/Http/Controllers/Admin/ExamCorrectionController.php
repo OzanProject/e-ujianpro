@@ -19,9 +19,7 @@ class ExamCorrectionController extends Controller
         $user = auth()->user();
         
         // Filter sessions by teacher subjects or admin creator
-        $query = ExamSession::with(['subject'])->withCount(['attempts' => function($query) {
-            $query->where('status', 'completed');
-        }]);
+        $query = ExamSession::with(['subject'])->withCount(['attempts']);
 
         if ($user->role === 'pengajar') {
             $query->whereIn('subject_id', $user->subjects->pluck('id'));
@@ -51,7 +49,6 @@ class ExamCorrectionController extends Controller
         $sort = $request->input('sort', 'latest');
 
         $query = ExamAttempt::where('exam_session_id', $sessionId)
-                            ->where('status', 'completed')
                             ->with('student');
 
         if ($sort === 'highest') {

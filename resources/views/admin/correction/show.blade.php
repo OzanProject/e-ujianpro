@@ -44,8 +44,9 @@
                         <tr>
                             <th style="width: 10px">#</th>
                             <th>Nama Peserta</th>
+                            <th>Status Ujian</th>
                             <th>Nilai Saat Ini</th>
-                            <th>Waktu Selesai</th>
+                            <th>Waktu Update Terakhir</th>
                             <th style="width: 100px">Aksi</th>
                         </tr>
                     </thead>
@@ -54,6 +55,13 @@
                             <tr>
                                 <td>{{ $loop->iteration + $attempts->firstItem() - 1 }}</td>
                                 <td>{{ $attempt->student->name }}</td>
+                                <td>
+                                    @if($attempt->status == 'completed')
+                                        <span class="badge badge-success">Selesai</span>
+                                    @else
+                                        <span class="badge badge-warning">Berlangsung</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="badge badge-success" style="font-size: 14px">{{ number_format($attempt->score, 2) }}</span>
                                 </td>
@@ -66,7 +74,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Belum ada peserta yang menyelesaikan ujian ini.</td>
+                                <td colspan="6" class="text-center">Belum ada peserta yang mengikuti ujian ini.</td>
                             </tr>
                         @endforelse
                     </tbody>

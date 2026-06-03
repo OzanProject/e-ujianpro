@@ -18,7 +18,7 @@
                             <th>Judul Ujian</th>
                             <th>Mata Pelajaran</th>
                             <th>Waktu Selesai</th>
-                            <th>Jumlah Peserta Selesai</th>
+                            <th>Jumlah Peserta (Berlangsung & Selesai)</th>
                             <th style="width: 100px">Aksi</th>
                         </tr>
                     </thead>
@@ -40,7 +40,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">Belum ada sesi ujian yang memiliki peserta selesai.</td>
+                                <td colspan="6" class="text-center">Belum ada sesi ujian yang memiliki peserta.</td>
                             </tr>
                         @endforelse
                     </tbody>
