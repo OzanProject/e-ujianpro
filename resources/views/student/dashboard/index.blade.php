@@ -71,9 +71,11 @@
                                     <div class="text-xs text-muted font-weight-bold">{{ $session->start_time->translatedFormat('D') }}</div>
                                 </div>
                         
-                                <!-- Details -->
                                 <div class="col-8 col-md-6 mb-2 mb-md-0 pl-4">
-                                    <h6 class="font-weight-bold mb-1 text-gray-800" style="font-size: 1.05rem;">{{ $session->subject->name ?? '-' }}</h6>
+                                    <h6 class="font-weight-bold mb-1 text-gray-800" style="font-size: 1.05rem;">
+                                        {{ $session->subject->name ?? '-' }}
+                                        <span class="badge badge-soft-primary ml-1" style="font-size: 0.75rem;"><i class="fas fa-bullseye"></i> KKM: {{ $session->subject->kkm ?? 75 }}</span>
+                                    </h6>
                                     <p class="text-sm text-muted mb-0"><i class="fas fa-file-alt mr-1 text-gray-400"></i> {{ $session->examPackage->title ?? 'Paket Ujian' }}</p>
                                 </div>
                         
@@ -139,7 +141,10 @@
                                             </div>
                                             
                                             <h5 class="font-weight-bold mb-1" style="color: #1e293b;">{{ $session->subject->name ?? 'Mata Pelajaran' }}</h5>
-                                            <p class="text-muted text-sm mb-3">{{ $session->examPackage->title ?? 'Paket Soal' }}</p>
+                                            <p class="text-muted text-sm mb-3">
+                                                {{ $session->examPackage->title ?? 'Paket Soal' }}<br>
+                                                <span class="badge badge-soft-primary mt-1"><i class="fas fa-bullseye mr-1"></i> KKM: {{ $session->subject->kkm ?? 75 }}</span>
+                                            </p>
                                             
                                             <div class="mt-auto">
                                                 <div class="d-flex align-items-center text-sm text-gray-600 mb-2">

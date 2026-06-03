@@ -44,6 +44,10 @@
                                     <td><span class="badge badge-success px-3 py-1 rounded-pill">Aktif</span></td>
                                 </tr>
                                 <tr>
+                                    <th class="text-gray-500 pl-0">Nilai KKM</th>
+                                    <td class="font-weight-bold text-gray-800">{{ $session->subject->kkm ?? 75 }}</td>
+                                </tr>
+                                <tr>
                                     <th class="text-gray-500 pl-0">Ruangan</th>
                                     <td class="font-weight-bold text-gray-800">
                                         {{ Auth::guard('student')->user()->examRoom->name ?? '-' }}

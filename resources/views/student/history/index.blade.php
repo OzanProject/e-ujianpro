@@ -169,7 +169,10 @@
                                             <div class="exam-title">
                                                 {{ $subject->name ?? 'Mata Pelajaran Tidak Ditemukan' }}
                                             </div>
-                                            <div class="exam-subtitle">
+                                            <div class="exam-subtitle mt-1">
+                                                <span class="badge badge-soft-primary px-2 py-1"><i class="fas fa-bullseye mr-1"></i> KKM: {{ $subject->kkm ?? 75 }}</span>
+                                            </div>
+                                            <div class="exam-subtitle mt-1">
                                                 <i class="fas fa-calendar-alt mr-1"></i>
                                                 @tgl_jam(optional($session)->start_time)
                                             </div>
