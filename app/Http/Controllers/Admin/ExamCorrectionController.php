@@ -20,7 +20,8 @@ class ExamCorrectionController extends Controller
         
         $search = $request->input('search');
         $subjectId = $request->input('subject_id');
-        $sort = $request->input('sort', 'latest');
+        $sort = $request->input('sort', 'az');
+        $limit = $request->input('limit', 10);
 
         // Filter sessions by teacher subjects or admin creator
         $query = ExamSession::with(['subject'])->withCount(['attempts']);
@@ -48,19 +49,21 @@ class ExamCorrectionController extends Controller
             $query->orderBy(\App\Models\Subject::select('name')->whereColumn('subjects.id', 'exam_sessions.subject_id'), 'asc');
         } elseif ($sort === 'za') {
             $query->orderBy(\App\Models\Subject::select('name')->whereColumn('subjects.id', 'exam_sessions.subject_id'), 'desc');
+        } elseif ($sort === 'latest') {
+            $query->latest();
         } elseif ($sort === 'oldest') {
             $query->orderBy('created_at', 'asc');
         } else {
-            $query->latest();
+            $query->orderBy(\App\Models\Subject::select('name')->whereColumn('subjects.id', 'exam_sessions.subject_id'), 'asc');
         }
 
-        $sessions = $query->paginate(10)->withQueryString();
+        $sessions = $query->paginate($limit)->withQueryString();
         $baseRoute = $this->getBaseRoute();
         
         // Pass subjects for filter dropdown
         $subjects = \App\Models\Subject::whereIn('id', $allowedSubjectIds)->orderBy('name', 'asc')->get();
 
-        return view('admin.correction.index', compact('sessions', 'baseRoute', 'subjects', 'search', 'subjectId', 'sort'));
+        return view('admin.correction.index', compact('sessions', 'baseRoute', 'subjects', 'search', 'subjectId', 'sort', 'limit'));
     }
 
     public function show(Request $request, $sessionId)
