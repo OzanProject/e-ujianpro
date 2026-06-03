@@ -245,4 +245,91 @@ class RecapController extends Controller
             ->route($this->getBaseRoute() . '.exam_result', ['exam_session_id' => $exam_session_id])
             ->with('success', "Berhasil menghitung ulang nilai untuk $count peserta ujian. Semua nilai kompleks dan grid kini sudah terkoreksi dengan benar.");
     }
+
+    public function itemAnalysis(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Scope Exam Sessions
+        if ($user->role === 'pengajar') {
+            $examSessions = ExamSession::whereIn('subject_id', $user->subjects->pluck('id'))
+                                ->with(['subject', 'examPackage'])
+                                ->orderByDesc('start_time')
+                                ->get();
+        } else {
+            $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+            $subjects = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+            $examSessions = ExamSession::whereIn('subject_id', $subjects)
+                                ->with(['subject', 'examPackage'])
+                                ->orderByDesc('start_time')
+                                ->get();
+        }
+
+        $selectedSession = null;
+        $attempts = collect([]);
+        $questions = collect([]);
+        $kkm = $request->input('kkm', 75);
+
+        if ($request->has('exam_session_id') && $request->exam_session_id) {
+            $sessionCheck = $examSessions->where('id', $request->exam_session_id)->first();
+            
+            if ($sessionCheck) {
+                $selectedSession = ExamSession::with(['examPackage.questions'])->find($request->exam_session_id);
+                $questions = $selectedSession->examPackage->questions;
+                
+                $attempts = $selectedSession->attempts()
+                    ->with(['student.group', 'student', 'answers.option', 'answers.question']) 
+                    ->orderByDesc('score')
+                    ->get();
+            }
+        }
+
+        $baseRoute = $this->getBaseRoute();
+        return view('admin.recap.item_analysis', compact('examSessions', 'selectedSession', 'attempts', 'questions', 'kkm', 'baseRoute'));
+    }
+
+    public function printItemAnalysis(Request $request)
+    {
+        $user = Auth::user();
+        $selectedSession = ExamSession::with(['examPackage.questions', 'examPackage.subject.creator'])->find($request->exam_session_id);
+
+        if (!$selectedSession) {
+            abort(404);
+        }
+
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+             $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+             if (in_array($selectedSession->subject_id, $allowedSubjectIds)) {
+                 $hasAccess = true;
+             }
+        } else {
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+             if ($selectedSession->subject->created_by == $creatorId) {
+                 $hasAccess = true;
+             }
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $kkm = $request->input('kkm', 75);
+        $questions = $selectedSession->examPackage->questions;
+
+        $attempts = $selectedSession->attempts()
+            ->with(['student.group', 'student', 'answers.option', 'answers.question'])
+            ->orderByDesc('score')
+            ->get();
+
+        $subjectOwnerId = $selectedSession->subject->created_by;
+        $institution = \App\Models\Institution::where('user_id', $subjectOwnerId)->first();
+
+        if (!$institution) {
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+             $institution = \App\Models\Institution::where('user_id', $creatorId)->first();
+        }
+
+        return view('admin.recap.print_item_analysis', compact('selectedSession', 'attempts', 'questions', 'kkm', 'institution'));
+    }
 }

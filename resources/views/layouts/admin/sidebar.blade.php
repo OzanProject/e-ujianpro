@@ -409,6 +409,13 @@
                                     <p>Hasil Ujian</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route($baseRoute . '.recap.item_analysis') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.recap.item_analysis') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Analisis Butir Soal</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endif
