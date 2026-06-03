@@ -11,6 +11,33 @@
                 <h3 class="card-title">Pilih Sesi Ujian</h3>
             </div>
             <div class="card-body">
+                <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input type="text" name="search" class="form-control" placeholder="Cari judul ujian..." value="{{ request('search') }}">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select name="subject_id" class="form-control">
+                                <option value="">-- Semua Mata Pelajaran --</option>
+                                @foreach($subjects as $subject)
+                                    <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>{{ $subject->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select name="sort" class="form-control">
+                                <option value="latest" {{ request('sort', 'latest') == 'latest' ? 'selected' : '' }}>Terbaru</option>
+                                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
+                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>A-Z (Judul)</option>
+                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Z-A (Judul)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> Filter</button>
+                        </div>
+                    </div>
+                </form>
+
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>

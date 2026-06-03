@@ -14,25 +14,51 @@ class ExamCorrectionController extends Controller
         return auth()->user()->role === 'pengajar' ? 'pengajar.correction' : 'admin.correction';
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         
+        $search = $request->input('search');
+        $subjectId = $request->input('subject_id');
+        $sort = $request->input('sort', 'latest');
+
         // Filter sessions by teacher subjects or admin creator
         $query = ExamSession::with(['subject'])->withCount(['attempts']);
 
         if ($user->role === 'pengajar') {
-            $query->whereIn('subject_id', $user->subjects->pluck('id'));
+            $allowedSubjectIds = $user->subjects->pluck('id');
+            $query->whereIn('subject_id', $allowedSubjectIds);
         } else {
             $creatorId = $user->role === 'operator' ? $user->created_by : $user->id;
-            $subjectIds = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
-            $query->whereIn('subject_id', $subjectIds);
+            $allowedSubjectIds = \App\Models\Subject::where('created_by', $creatorId)->pluck('id');
+            $query->whereIn('subject_id', $allowedSubjectIds);
         }
 
-        $sessions = $query->latest()->paginate(10);
+        if ($search) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+        
+        if ($subjectId) {
+            $query->where('subject_id', $subjectId);
+        }
+        
+        if ($sort === 'az') {
+            $query->orderBy('title', 'asc');
+        } elseif ($sort === 'za') {
+            $query->orderBy('title', 'desc');
+        } elseif ($sort === 'oldest') {
+            $query->orderBy('created_at', 'asc');
+        } else {
+            $query->latest();
+        }
+
+        $sessions = $query->paginate(10)->withQueryString();
         $baseRoute = $this->getBaseRoute();
         
-        return view('admin.correction.index', compact('sessions', 'baseRoute'));
+        // Pass subjects for filter dropdown
+        $subjects = \App\Models\Subject::whereIn('id', $allowedSubjectIds)->orderBy('name', 'asc')->get();
+
+        return view('admin.correction.index', compact('sessions', 'baseRoute', 'subjects', 'search', 'subjectId', 'sort'));
     }
 
     public function show(Request $request, $sessionId)
