@@ -112,7 +112,9 @@
                                 <tr>
                                     <td class="col-fixed bg-white">{{ $loop->iteration }}</td>
                                     <td class="col-fixed-2 bg-white text-left font-weight-bold text-dark">
-                                        {{ $attempt->student->name }}
+                                        <a href="{{ route($baseRoute . '.show_attempt', $attempt->id) }}" class="text-primary text-decoration-underline" title="Lihat detail pengerjaan siswa ini">
+                                            {{ $attempt->student->name }}
+                                        </a>
                                         <br><small class="text-muted font-weight-normal">{{ $attempt->student->group->name ?? '-' }}</small>
                                     </td>
                                     

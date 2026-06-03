@@ -341,4 +341,80 @@ class RecapController extends Controller
 
         return view('admin.recap.print_item_analysis', compact('selectedSession', 'attempts', 'questions', 'kkm', 'institution'));
     }
+
+    public function showAttempt(Request $request, $p1, $p2 = null)
+    {
+        // Handle optional subdomain parameter
+        $id = $p2 ?? $p1;
+        $user = Auth::user();
+        
+        // 1. Get fundamental attempt data
+        $attempt = \App\Models\ExamAttempt::with(['examSession.subject', 'examSession.examPackage', 'student'])
+                    ->where('id', $id)
+                    ->firstOrFail();
+
+        // Optional: access control to ensure user can view this session
+        $selectedSession = $attempt->examSession;
+        $hasAccess = false;
+        if ($user->role === 'pengajar') {
+             $allowedSubjectIds = $user->subjects->pluck('id')->toArray();
+             if (in_array($selectedSession->subject_id, $allowedSubjectIds)) {
+                 $hasAccess = true;
+             }
+        } else {
+             $creatorId = in_array($user->role, ['operator', 'pengajar']) ? $user->created_by : $user->id;
+             if ($selectedSession->subject->created_by == $creatorId) {
+                 $hasAccess = true;
+             }
+        }
+
+        if (!$hasAccess && $user->role !== 'super_admin') {
+            abort(403, 'Unauthorized access.');
+        }
+
+        // 2. Fetch all answers for statistics (before pagination)
+        $allAnswers = $attempt->answers()->with(['question', 'option'])->get();
+        
+        $stats = [
+            'total' => $allAnswers->count(),
+            'correct' => 0,
+            'wrong' => 0,
+            'empty' => 0,
+            'essay' => 0,
+        ];
+
+        foreach ($allAnswers as $ans) {
+            $questionType = $ans->question->type ?? 'multiple_choice';
+
+            if ($questionType === 'essay') {
+                if ($ans->answer_text) {
+                    $stats['essay']++;
+                } else {
+                    $stats['empty']++;
+                }
+            } else {
+                // Objective types (PG Tunggal, PG Kompleks, Benar/Salah)
+                if ($ans->question_option_id || $ans->answer_text) {
+                    if ($ans->is_correct) {
+                        $stats['correct']++;
+                    } else {
+                        $stats['wrong']++;
+                    }
+                } else {
+                    $stats['empty']++;
+                }
+            }
+        }
+
+        // 3. Paginate answers for display
+        $perPage = request()->get('per_page', 10);
+        $answers = $attempt->answers()
+                    ->with(['question.options', 'option'])
+                    ->paginate($perPage)
+                    ->appends(['per_page' => $perPage]); // Keep parameter in pagination links
+                    
+        $baseRoute = $this->getBaseRoute();
+
+        return view('admin.recap.show_attempt', compact('attempt', 'answers', 'stats', 'perPage', 'baseRoute'));
+    }
 }
