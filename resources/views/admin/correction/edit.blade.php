@@ -43,13 +43,13 @@
                             <strong>Jawaban Siswa:</strong>
                             <div class="p-2 bg-light border rounded mt-2">
                                 @if($answer->question->type == 'multiple_choice')
-                                    {{ $answer->option->content ?? '(Tidak Menjawab)' }}
+                                    <div class="d-inline-block">{!! $answer->option->content ?? '(Tidak Menjawab)' !!}</div>
                                     @if(optional($answer->option)->is_correct)
                                         <i class="fas fa-check-circle text-success ml-2"></i> (Benar)
                                     @else
                                         <i class="fas fa-times-circle text-danger ml-2"></i> (Salah)
                                         <br><small class="text-success">Jawaban Benar:
-                                            {{ $answer->question->options->where('is_correct', true)->first()->content ?? '-' }}</small>
+                                            <div class="d-inline-block">{!! $answer->question->options->where('is_correct', true)->first()->content ?? '-' !!}</div></small>
                                     @endif
                                 @else
                                     <p>{!! nl2br(e($answer->answer_text ?? '(Tidak Menjawab)')) !!}</p>
