@@ -27,7 +27,10 @@
                             <tr>
                                 <td>{{ $loop->iteration + $sessions->firstItem() - 1 }}</td>
                                 <td>{{ $session->title }}</td>
-                                <td>{{ $session->subject->name }}</td>
+                                <td>
+                                    {{ $session->subject->name }}
+                                    <br><small class="text-muted">Kelas: {{ $session->target_kelas ?? 'Semua' }}</small>
+                                </td>
                                 <td>{{ $session->end_time->format('d M Y H:i') }}</td>
                                 <td>
                                     <span class="badge badge-info">{{ $session->attempts_count }} Peserta</span>
