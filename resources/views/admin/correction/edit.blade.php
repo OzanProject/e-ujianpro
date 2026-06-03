@@ -32,7 +32,13 @@
                             <h3 class="card-title">
                                 Soal #{{ $index + 1 }}
                                 <span class="badge {{ $answer->question->type == 'essay' ? 'badge-warning' : 'badge-info' }}">
-                                    {{ $answer->question->type == 'essay' ? 'Essay' : 'Pilgan' }}
+                                    @if($answer->question->type == 'essay')
+                                        Essay
+                                    @elseif($answer->question->type == 'multiple_choice_complex')
+                                        Pilgan Kompleks
+                                    @else
+                                        Pilgan
+                                    @endif
                                 </span>
                             </h3>
                         </div>
@@ -51,6 +57,36 @@
                                         <br><small class="text-success">Jawaban Benar:
                                             <div class="d-inline-block">{!! $answer->question->options->where('is_correct', true)->first()->content ?? '-' !!}</div></small>
                                     @endif
+                                @elseif($answer->question->type == 'multiple_choice_complex')
+                                    @php
+                                        $selectedIds = json_decode($answer->answer_text, true) ?? [];
+                                        $selectedOptions = $answer->question->options->whereIn('id', $selectedIds);
+                                        $correctOptions = $answer->question->options->where('is_correct', true);
+                                    @endphp
+                                    @if($selectedOptions->isEmpty())
+                                        (Tidak Menjawab)
+                                    @else
+                                        <ul class="mb-2 pl-3">
+                                        @foreach($selectedOptions as $opt)
+                                            <li>
+                                                <div class="d-inline-block">{!! $opt->content !!}</div>
+                                                @if($opt->is_correct)
+                                                    <i class="fas fa-check-circle text-success ml-1" title="Benar"></i>
+                                                @else
+                                                    <i class="fas fa-times-circle text-danger ml-1" title="Salah"></i>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                        </ul>
+                                    @endif
+                                    <hr>
+                                    <small class="text-success"><strong>Jawaban Benar:</strong>
+                                    <ul class="pl-3 mb-0">
+                                        @foreach($correctOptions as $cOpt)
+                                            <li><div class="d-inline-block">{!! $cOpt->content !!}</div></li>
+                                        @endforeach
+                                    </ul>
+                                    </small>
                                 @else
                                     <p>{!! nl2br(e($answer->answer_text ?? '(Tidak Menjawab)')) !!}</p>
                                 @endif
