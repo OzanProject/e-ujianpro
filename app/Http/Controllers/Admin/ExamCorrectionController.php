@@ -35,7 +35,9 @@ class ExamCorrectionController extends Controller
         }
 
         if ($search) {
-            $query->where('title', 'like', '%' . $search . '%');
+            $query->whereHas('subject', function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
         }
         
         if ($subjectId) {
@@ -43,9 +45,9 @@ class ExamCorrectionController extends Controller
         }
         
         if ($sort === 'az') {
-            $query->orderBy('title', 'asc');
+            $query->orderBy(\App\Models\Subject::select('name')->whereColumn('subjects.id', 'exam_sessions.subject_id'), 'asc');
         } elseif ($sort === 'za') {
-            $query->orderBy('title', 'desc');
+            $query->orderBy(\App\Models\Subject::select('name')->whereColumn('subjects.id', 'exam_sessions.subject_id'), 'desc');
         } elseif ($sort === 'oldest') {
             $query->orderBy('created_at', 'asc');
         } else {

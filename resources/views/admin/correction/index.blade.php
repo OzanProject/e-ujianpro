@@ -14,7 +14,7 @@
                 <form action="{{ route($baseRoute . '.index') }}" method="GET" class="mb-3">
                     <div class="row">
                         <div class="col-md-4 mb-2">
-                            <input type="text" name="search" class="form-control" placeholder="Cari judul ujian..." value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control" placeholder="Cari mata pelajaran..." value="{{ request('search') }}">
                         </div>
                         <div class="col-md-3 mb-2">
                             <select name="subject_id" class="form-control">
@@ -28,8 +28,8 @@
                             <select name="sort" class="form-control">
                                 <option value="latest" {{ request('sort', 'latest') == 'latest' ? 'selected' : '' }}>Terbaru</option>
                                 <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Terlama</option>
-                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>A-Z (Judul)</option>
-                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Z-A (Judul)</option>
+                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>A-Z (Mapel)</option>
+                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>Z-A (Mapel)</option>
                             </select>
                         </div>
                         <div class="col-md-2 mb-2">
