@@ -294,15 +294,15 @@
                     </li>
                 @endif
 
-                {{-- Group: Laporan & Hasil --}}
+                {{-- Group: Cetak Administrasi --}}
                 @if(in_array($user->role, ['admin_lembaga', 'pengajar', 'operator']))
                     <li
-                        class="nav-item {{ request()->routeIs($baseRoute . '.report.*') || request()->routeIs($baseRoute . '.recap.*') ? 'menu-open' : '' }}">
+                        class="nav-item {{ request()->routeIs($baseRoute . '.report.exam_schedule') || request()->routeIs($baseRoute . '.report.student_room.*') || request()->routeIs($baseRoute . '.report.desk_card.*') || request()->routeIs($baseRoute . '.report.attendance.*') || request()->routeIs($baseRoute . '.report.attendance_proctor.*') || request()->routeIs($baseRoute . '.report.berita_acara.*') || request()->routeIs($baseRoute . '.report.daily_log.*') || request()->routeIs($baseRoute . '.report.denah_ruang.*') || request()->routeIs($baseRoute . '.report.tata_tertib*') ? 'menu-open' : '' }}">
                         <a href="#"
-                            class="nav-link {{ request()->routeIs($baseRoute . '.report.*') || request()->routeIs($baseRoute . '.recap.*') ? 'active' : '' }}">
+                            class="nav-link {{ request()->routeIs($baseRoute . '.report.exam_schedule') || request()->routeIs($baseRoute . '.report.student_room.*') || request()->routeIs($baseRoute . '.report.desk_card.*') || request()->routeIs($baseRoute . '.report.attendance.*') || request()->routeIs($baseRoute . '.report.attendance_proctor.*') || request()->routeIs($baseRoute . '.report.berita_acara.*') || request()->routeIs($baseRoute . '.report.daily_log.*') || request()->routeIs($baseRoute . '.report.denah_ruang.*') || request()->routeIs($baseRoute . '.report.tata_tertib*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-print"></i>
                             <p>
-                                Laporan & Hasil
+                                Cetak Administrasi
                                 <i class="right fas fa-angle-left"></i>
                             </p>
                         </a>
@@ -311,14 +311,7 @@
                                 <a href="{{ route($baseRoute . '.report.exam_schedule') }}"
                                     class="nav-link {{ request()->routeIs($baseRoute . '.report.exam_schedule') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Cetak Jadwal Ujian</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route($baseRoute . '.recap.exam_result') }}"
-                                    class="nav-link {{ request()->routeIs($baseRoute . '.recap.exam_result') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Hasil Ujian</p>
+                                    <p>Jadwal Ujian</p>
                                 </a>
                             </li>
 
@@ -326,7 +319,7 @@
                                 <a href="{{ route($baseRoute . '.report.student_room.index') }}"
                                     class="nav-link {{ request()->routeIs($baseRoute . '.report.student_room.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Daftar Peserta per Ruang</p>
+                                    <p>Peserta per Ruang</p>
                                 </a>
                             </li>
 
@@ -335,7 +328,7 @@
                                     <a href="{{ route($baseRoute . '.report.desk_card.index') }}"
                                         class="nav-link {{ request()->routeIs($baseRoute . '.report.desk_card.*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Cetak Kartu Meja</p>
+                                        <p>Kartu Meja</p>
                                     </a>
                                 </li>
                             @endif
@@ -344,7 +337,7 @@
                                 <a href="{{ route($baseRoute . '.report.attendance.index') }}"
                                     class="nav-link {{ request()->routeIs($baseRoute . '.report.attendance.index') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Cetak Daftar Hadir</p>
+                                    <p>Daftar Hadir Peserta</p>
                                 </a>
                             </li>
 
@@ -353,7 +346,7 @@
                                     <a href="{{ route($baseRoute . '.report.attendance_proctor.index') }}"
                                         class="nav-link {{ request()->routeIs($baseRoute . '.report.attendance_proctor.index') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Cetak Absen Pengawas</p>
+                                        <p>Absen Pengawas</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -367,7 +360,14 @@
                                     <a href="{{ route($baseRoute . '.report.daily_log.index') }}"
                                         class="nav-link {{ request()->routeIs($baseRoute . '.report.daily_log.*') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>Catatan Kejadian Penting</p>
+                                        <p>Catatan Kejadian</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route($baseRoute . '.report.denah_ruang.index') }}"
+                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.denah_ruang.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Denah Ruang Ujian</p>
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -384,14 +384,31 @@
                                         <p>Tata Tertib Pengawas</p>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{ route($baseRoute . '.report.denah_ruang.index') }}"
-                                        class="nav-link {{ request()->routeIs($baseRoute . '.report.denah_ruang.*') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>Denah Ruang Ujian</p>
-                                    </a>
-                                </li>
                             @endif
+                        </ul>
+                    </li>
+                @endif
+
+                {{-- Group: Laporan & Evaluasi --}}
+                @if(in_array($user->role, ['admin_lembaga', 'pengajar', 'operator']))
+                    <li
+                        class="nav-item {{ request()->routeIs($baseRoute . '.recap.*') ? 'menu-open' : '' }}">
+                        <a href="#"
+                            class="nav-link {{ request()->routeIs($baseRoute . '.recap.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-chart-bar"></i>
+                            <p>
+                                Laporan & Hasil
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route($baseRoute . '.recap.exam_result') }}"
+                                    class="nav-link {{ request()->routeIs($baseRoute . '.recap.exam_result') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Hasil Ujian</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endif
