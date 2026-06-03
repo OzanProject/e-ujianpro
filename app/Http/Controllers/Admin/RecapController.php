@@ -61,8 +61,9 @@ class RecapController extends Controller
                     $summary['avg_score'] = $attempts->avg('score');
                     $summary['max_score'] = $attempts->max('score');
                     $summary['min_score'] = $attempts->min('score');
-                    $summary['passed'] = $attempts->where('score', '>=', 75)->count(); 
-                    $summary['failed'] = $attempts->where('score', '<', 75)->count();
+                    $kkm = $selectedSession->subject->kkm ?? 75;
+                    $summary['passed'] = $attempts->where('score', '>=', $kkm)->count(); 
+                    $summary['failed'] = $attempts->where('score', '<', $kkm)->count();
                 }
             }
         }
@@ -268,7 +269,7 @@ class RecapController extends Controller
         $selectedSession = null;
         $attempts = collect([]);
         $questions = collect([]);
-        $kkm = $request->input('kkm', 75);
+        $kkm = $request->input('kkm', null);
 
         if ($request->has('exam_session_id') && $request->exam_session_id) {
             $sessionCheck = $examSessions->where('id', $request->exam_session_id)->first();
@@ -281,7 +282,15 @@ class RecapController extends Controller
                     ->with(['student.group', 'student', 'answers.option', 'answers.question']) 
                     ->orderByDesc('score')
                     ->get();
+                
+                if (is_null($kkm)) {
+                    $kkm = $selectedSession->subject->kkm ?? 75;
+                }
             }
+        }
+        
+        if (is_null($kkm)) {
+            $kkm = 75;
         }
 
         $baseRoute = $this->getBaseRoute();
@@ -314,7 +323,7 @@ class RecapController extends Controller
             abort(403, 'Unauthorized access.');
         }
 
-        $kkm = $request->input('kkm', 75);
+        $kkm = $request->input('kkm', $selectedSession->subject->kkm ?? 75);
         $questions = $selectedSession->examPackage->questions;
 
         $attempts = $selectedSession->attempts()

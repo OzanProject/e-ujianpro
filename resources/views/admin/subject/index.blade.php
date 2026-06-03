@@ -31,6 +31,7 @@
                             <th style="width: 10px">#</th>
                             <th>Kode</th>
                             <th>Nama Mata Pelajaran</th>
+                            <th>KKM</th>
                             <th>Dibuat Pada</th>
                             <th style="width: 150px">Aksi</th>
                         </tr>
@@ -41,6 +42,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td><span class="badge bg-info">{{ $subject->code }}</span></td>
                                 <td>{{ $subject->name }}</td>
+                                <td><span class="badge badge-success">{{ $subject->kkm ?? 75 }}</span></td>
                                 <td>@tgl($subject->created_at)</td>
                                 <td>
                                     <a href="{{ route('admin.subject.edit', $subject->id) }}" class="btn btn-warning btn-sm">
@@ -57,7 +59,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Belum ada data mata pelajaran.</td>
+                                <td colspan="6" class="text-center">Belum ada data mata pelajaran.</td>
                             </tr>
                         @endforelse
                     </tbody>

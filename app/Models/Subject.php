@@ -9,7 +9,7 @@ class Subject extends Model
 {
     use Multitenantable;
 
-    protected $fillable = ['code', 'name', 'created_by'];
+    protected $fillable = ['code', 'name', 'created_by', 'kkm'];
 
     public function teachers()
     {

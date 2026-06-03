@@ -200,7 +200,8 @@
                                             @if($session && $session->show_score)
                                                 @php
                                                     $score = (float) ($attempt->score ?? 0);
-                                                    $scoreClass = $score >= 75 ? 'badge-success' : ($score >= 60 ? 'badge-warning text-white' : 'badge-danger');
+                                                    $kkm = $attempt->examSession->subject->kkm ?? 75;
+                                                    $scoreClass = $score >= $kkm ? 'badge-success' : ($score >= ($kkm - 15) ? 'badge-warning text-white' : 'badge-danger');
                                                 @endphp
                                                 <span class="badge {{ $scoreClass }} score-badge">
                                                     {{ number_format($score, 2) }}

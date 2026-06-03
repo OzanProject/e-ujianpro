@@ -169,7 +169,7 @@
                                         <span class="font-weight-bold text-dark" style="font-size: 1.1em;">{{ number_format($attempt->score, 2) }}</span>
                                     </td>
                                     <td class="px-4 py-3 align-middle text-center">
-                                        @if($attempt->score >= 75)
+                                        @if($attempt->score >= ($selectedSession->subject->kkm ?? 75))
                                             <span class="badge badge-soft-success text-success px-3 py-2 rounded-pill" style="background: #ecfdf5; min-width: 80px;">Lulus</span>
                                         @else
                                             <span class="badge badge-soft-danger text-danger px-3 py-2 rounded-pill" style="background: #fef2f2; min-width: 80px;">Remedial</span>

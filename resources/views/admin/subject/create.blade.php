@@ -27,6 +27,13 @@
                             <span class="error invalid-feedback">{{ $message }}</span>
                         @enderror
                     </div>
+                    <div class="form-group">
+                        <label for="kkm">Nilai KKM</label>
+                        <input type="number" class="form-control @error('kkm') is-invalid @enderror" id="kkm" name="kkm" value="{{ old('kkm', 75) }}" placeholder="Contoh: 75" min="0" max="100">
+                        @error('kkm')
+                            <span class="error invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Simpan</button>

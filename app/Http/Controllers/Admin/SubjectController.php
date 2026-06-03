@@ -41,12 +41,13 @@ class SubjectController extends Controller
                 }),
             ],
             'name' => 'required|string|max:255',
+            'kkm' => 'nullable|integer|min:0|max:100',
         ]);
 
         Subject::create([
             'code' => $request->code,
             'name' => $request->name,
-            
+            'kkm' => $request->kkm ?? 75,
         ]);
 
         return redirect()->route('admin.subject.index')->with('success', 'Mata Pelajaran berhasil ditambahkan.');
@@ -83,9 +84,12 @@ class SubjectController extends Controller
                 })->ignore($subject->id),
             ],
             'name' => 'required|string|max:255',
+            'kkm' => 'nullable|integer|min:0|max:100',
         ]);
 
-        $subject->update($request->all());
+        $data = $request->all();
+        $data['kkm'] = $request->kkm ?? 75;
+        $subject->update($data);
 
         return redirect()->route('admin.subject.index')->with('success', 'Mata Pelajaran berhasil diperbarui.');
     }
